@@ -20,7 +20,7 @@ switch ($d->labelPosition) {
 
 empty($d->label) ? $margin = '' : $margin = 'margin-top: 15px;';
 ?>
-<div style=" <?php echo $margin ?> display: flex; flex-direction: <?php echo $direction?>">
+<div style=" <?php echo $margin ?> ">
 	<?php echo $d->label ?>
 	<?php echo $d->element ?>
 </div>
