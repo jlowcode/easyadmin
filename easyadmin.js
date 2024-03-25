@@ -15,19 +15,30 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		},
 		initialize: function (options) { 
             // Init options
+			self = this;
 			this.options = options;
-			const { baseUri } = options;
 
 			this.setElementsDatabasejoin();
 			this.setElementType();
 			this.setUpButtonSave();
+			this.setUpButtonsPainel();
 
+			Fabrik.addEvent('fabrik.list.submit.ajax.complete', function () {
+				self.setUpButtonsPainel();
+			});
+		},
+
+		/**
+		 * Function to show the buttons from painel
+		 * 
+		 */
+		setUpButtonsPainel: function () {
 			const heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
-			const btnGroup = options.actionMethod == 'inline' ? jQuery(heading).find('.btn-group')[0] : jQuery(heading).find('.dropdown-menu')[0];			
+			const btnGroup = this.options.actionMethod == 'inline' ? jQuery(heading).find('.btn-group')[0] : jQuery(heading).find('.dropdown-menu')[0];			
 
 			if(btnGroup) {
-				this.setButtons(options.elements, baseUri);
-				this.setActionPanel(options.elements);
+				this.setButtons(this.options.elements);
+				this.setActionPanel(this.options.elements);
 				jQuery(document).ready(function () {
 					jQuery(document).on('mouseenter', '.heading.fabrik_ordercell', function () {
 						jQuery(this).find(":button.elementAdminButton").show();
@@ -38,36 +49,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			} else {
 				return;
 			}
-
-			// JQuery responsável por montar o modal na tela
-			jQuery("a[rel=modal]").click(function(ev){
-				ev.preventDefault();
-				var id = jQuery(this).attr("href");
-				var alturaTela  = jQuery(document).height();
-				var larguraTela = jQuery(window).width();
-		
-				jQuery('#mascara').css({'width':larguraTela, 'height':alturaTela});
-				jQuery('#mascara').fadeIn(200);
-				jQuery('#mascara').fadeTo("slow", 0.2);
-		
-				var left = (jQuery(window).width() / 2 ) - (jQuery(id).width() / 2 );
-				var top  = (jQuery(window).height() / 2 ) - (jQuery(id).height() / 2 );
-		
-				jQuery(id).css({'left':left, 'top':top});
-				jQuery(id).show();
-			});
-
-			jQuery('#mascara').click(function(){		
-				jQuery(this).fadeOut("slow");
-				jQuery('.window').fadeOut("slow");
-			});
-		
-			jQuery('.fechar').click(function(ev){		
-				ev.preventDefault();		
-				jQuery('#mascara').fadeOut(200, "linear");
-				jQuery('.window').fadeOut(200, "linear");
-				window.location.reload();
-			});
 		},
 
 		// Create a button of an element edit link
@@ -284,7 +265,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 		// Set buttons to edit the elements
 		// @links array of the links
-		setButtons: function(links, baseUri)  {
+		setButtons: function(links)  {
 			for (var key in links) {
 				if(links.hasOwnProperty(key) && links[key].enabled) {
 					var element = jQuery('th.'+ links[key].fullname).children();
