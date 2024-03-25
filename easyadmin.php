@@ -872,7 +872,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'dropdown' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DROPDOWN'),
 			'autocomplete' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_AUTOCOMPLETE'),
 			'treeview' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TREEVIEW'),
-			'rating' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RATING')
+			'rating' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RATING'),
+			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS')
 		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
@@ -931,6 +932,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___required';
 		$dEl = new stdClass();
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -942,7 +944,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$nameElement]['dataLabel'] = $this->getDataLabel($id, 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_REQUIRED_LABEL'), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_REQUIRED_DESC'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_REQUIRED_DESC'),
+			$showOnTypes, 
+			false
 		);
 		$elements[$nameElement]['dataField'] = Array(
 			'value' => 0,
@@ -1661,6 +1665,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['tree_parent_id'] =  $data['father'];
 				}
 
+				break;
+			
+			case 'thumbs':
+				$opts['plugin'] = 'thumbs';
+				$params['rate_in_from'] =  '0';
 				break;
 		}
 
