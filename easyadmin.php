@@ -1506,16 +1506,26 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$input = $app->input;
 		$data = $listModel->removeTableNameFromSaveData($_POST);
-		$group_id = $listModel->getFormModel()->getGroups()[$listId]->getGroup()->getId();
 		$mode = $data['mode'];
 
 		switch ($mode) {
 			case 'elements':
+				if($data['valIdEl'] != '0') {
+					$idEl = $data['valIdEl'];
+					$element = $listModel->getElements('id')[$idEl];
+					$group_id = $element->getGroup()->getId();
+				} else {
+					foreach ($listModel->getFormModel()->getGroups() as $key => $value) {
+						$groups[] = $value;
+					}
+					$group_id = $groups[0]->getGroup()->getId();
+				}
+
 				$r = $this->saveModalElements($data, $group_id, $listModel);
 				break;
 			
 			case 'list':
-				$r = $this->saveModalList($data, $group_id, $listModel);
+				$r = $this->saveModalList($data, $listModel);
 				break;
 		}
 
@@ -1717,7 +1727,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 	version 4.0
 	 */
-	private function saveModalList($data, $group_id, $listModel) {
+	private function saveModalList($data, $listModel) {
 		$modelList = new FabrikAdminModelList();
 		$properties = $listModel->getTable()->getProperties();
 
