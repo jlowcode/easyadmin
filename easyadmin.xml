@@ -16,5 +16,6 @@
 		<filename>easyadmin-min.js</filename>
 		<folder>language</folder>
 		<folder>forms</folder>
+		<folder>layouts</folder>
 	</files>
 </extension>
