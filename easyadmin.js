@@ -36,19 +36,15 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			const heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			const btnGroup = this.options.actionMethod == 'inline' ? jQuery(heading).find('.btn-group')[0] : jQuery(heading).find('.dropdown-menu')[0];			
 
-			if(btnGroup) {
-				this.setButtons(this.options.elements);
-				this.setActionPanel(this.options.elements);
-				jQuery(document).ready(function () {
-					jQuery(document).on('mouseenter', '.heading.fabrik_ordercell', function () {
-						jQuery(this).find(":button.elementAdminButton").show();
-					}).on('mouseleave', '.heading.fabrik_ordercell', function () {
-						jQuery(this).find(":button.elementAdminButton").hide();
-					});
+			this.setButtons(this.options.elements);
+			this.setActionPanel(this.options.elements);
+			jQuery(document).ready(function () {
+				jQuery(document).on('mouseenter', '.heading.fabrik_ordercell', function () {
+					jQuery(this).find(":button.elementAdminButton").show();
+				}).on('mouseleave', '.heading.fabrik_ordercell', function () {
+					jQuery(this).find(":button.elementAdminButton").hide();
 				});
-			} else {
-				return;
-			}
+			});
 		},
 
 		// Create a button of an element edit link
@@ -296,11 +292,18 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			var button = jQuery('<a class="btn fabrik_view fabrik__rowlink btn-default"><span>' + this.options.images.admin + '</span><span class="hidden">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") +'</span></a>');
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
-			var JBtnGroup = jQuery(heading).find('.btn-group');
+			var btnGroup = jQuery(heading).find('.btn-group')[0];
 
 			var editListButton = jQuery('<li><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") + '</button></li>');
 			var addElementButton = jQuery('<li><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") + '</button></li>');
 			
+			if(!btnGroup) {
+				var newBtnGroup = jQuery('<div class="btn-group"></div>');
+				jQuery(heading).find("span").append(newBtnGroup);
+				btnGroup = jQuery(heading).find('.btn-group')[0];
+			}
+			var JBtnGroup = jQuery(btnGroup);
+
 			this.setCssAndEventsButtons(editListButton, addElementButton);
 
 			var div = jQuery("<div></div>");
@@ -411,10 +414,17 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			var button = jQuery('<li class="nav-link"><a title="Admin"><span>' + this.options.images.admin +'</span> ' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") + '</a></li>');
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
-			var JBtnGroup = jQuery(heading).find('.dropdown-menu');
+			var btnGroup = jQuery(heading).find('.dropdown-menu')[0];
 
 			var editListButton = jQuery('<li class="subMenuAdmin" style="display: none; padding: 0px 10px;"><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") +'</button></li>');
 			var addElementButton = jQuery('<li class="subMenuAdmin" style="display: none; padding: 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") +'</button></li>');
+
+			if(!btnGroup) {
+				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-angle-down" aria-hidden="true"></i></button><ul class="dropdown-menu dropdown-menu-end" style=""></ul></div>');
+				jQuery(heading).find("span").append(newBtnGroup);
+				btnGroup = jQuery(heading).find('.dropdown-menu')[0];
+			}
+			var JBtnGroup = jQuery(btnGroup);
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
 
