@@ -195,6 +195,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$dataEl->use_filter = $dataElement->filter_type ? true : false;
 		$dataEl->required = !empty($element->getValidations()) ? true : false;
+		$dataEl->show_in_list = $dataElement->show_in_list_summary ? true : false;
 		$dataEl->name = $dataElement->label;
 
 		switch ($plugin) {
@@ -544,6 +545,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementMultiRelations($elements, 'multiRelations');
 		$this->setElementAccessRating($elements, 'accessRating');
 		$this->setElementUseFilter($elements, 'useFilter');
+		$this->setElementShowInList($elements, 'showInList');
 		$this->setElementRequiered($elements, 'required');
 
 		$this->elements = $elements;
@@ -708,6 +710,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$formModel = $listModel->getFormModel();
 		$subject = $this->getSubject();
 
+		$tableList = $listModel->getTable();
+		$val = json_decode($tableList->get('order_dir'), true);
+
 		$id = 'easyadmin_modal___ordering_type_list';
 		$dEl = new stdClass();
 
@@ -715,7 +720,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->options = $this->optionsElements(Array('ASC' => 'Crescente', 'DESC' => 'Decrescente'));
 		$dEl->name = $id;
 		$dEl->id = $id;
-		$dEl->selected = Array('ASC');
+		$dEl->selected = $val;
 		$dEl->multiple = '0';
 		$dEl->attribs = 'class="fabrikinput form-select input-medium child-element-list"';
 		$dEl->multisize = '';
@@ -916,6 +921,46 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Setter method to show in list element
+	 *
+	 * @param   array 	$elements		Reference to all elements
+	 * @param	string	$nameElement	Identity of the element
+	 *
+	 * @return  null
+	 * 
+	 * @since version 4.0.1
+	 */
+	private function setElementShowInList(&$elements, $nameElement) {
+		$subject = $this->getSubject();
+		$id = 'easyadmin_modal___show_in_list';
+		$dEl = new stdClass();
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$nameElement]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel($id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_IN_LIST_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_IN_LIST_DESC'),
+			$showOnTypes, 
+			false
+		);
+		$elements[$nameElement]['dataField'] = Array(
+			'value' => 0,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
 	}
 
 	/**
@@ -1563,6 +1608,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['name'] = $opts['id'] == '0' ? strtolower($data['name']) : '';
 		$opts['group_id'] = $group_id;
 		$opts['published'] = '1';
+		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
 		
@@ -1599,6 +1645,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_file_increment'] = '1';
 
 				if($data['make_thumbs']) {
+					$params['fu_show_image'] = '2';
 					$params['make_thumbnail'] = '1';
 					$params['fu_make_pdf_thumb'] = '1';
 					$params['thumb_dir'] = "images/stories/thumbs";
@@ -1750,6 +1797,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			if($key == 'params') {
 				$dataList[$key] = json_decode($dataList[$key], true);
+				$dataList[$key]['admin_template'] = $data['default_layout'];
 			}
 		}	
 
