@@ -7,7 +7,7 @@
 	<license>GNU/GPL http://www.gnu.org/copyleft/gpl.html</license>
 	<authorEmail>contact@jlowcode.org</authorEmail>
 	<authorUrl>www.jlowcode.org</authorUrl>
-	<version>4.0.1</version>
+	<version>4.0.2</version>
 	<description>PLG_FABRIK_LIST_EASY_ADMIN_DESCRIPTION</description>
 	<files>
 		<filename plugin="easyadmin">easyadmin.php</filename>
