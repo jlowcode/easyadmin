@@ -115,7 +115,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						return;
 					}
 
-					var url = "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + tid + "'";
+					var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + tid + "'";
 					jQuery.ajax({
 						url     : url,
 						method	: 'get',
@@ -279,7 +279,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				return;
 			}
 
-			var url = "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
 			jQuery.ajax({
 				url     : url,
 				method	: 'post',
