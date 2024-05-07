@@ -98,6 +98,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @return  null
 	 */
 	protected function init() {
+		if(!$this->authorized()) {
+			return;
+		}
+
 		$this->jsScriptTranslation();
 
 		$opts = new StdClass;
@@ -115,6 +119,31 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Load the JS code and pass the opts
 		$this->loadJS($opts);
+	}
+
+	/**
+	 * Function to check if the user is authorized
+	 *
+	 * @return  Boolean
+	 * 
+	 * @since version 4.0.2
+	 */
+	private function authorized() {
+		$user = Factory::getUser();
+		$db = Factory::getDbo();
+		$listModel = $this->getListModel();
+
+		$groupsLevels = $user->groups;
+		$levelEditList = (int) $listModel->getParams()->get("allow_edit_details");
+		$query = $db->getQuery(true);
+
+		$query->select($db->qn("rules"))
+			->from($db->qn("#__viewlevels"))
+			->where($db->qn("id") . " = " . $db->q($levelEditList));
+		$db->setQuery($query);
+		$groups = json_decode($db->loadResult());
+
+		return count(array_intersect($groupsLevels, $groups)) > 0 ? true : false;
 	}
 
 	/**
