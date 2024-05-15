@@ -362,7 +362,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 		
 		//We don't have run if the task is filter
-		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) {
+		if((strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) || $this->elements['list']['objField'] === null) {
 			return;
 		}
 
