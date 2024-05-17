@@ -373,30 +373,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * We need to get the table name from table label before render child elements of element list in JS
-	 * 
-	 * @return  JSON
-	 * 
-	 * @since 	version 4.0.3
-	 */
-	public function onGetDbTableName() {
-		$db = Factory::getDbo();
-		$app = Factory::getApplication();
-
-		$input = $app->input;
-		$query = $db->getQuery(true);
-		$label = $input->getString("label");
-
-		$query->select($db->qn("db_table_name"))
-			->from($db->qn("#__fabrik_lists"))
-			->where($db->qn("label") . " = " . $label);
-		$db->setQuery($query);
-		$db_table_name = $db->loadResult();
-
-		echo json_encode($db_table_name);
-	}
-
-	/**
      * Function sends message texts to javascript file
      *
      * @since version 4.0
@@ -1567,11 +1543,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'database_join_display_type' => 'checkbox', 
 			'database_join_display_style' => 'only-autocomplete',
 			'join_db_name' => '#__fabrik_lists',
-			'join_val_column' => 'label',
+			'join_val_column' => 'db_table_name',
 			'join_key_column' => 'db_table_name',
 			'database_join_show_please_select' => '1',
 			'dbjoin_autocomplete_rows' => 10,
-			'database_join_where_sql' => '`db_table_name` NOT LIKE "adm_%"'
+			'database_join_where_sql' => 'SUBSTRING(`label`, 1, 1) != "_"'
 		)));
 
 		$objDatabasejoin->setParams($params, 0);
@@ -1771,14 +1747,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
      */
     public function getViewLevels()
     {
-        $db    = JFactory::getDbo();
+        $db    = Factory::getDbo();
         $query = $db->getQuery(true);
 
         // Get all the available view levels
-        $query->select($db->quoteName('id'))
-            ->select($db->quoteName('title'))
-            ->from($db->quoteName('#__viewlevels'))
-            ->order($db->quoteName('id'));
+        $query->select($db->qn('id'))
+            ->select($db->qn('title'))
+            ->from($db->qn('#__viewlevels'))
+            ->order($db->qn('id'))
+			->where($db->qn("id") . " IN ('" . implode("','", [1, $this->getListModel()->getTable()->access]) . "')");
 
         $db->setQuery($query);
         $result = $db->loadObjectList();
@@ -1973,13 +1950,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['database_join_display_type'] = $data['multi_relation'] ? 'checkbox' : 'auto-complete';
 
 				if($data['use_filter']) {
-					$opts['filter_type'] = 'auto-complete';
+					$type == 'autocomplete' ? $opts['filter_type'] = 'auto-complete' : $opts['filter_type'] = 'treeview';
 				}
 
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
 				} else {
-					$params['database_join_display_style'] =  'only-treeview';
+					$params['database_join_display_style'] =  'both-treeview-autocomplete';
 					$params['tree_parent_id'] =  $data['father'];
 				}
 
@@ -2432,6 +2409,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	public function setImages() {
 		$this->images['admin'] = FabrikHelperHTML::image('admin.png', 'list');
 		$this->images['edit'] = FabrikHelperHTML::image('edit.png', 'list');
+		$this->images['trash'] = FabrikHelperHTML::image('trash.png', 'list');
 	}
 
 	/**
