@@ -133,20 +133,25 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					}).done(function (r) {
 						var opts = eval(r);
 						var els = document.getElementsByClassName('child-element-list');
-						
+						var notShow = ["id", "created_by", "created_date", "created_ip", "indexing_text", "updated_by", "updated_date"];
+
 						jQuery('.child-element-list').each(function(index, element) {
 							jQuery(element).empty();
 						});
 
 						Array.each(els, function (el) {
 							opts.forEach(opt => {
-								el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
-								var o = {'value': opt.value};
+								if(!notShow.includes(opt.value)) {
+									el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
+									var o = {'value': opt.value};
 
-								if (opt.value === val) {
-									o.selected = 'selected';
+									if (opt.value === val) {
+										o.selected = 'selected';
+									} else if(opt.value == "name" && el.id.indexOf("___label") > 0) {
+										o.selected = "selected";
+									}
+									new Element('option', o).set('text', opt.label).inject(el);
 								}
-								new Element('option', o).set('text', opt.label).inject(el);
 							});
 						});
 					});
@@ -462,8 +467,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 									var list = jQuery('<li class="select2-selection__choice" title="' + value + '" data-select2-id="18"><span class="select2-selection__choice__remove" role="presentation">×</span>' + value + '</li>');
 									var option = jQuery('<option value="' + value + '" data-select2-id="18">' + value + '</option>');
 
-									jQuery('#easyadmin_modal___' + index).parent().css("display", "none");
-
 									jQuery('[name="easyadmin_modal___list[]"] > option').remove();
 									jQuery('[name="easyadmin_modal___list[]"]').append(option);
 									jQuery('[name="easyadmin_modal___list[]"]').val(value);
@@ -471,6 +474,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 									jQuery('#easyadmin_modal___' + index + ' .select2-selection__choice').remove();
 									jQuery('#easyadmin_modal___' + index + ' .select2-selection__rendered').append(list);
 									jQuery('#easyadmin_modal___' + index + ' .select2-search__field').trigger('change');
+
+									setTimeout(() => {
+										jQuery(".select2-selection__choice__remove").css("display", "none");
+									}, 100);
+									
 									break;
 
 								case 'width_field':
@@ -609,7 +617,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});
 				jQuery('#easyadmin_modal___label').empty();
 				jQuery('#easyadmin_modal___father').empty();
-				jQuery('#easyadmin_modal___list').parent().css("display", "block");
 			});
 
 			editListButton.find('button').css({

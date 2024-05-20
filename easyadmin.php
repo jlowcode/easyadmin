@@ -1827,6 +1827,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @since 	version 4.0
 	 */
 	private function saveModalElements($data, $group_id, $listModel) {
+		$db = Factory::getDbo();
 		$modelElement = new FabrikAdminModelElement();
 
 		$validate = $this->validateElements($data);
@@ -1955,9 +1956,22 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
+					$params['jsSuggest'] =  '1';
+					$params['moldTags'] =  '1';
 				} else {
 					$params['database_join_display_style'] =  'both-treeview-autocomplete';
 					$params['tree_parent_id'] =  $data['father'];
+					$params['fabrikdatabasejoin_frontend_add'] =  '1';
+					$params['fabrikdatabasejoin_frontend_blank_page'] =  '1';
+
+					$query = $db->getQuery(true);
+					$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
+						->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
+						->where('f.published = 1 AND l.db_table_name = ' . $db->q($data['list']));
+					$db->setQuery($query);
+					$options = $db->loadObjectList();
+		
+					$params['databasejoin_popupform'] =  $options[0]->value;
 				}
 
 				break;
