@@ -140,6 +140,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						});
 
 						Array.each(els, function (el) {
+							x = 0;
 							opts.forEach(opt => {
 								if(!notShow.includes(opt.value)) {
 									el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
@@ -147,7 +148,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 									if (opt.value === val) {
 										o.selected = 'selected';
-									} else if(opt.value == "name" && el.id.indexOf("___label") > 0) {
+										x = 1;
+									} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
 										o.selected = "selected";
 									}
 									new Element('option', o).set('text', opt.label).inject(el);
@@ -473,6 +475,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 									jQuery('#easyadmin_modal___' + index + ' .select2-selection__choice').remove();
 									jQuery('#easyadmin_modal___' + index + ' .select2-selection__rendered').append(list);
+
+									self.setUpElementList();
 									jQuery('#easyadmin_modal___' + index + ' .select2-search__field').trigger('change');
 
 									setTimeout(() => {

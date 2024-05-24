@@ -450,7 +450,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			[
 				'title'       	=> $config['title'],
 				'backdrop'    	=> true,
-				'keyboard'    	=> true,
+				'keyboard'    	=> true,	
 				'focus'			=> true,
 				'closeButton' 	=> true,
 				'height'      	=> '400px',
@@ -1962,7 +1962,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['database_join_display_style'] =  'both-treeview-autocomplete';
 					$params['tree_parent_id'] =  $data['father'];
 					$params['fabrikdatabasejoin_frontend_add'] =  '1';
-					$params['fabrikdatabasejoin_frontend_blank_page'] =  '1';
+					$params['fabrikdatabasejoin_frontend_blank_page'] =  '0';
+					$params['join_popupwidth'] =  '80%';
 
 					$query = $db->getQuery(true);
 					$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
