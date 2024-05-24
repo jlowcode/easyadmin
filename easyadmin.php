@@ -1988,7 +1988,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$params['filter_access'] = '1';
 			$params['filter_length'] = '20';
 			$params['filter_required'] = '0';
-			$params['filter_build_method'] = '0';
+			$params['filter_build_method'] = '1';
 			$params['filter_groupby'] = 'text';
 			$params['filter_class'] = 'input-xxlarge';
 			$params['filter_responsive_class'] = '';
