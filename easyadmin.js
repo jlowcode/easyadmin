@@ -157,7 +157,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 							});
 						});
 					});
-				}, 200);
+				}, 500);
 			});
 		},
 
