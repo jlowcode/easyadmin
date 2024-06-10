@@ -71,7 +71,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setListId($input->get('listid'));
 		
 		//We don't have run if the task is filter
-		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) {
+		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0 || $input->get('format') == 'csv') {
 			return;
 		}
 
@@ -147,7 +147,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return count(array_intersect($groupsLevels, $groups)) > 0 ? true : false;
 	}
 
-	/**
+		/**
 	 * Function to load the javascript code for the plugin
 	 *
 	 * @param   array  $opts 	Configuration array for javascript.
@@ -163,8 +163,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$jsFiles['Fabrik'] = 'media/com_fabrik/js/fabrik.js';
 		$jsFiles['FabrikEasyAdmin'] = '/plugins/fabrik_list/easyadmin/easyadmin' . $ext;
 		$script = "var fabrikEasyAdmin = new FabrikEasyAdmin($optsJson);";
-		FabrikHelperHTML::script($jsFiles, $script);
+		$this->opts = $optsJson;
+		//FabrikHelperHTML::script($jsFiles, $script);
 	}
+
+	public function onloadJavascriptInstance($args)
+    {
+		parent::onLoadJavascriptInstance($args);
+
+        $this->jsInstance = "new FbListEasyadmin({$this->opts})";
+
+        return true;
+    }
+
+    public function loadJavascriptClassName_result()
+    {
+        return 'FbListEasyadmin';
+    }
 
 	/**
 	 * Function that process the data of elements to edit them
@@ -340,7 +355,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 		
 		//We don't have run if the task is filter
-		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) {
+		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0 || $input->get('format') == 'csv') {
 			return;
 		}
 
@@ -362,7 +377,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 		
 		//We don't have run if the task is filter
-		if((strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) || $this->elements['list']['objField'] === null) {
+		if((strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) || $this->elements['list']['objField'] === null || $input->get('format') == 'csv') {
 			return;
 		}
 
@@ -2290,7 +2305,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $item->id;
 		
 		//We don't have run if the task is filter
-		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0) {
+		if(strpos($input->get('task'), 'filter') > 0 || strpos($input->get('task'), 'order') > 0 || $input->get('format') == 'csv') {
 			return;
 		}
 
