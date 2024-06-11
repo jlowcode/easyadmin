@@ -164,22 +164,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$jsFiles['FabrikEasyAdmin'] = '/plugins/fabrik_list/easyadmin/easyadmin' . $ext;
 		$script = "var fabrikEasyAdmin = new FabrikEasyAdmin($optsJson);";
 		$this->opts = $optsJson;
-		//FabrikHelperHTML::script($jsFiles, $script);
+		FabrikHelperHTML::script($jsFiles, $script);
 	}
-
-	public function onloadJavascriptInstance($args)
-    {
-		parent::onLoadJavascriptInstance($args);
-
-        $this->jsInstance = "new FbListEasyadmin({$this->opts})";
-
-        return true;
-    }
-
-    public function loadJavascriptClassName_result()
-    {
-        return 'FbListEasyadmin';
-    }
 
 	/**
 	 * Function that process the data of elements to edit them
