@@ -205,7 +205,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		setElementShowInList: function() {
 			self = this;
 			var elShowInList = jQuery('input[name="easyadmin_modal___show_in_list"]');
-			
+
 			elShowInList.on('change', function(e, params) {
 				if(self.options.valIdEl == 0 && params === undefined) {
 					return;
@@ -272,6 +272,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___description_list':
 					case 'easyadmin_modal___ordering_list':
 					case 'easyadmin_modal___ordering_type_list':
+					case 'easyadmin_modal___collab_list':
 					case 'easyadmin_modal___default_layout':
 					case 'easyadmin_modal___width_field':
 					case 'easyadmin_modal___ordering_elements':

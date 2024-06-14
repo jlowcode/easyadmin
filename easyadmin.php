@@ -29,8 +29,10 @@ require_once JPATH_PLUGINS . '/fabrik_element/dropdown/dropdown.php';
 require_once JPATH_PLUGINS . '/fabrik_element/databasejoin/databasejoin.php';
 require_once JPATH_BASE . '/components/com_fabrik/models/element.php';
 require_once JPATH_BASE . '/components/com_fabrik/models/list.php';
+require_once JPATH_BASE . '/components/com_fabrik/models/form.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/element.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/list.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/form.php';
 
 /**
  *  Buttons to edit list and create elements on site Front-End
@@ -618,6 +620,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		//$this->setElementThumbList($elementsList, 'thumbList');	// For new version
 		$this->setElementOrderingList($elementsList, 'orderingList');
 		$this->setElementOrderingTypeList($elementsList, 'orderingTypeList');
+		$this->setElementCollab($elementsList, 'collabList');
 		//$this->setElementDefaultLayout($elementsList, 'defaultLayout');
 
 		$this->elementsList = $elementsList;
@@ -782,6 +785,50 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
 		$elements[$nameElement]['objField'] = $classDropdown->getLayout('form');
 		$elements[$nameElement]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method to collaboration element
+	 *
+	 * @param   array 	$elements		Reference to all elements
+	 * @param	string	$nameElement	Identity of the element
+	 *
+	 * @return  null
+	 * 
+	 * @since version 4.0
+	 */
+	private function setElementCollab(&$elements, $nameElement) {
+		$listModel = $this->getListModel();
+		$formModel = $listModel->getFormModel();
+		$subject = $this->getSubject();
+
+		$tableList = $listModel->getTable();
+		$val = Array($formModel->getParams()->get('approve_for_own_records'));
+
+		$id = 'easyadmin_modal___collab_list';
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$dEl->options = $this->optionsElements(Array(
+			'0' => 'Restrita, todas as contribuições devem ser revisadas e precisam de aprovação',
+			'1' => 'Aberta, apenas as contribuições de edição e exclusão precisam de aprovação'
+		));
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = $val;
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium child-element-list"';
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$nameElement]['objField'] = $classDropdown->getLayout('form');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		$elements[$nameElement]['dataField'] = $dEl;
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_DESC'),
+		);
 	}
 
 	/**
@@ -1972,7 +2019,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 						->where('f.published = 1 AND l.db_table_name = ' . $db->q($data['list']));
 					$db->setQuery($query);
 					$options = $db->loadObjectList();
-		
+
 					$params['databasejoin_popupform'] =  $options[0]->value;
 				}
 
@@ -2139,10 +2186,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 	version 4.0
 	 */
-	private function saveModalList($data, $listModel) 
+	private function saveModalList($data, $listModel)
 	{
+		$app = Factory::getApplication();
+		$input = $app->input;
+		
 		$modelList = new FabrikAdminModelList();
+		$modelForm = new FabrikAdminModelForm();
+		$formModel = new FabrikFEModelForm();
+
+		$formModel->setId("11");
+		$groupsForm = $formModel->getGroups();
+
 		$properties = $listModel->getTable()->getProperties();
+		$propertiesForm = $listModel->getFormModel()->getTable()->getProperties();
 
 		$validate = $this->validateList($data);
 		if($validate->error) {
@@ -2167,8 +2224,28 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			}
 		}	
 
+		$dataForm['current_groups'] = array_keys($groupsForm);
+		$pluginsForm = Array();
+		foreach ($propertiesForm as $key => $val) {
+			if(!array_key_exists($key, $dataForm)) {
+				$dataForm[$key] = $propertiesForm[$key];
+			}
+
+			if($key == 'params') {
+				$dataForm[$key] = json_decode($dataForm[$key], true);
+				$dataForm[$key]['approve_for_own_records'] = $data['collab_list'];
+				$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
+				$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
+				$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];
+				$pluginsForm['plugin_description'] = $dataForm[$key]['plugin_description'];
+				$pluginsForm['plugin_state'] = $dataForm[$key]['plugin_state'];
+			}
+		}	
+
 		if(!$validate->error) {
 			$modelList->save($dataList);
+			$input->set('jform', $pluginsForm);
+			$modelForm->save($dataForm);
 		}
 
 		return json_encode($validate);
@@ -2299,7 +2376,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
             return;
         }
 
-		JFactory::getApplication()->getInput()->set("id", $id);
+		$app->getInput()->set("id", $id);
 		$data['modelElement']->setState("element.id", $id);
 		$data['modelElement']->getState("element.id");
 	}
