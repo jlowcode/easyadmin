@@ -8,6 +8,8 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Factory;
 
 $d = $displayData;
+$css = $d->cssElement;
+
 switch ($d->labelPosition) {
 	case '1':
 		$direction = 'column';
@@ -20,7 +22,7 @@ switch ($d->labelPosition) {
 
 empty($d->label) ? $margin = '' : $margin = 'margin-top: 15px;';
 ?>
-<div style=" <?php echo $margin ?> ">
+<div style=" <?php echo $margin . $css ?> ">
 	<?php echo $d->label ?>
 	<?php echo $d->element ?>
 </div>
