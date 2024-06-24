@@ -158,7 +158,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			strpos($input->get('task'), 'filter') > 0 || 
 			strpos($input->get('task'), 'order') > 0 || 
 			$input->get('format') == 'csv' || 
-			in_array('form', explode('.', $input->get('task')))
+			in_array('form', explode('.', $input->get('task'))) ||
+			$this->elements['list']['objField'] === null
 		) {
 			return false;
 		}
