@@ -154,10 +154,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 
 		if(
-			strpos($input->get('task'), 'filter') > 0 || 
-			strpos($input->get('task'), 'order') > 0 || 
-			$input->get('format') == 'csv' || 
-			in_array('form', explode('.', $input->get('task')))
+			strpos($input->get('task'), 'filter') > 0 ||
+			strpos($input->get('task'), 'order') > 0 ||
+			$input->get('format') == 'csv' ||
+			in_array('form', explode('.', $input->get('task'))) &&
+			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
+			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin')
 		) {
 			return false;
 		}
@@ -381,7 +383,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 		
 		//We don't have run if the task is filter
-		if(!$this->mustRun() || $this->elements['list']['objField'] === null) {
+		if(!$this->mustRun()) {
 			return;
 		}
 
