@@ -267,6 +267,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___label':
 					case 'easyadmin_modal___father':
 					case 'easyadmin_modal___format':
+					case 'easyadmin_modal___related_list':
 					case 'easyadmin_modal___access_rating':
 					case 'easyadmin_modal___name_list':
 					case 'easyadmin_modal___description_list':
@@ -599,6 +600,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___label':
 						case 'easyadmin_modal___father':
 						case 'easyadmin_modal___format':
+						case 'easyadmin_modal___related_list':
 						case 'easyadmin_modal___access_rating':
 						case 'easyadmin_modal___width_field':
 						case 'easyadmin_modal___ordering_elements':
