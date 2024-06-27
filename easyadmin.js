@@ -15,7 +15,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		},
 		initialize: function (options) { 
             // Init options
-			var self = this;
+			self = this;
 			this.options = options;
 
 			jQuery(".modal-body").css("overflow-y", "scroll");
@@ -75,7 +75,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 * 
 		 */
 		setElementsDatabasejoin: function() {
-			var self = this;
+			self = this;
 
 			var multiSelectElement = jQuery('.select2-search__field');
 			multiSelectElement.on('change', function() {
@@ -443,7 +443,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 * 
 		 */
 		setModalToEditElement: function (el) {
-			var self = this;
+			self = this;
 			var li = jQuery(el).parent();
 			var idEl = li.prop('value');
 			var options = self.options.allElements[idEl];
