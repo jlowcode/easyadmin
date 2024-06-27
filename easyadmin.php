@@ -2024,8 +2024,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
-					$params['jsSuggest'] =  '0';
-					$params['moldTags'] =  '0';
+					$params['jsSuggest'] =  '0';	// Before, we need fix this feature to acept several elements at the same time
+					$params['moldTags'] =  '0';		// Before, we need fix this feature to acept several elements at the same time
 				} else {
 					$params['database_join_display_style'] =  'both-treeview-autocomplete';
 					$params['tree_parent_id'] =  $data['father'];
@@ -2161,7 +2161,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$user = Factory::getApplication()->getIdentity();
-		$groups = $user->getAuthorisedViewLevels();
+		$groups = $user->groups;
 
 		switch ($mode) {
 			case 'change':
