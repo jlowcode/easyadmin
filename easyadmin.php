@@ -2024,8 +2024,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
-					$params['jsSuggest'] =  '1';
-					$params['moldTags'] =  '1';
+					$params['jsSuggest'] =  '0';
+					$params['moldTags'] =  '0';
 				} else {
 					$params['database_join_display_style'] =  'both-treeview-autocomplete';
 					$params['tree_parent_id'] =  $data['father'];
