@@ -135,7 +135,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function authorized() {
 		$user = Factory::getUser();
-		$db = Factory::getDbo();
+		$db = Factory::getContainer()->get('DatabaseDriver');
 		$listModel = $this->getListModel();
 
 		$groupsLevels = $user->groups;
@@ -1294,7 +1294,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function searchRelatedLists($table='')
 	{
-		$db = Factory::getDbo();
+		$db = Factory::getContainer()->get('DatabaseDriver');
 
 		$findJoin = false;
 		$table == '' ?  $table = $this->db_table_name : $findJoin = true;
@@ -1896,7 +1896,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
      */
     public function getViewLevels()
     {
-        $db    = Factory::getDbo();
+        $db    = Factory::getContainer()->get('DatabaseDriver');
         $query = $db->getQuery(true);
 
         // Get all the available view levels
@@ -1977,7 +1977,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function saveModalElements($data, $group_id, $listModel) 
 	{
-		$db = Factory::getDbo();
+		$db = Factory::getContainer()->get('DatabaseDriver');
 		$modelElement = new FabrikAdminModelElement();
 
 		$validate = $this->validateElements($data);
@@ -2200,17 +2200,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @since 	version 4.1.0
 	 */
 	private function createNewGroupToElementRelatedList($listModel, &$opts, &$params) 
-	{
+	{	
 		$modelGroup = new FabrikAdminModelGroup();
 
 		$new = $opts['id'] == '0' ? true : false;
-		$new ? '' : $optsGroup['id'] = $opts['group_id'];
+		$new ? '' : $optsGroup['id'] = "{$opts['group_id']}";
 		$idForm = $listModel->getFormModel()->getId();
 
 		$optsGroup['name'] = $opts['label'];
 		$optsGroup['label'] = '';
 		$optsGroup['published'] = $opts['published'];
-		$optsGroup['form'] = "$idForm";
+		//$optsGroup['form'] = "$idForm";
 		$optsGroup['is_join'] = "0";
 		$optsGroup['tags'] = Array();
 
@@ -2220,6 +2220,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsGroup['params']['labels_above'] = "1";
 		$optsGroup['params']['labels_above_details'] = "1";
 
+		$modelGroup->setState('task', 'apply');
 		$modelGroup->save($optsGroup);
 
 		return $new ? $modelGroup->getState('group.id') : $optsGroup['id'];
@@ -2279,7 +2280,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsModule['params']['prefilters'] = json_encode($optsPreFilters);
 
 		$modelModule->save($optsModule);
-		return $modelModule->getState('module.id');
+		return $new ? $modelModule->getState('module.id') : $optsModule['id'];
 	}
 
 	/**
