@@ -310,6 +310,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'thumbs':
 				$dataEl->type = 'thumbs';
 				break;
+			
+			case 'display':
+				$dataEl->type = 'related_list';
+				break;
 		}
 	}
 
@@ -505,6 +509,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($type == 'list') {
 			$footer .=  '<input type="hidden" id="easyadmin_modal___db_table_name" name="db_table_name" value="' . $this->db_table_name . '">';
 		}
+		
+		$footer .=  '<input type="hidden" id="easyadmin_modal___history_type" name="history_type" value="">';
 
 		$footer .= '</div>';
 
@@ -1942,7 +1948,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		switch ($mode) {
 			case 'elements':
-				if($data['valIdEl'] != '0') {
+				if($data['history_type'] == 'related_list') {
+					// Changing the element related_list to another type, the group must to be the principal
+
+					$idEl = $data['valIdEl'];
+					$element = $listModel->getElements('id', true, false)[$idEl];
+					$element = $listModel->getElements('id', true, false)[$idEl];
+					preg_match('/{loadmoduleid (\d+)}/', $element->getElement()->get('default'), $match);
+					
+					$data['group_id_old'] = (string) $element->getGroup()->getId();
+					$data['module_id_old'] = $match[1];
+					$group_id = array_keys($listModel->getFormModel()->getGroups())[0];
+				} else if($data['valIdEl'] != '0') {
 					$idEl = $data['valIdEl'];
 					$element = $listModel->getElements('id', true, false)[$idEl];
 					$group_id = $element->getGroup()->getId();
@@ -2134,8 +2151,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'related_list':
 				$opts['related_list'] = $data['related_list'];
 
-				$groupIdRelated = $this->createNewGroupToElementRelatedList($listModel, $opts, $params);
-				$moduleId = $this->createNewModuleToElementRelatedList($listModel, $opts, $params);
+				$groupIdRelated = $this->groupToElementRelatedList($listModel, $opts, $params);
+				$moduleId = $this->moduleToElementRelatedList($listModel, $opts, $params);
 
 				$opts['plugin'] = 'display';
 				$opts['default'] = "{loadmoduleid $moduleId}";
@@ -2180,16 +2197,25 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$modelElement->save($opts);
-		$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
-		if(!$saveOrder) {
-			$validate->error = Text::_("");
+		//$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
+		//if(!$saveOrder) {
+		//	$validate->error = Text::_("");
+		//}
+
+		if($data['history_type'] == 'related_list') {
+			// Changing the element related_list to another type, the group and module must to be unpublished
+			$opts['group_id_old'] = $data['group_id_old'];
+			$opts['module_id_old'] = $data['module_id_old'];
+
+			$this->groupToElementRelatedList($listModel, $opts, $params, true);
+			$this->moduleToElementRelatedList($listModel, $opts, $params, true);
 		}
 
 		return json_encode($validate);
 	}
 
 	/**
-	 * Function that save the related list element, creating the new group
+	 * Function that save the related list element, creating/editing the new group
 	 * 
 	 * @param	object		The listmodel object
 	 * @param	array		The element options
@@ -2199,24 +2225,29 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 	version 4.1.0
 	 */
-	private function createNewGroupToElementRelatedList($listModel, &$opts, &$params) 
-	{	
+	private function groupToElementRelatedList($listModel, &$opts, &$params, $trash=false)
+	{
 		$modelGroup = new FabrikAdminModelGroup();
 
-		$new = $opts['id'] == '0' ? true : false;
-		$new ? '' : $optsGroup['id'] = "{$opts['group_id']}";
 		$idForm = $listModel->getFormModel()->getId();
+
+		if($opts['id'] == '0' || !isset($opts['group_id_old'])) {
+			$new = true;
+			$optsGroup['form'] = (string) $idForm;
+		} else {
+			$new = false;
+			$optsGroup['id'] = $trash ? (string) $opts['group_id_old'] : (string) $opts['group_id'];
+		}
 
 		$optsGroup['name'] = $opts['label'];
 		$optsGroup['label'] = '';
-		$optsGroup['published'] = $opts['published'];
-		//$optsGroup['form'] = "$idForm";
+		$optsGroup['published'] = $trash ? '0' : '1';
 		$optsGroup['is_join'] = "0";
 		$optsGroup['tags'] = Array();
 
 		$optsGroup['params']['repeat_group_button'] = "0";
 		$optsGroup['params']['group_columns'] = "1";
-		$optsGroup['params']['repeat_group_show_first'] = "2";
+		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
 		$optsGroup['params']['labels_above'] = "1";
 		$optsGroup['params']['labels_above_details'] = "1";
 
@@ -2227,7 +2258,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Function that save the related list element, creating the new module
+	 * Function that save the related list element, creating/editing the new module
 	 * 
 	 * @param	object		The listmodel object
 	 * @param	array		The element options
@@ -2237,20 +2268,26 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 	version 4.1.0
 	 */
-	private function createNewModuleToElementRelatedList($listModel, &$opts, &$params) 
+	private function moduleToElementRelatedList($listModel, &$opts, &$params, $trash=false) 
 	{
 		$modelModule = new ModuleModel();
 		$listModelRelated = new FabrikFEModelList();
 
 		$listModelRelated->setId($opts['related_list']);
-		$new = $opts['id'] == '0' ? true : false;
 		$idRelatedList = $opts['related_list'];
 
-		if(!$new) {
-			$displayElement = $listModel->getElements('id')[$opts['id']]->getElement();
-			$defaultColumn = $displayElement->get('default');
-			preg_match('/{loadmoduleid (\d+)}/', $defaultColumn, $match);
-			$optsModule['id'] = $match[1];
+		if($opts['id'] == '0' || !isset($opts['module_id_old'])) {
+			$new = true;
+		} else {
+			$new = false;
+			if($trash) {
+				$optsModule['id'] = $opts['module_id_old'];
+			} else {
+				$displayElement = $listModel->getElements('id')[$opts['id']]->getElement();
+				$defaultColumn = $displayElement->get('default');
+				preg_match('/{loadmoduleid (\d+)}/', $defaultColumn, $match);
+				$optsModule['id'] = $match[1];
+			}
 		}
 
 		// Data to pre filters
@@ -2266,7 +2303,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Data to configure the module
 		$optsModule['title'] = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_NAME_MODULE', $idRelatedList);
 		$optsModule['module'] = 'mod_fabrik_list';
-		$optsModule['published'] = $opts['published'];
+		$optsModule['published'] = $trash ? '0' : $opts['published'];
 		$optsModule['is_join'] = "0";
 		$optsModule['access'] = "1";
 		$optsModule['tags'] = Array();

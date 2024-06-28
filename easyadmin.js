@@ -247,16 +247,20 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		},
 
 		saveEvent: function(mode) {
+			self = this;
 			valEls = {};
 			inputs = jQuery('.fabrikinput');
 
 			listId = jQuery('[name=listid]').val();
 			db_table_name = jQuery('[name=db_table_name]').val();
+			history_type = jQuery('[name=history_type]').val();
 
 			valEls['easyadmin_modal___mode'] = mode;
 			valEls['easyadmin_modal___listid'] = listId;
-			valEls['jform'] = {'db_table_name': db_table_name};
+			valEls['easyadmin_modal___history_type'] = history_type;
 			valEls['easyadmin_modal___valIdEl'] = self.options.valIdEl;
+			valEls['jform'] = {'db_table_name': db_table_name};
+
 			inputs.each(function() {
 				id = this.id;
 				switch (id) {
@@ -452,6 +456,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			self.options.valIdEl = idEl;
 
 			if(options.enabled) {
+				jQuery('#easyadmin_modal___history_type').val(options.type);
+
 				jQuery.each(options, function(index, value) {
 					el = jQuery('#easyadmin_modal___' + index);
 					if(el.length > 0) {
