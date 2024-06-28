@@ -1912,7 +1912,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
 		$opts['label'] = $data['name'];
-		$opts['name'] = $opts['id'] == '0' ? strtolower($data['name']) : '';
+		$opts['name'] = $opts['id'] == '0' ? preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower($data['name']))) : '';
 		$opts['group_id'] = $group_id;
 		$opts['published'] = $data['trash'] == 'true' ? '0' : '1';
 		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
