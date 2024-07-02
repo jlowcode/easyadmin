@@ -299,8 +299,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			valEls['easyadmin_modal___list'] = jQuery('[name="easyadmin_modal___list[]"]').val()[0];
-			valEls['order_by'] = [valEls['easyadmin_modal___ordering_list']];
-			valEls['order_dir'] = [valEls['easyadmin_modal___ordering_type_list']];
+
+			if(mode == 'list') {
+				valEls['order_by'] = [valEls['easyadmin_modal___ordering_list']];
+				valEls['order_dir'] = [valEls['easyadmin_modal___ordering_type_list']];
+			}
 
 			if(valEls['easyadmin_modal___name_list'] == '') {
 				alert(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE"));
