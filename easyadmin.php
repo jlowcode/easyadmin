@@ -2180,7 +2180,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		if($data['show_in_list']) {
-			$params['tablecss_cell'] = $data['width_field'] ? 'width: ' . $data['width_field'] . '%;' : "";
+			$cssCel = 'width: ' . $data['width_field'] . '%; max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+			$params['tablecss_cell'] = $data['width_field'] ? $cssCel : "";
 		}
 
 		$params['can_order'] = '1';
