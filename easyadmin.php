@@ -279,8 +279,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'dropdown':
 				$dataEl->multi_select = $params['multiple'] == '1' ? true : false;
-				$dataEl->type = 'dropdown';
-				$dataEl->options_dropdown = implode(', ', $params['sub_options']['sub_labels']);
+				$dataEl->type = $params['allow_frontend_addtodropdown'] == '1' ? 'tags' : 'dropdown';
+				$dataEl->options_dropdown = implode(', ', (array) $params['sub_options']['sub_labels']);
 				break;
 
 			case 'date':
@@ -1007,7 +1007,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'treeview' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TREEVIEW'),
 			'related_list' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RELATED_LIST'),
 			'rating' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RATING'),
-			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS')
+			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS'),
+			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS')
 		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
@@ -1041,7 +1042,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function optionsElements($opts) {
 		$qtnTypes = count($opts);
 		$x = 0;
-		
+
 		foreach ($opts as $value => $text) {
 			$options[$x] = new stdClass();
 			$options[$x]->value = $value;
@@ -1067,7 +1068,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___show_in_list';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1216,7 +1217,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___required';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'tags'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1334,7 +1335,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___trash';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list', 'tags'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1419,7 +1420,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___use_filter';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'date', 'dropdown', 'autocomplete', 'treeview', 'date', 'rating'];
+		$showOnTypes = ['text', 'longtext', 'date', 'dropdown', 'autocomplete', 'treeview', 'date', 'rating', 'tags'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -2152,6 +2153,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['default'] = "{loadmoduleid $moduleId}";
 				$opts['group_id'] = $groupIdRelated;
 				$params['display_showlabel'] = "0";
+				break;
+
+			case 'tags':
+				$opts['plugin'] = 'dropdown';
+
+				$params['multiple'] = '1';
+				$params['advanced_behavior'] = '1';
+				$params['allow_frontend_addtodropdown'] = '1';
+
+				if($data['use_filter']) {
+					$opts['filter_type'] = 'auto-complete';
+				}
 				break;
 		}
 
