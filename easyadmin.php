@@ -644,6 +644,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementOrderingList($elementsList, 'orderingList');
 		$this->setElementOrderingTypeList($elementsList, 'orderingTypeList');
 		$this->setElementCollab($elementsList, 'collabList');
+		$this->setElementWidthList($elementsList, 'widthList');
+		$this->setElementLayoutMode($elementsList, 'layoutMode');
 		//$this->setElementDefaultLayout($elementsList, 'defaultLayout');
 
 		$this->elementsList = $elementsList;
@@ -693,7 +695,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Setter method to list description element
+	 * Setter method to description element of the list
 	 *
 	 * @param   array 	$elements		Reference to all elements
 	 * @param	string	$nameElement	Identity of the element
@@ -833,8 +835,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$dEl->options = $this->optionsElements(Array(
-			'0' => 'Restrita, todas as contribuições devem ser revisadas e precisam de aprovação',
-			'1' => 'Aberta, apenas as contribuições de edição e exclusão precisam de aprovação'
+			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_0"),
+			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1")
 		));
 		$dEl->name = $id;
 		$dEl->id = $id;
@@ -851,6 +853,91 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_LABEL'),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_DESC'),
+		);
+	}
+
+	/**
+	 * Setter method to width element of the list
+	 *
+	 * @param   array 	$elements		Reference to all elements
+	 * @param	string	$nameElement	Identity of the element
+	 *
+	 * @return  null
+	 * 
+	 * @since 	version 4.1.1
+	 */
+	private function setElementWidthList(&$elements, $nameElement) {
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$listWidth = (int) $listModel->getParams()->get('width_list');
+
+		$id = 'easyadmin_modal___width_list';
+		$dEl = new stdClass;
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text',
+			'value' => $listWidth
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$nameElement]['objField'] = $classField->getLayout('form');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_LIST_DESC'),
+		);
+		$elements[$nameElement]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method to layout mode element
+	 *
+	 * @param   array 	$elements		Reference to all elements
+	 * @param	string	$nameElement	Identity of the element
+	 *
+	 * @return  null
+	 * 
+	 * @since version 4.1.1
+	 */
+	private function setElementLayoutMode(&$elements, $nameElement) {
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$layoutMode = (int) $listModel->getParams()->get('layout_mode');
+		$val = Array($layoutMode);
+
+		$id = 'easyadmin_modal___layout_mode';
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$dEl->options = $this->optionsElements(Array(
+			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0"),
+			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1")
+		));
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = $val;
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium child-element-list"';
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$nameElement]['objField'] = $classDropdown->getLayout('form');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		$elements[$nameElement]['dataField'] = $dEl;
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_DESC'),
 		);
 	}
 
@@ -2550,7 +2637,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
-		
+
 		$modelList = new FabrikAdminModelList();
 		$modelForm = new FabrikAdminModelForm();
 		$formModel = new FabrikFEModelForm();
@@ -2581,6 +2668,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if($key == 'params') {
 				$dataList[$key] = json_decode($dataList[$key], true);
 				$dataList[$key]['admin_template'] = $data['default_layout'];
+				$dataList[$key]['width_list'] = $data['width_list'];
+				$dataList[$key]['layout_mode'] = $data['layout_mode'];
 			}
 		}
 

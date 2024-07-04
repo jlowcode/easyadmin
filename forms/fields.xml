@@ -1,7 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <form>
 	<fields addfieldpath="/administrator/components/com_fabrik/models/fields" name="params">
-        <fieldset name="plg-list-easyadmin">
+        <fieldset label="PLG_FABRIK_LIST_EASY_ADMIN_OPTIONS" name="plg-list-easyadmin">
+
+            <field type="helplink"
+				url="PLG_FABRIK_LIST_EASY_ADMIN_HELP_SERVER" />
+    
+            <field name="width_list"
+                   label="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_LIST_LABEL"
+                   description="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_LIST_DESC"
+                   size="30"
+                   type="text"
+                   default="100"
+            />
+
+            <field name="layout_mode"
+				type="list"
+				default="0"
+				description="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_DESC"
+				label="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_LABEL">
+					<option value="0">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0</option>
+					<option value="1">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1</option>
+			</field>
+        </fieldset>
+
+        <fieldset label="PLG_FABRIK_LIST_EASY_ADMIN_ADVANCED" name="plg-list-easyadmin-advanced">
+            <field type="helplink"
+				url="PLG_FABRIK_LIST_EASY_ADMIN_HELP_SERVER" />
         </fieldset>
     </fields>
 </form>
