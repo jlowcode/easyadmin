@@ -365,6 +365,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___make_thumbs1':
 					case 'easyadmin_modal___multi_select1':
 					case 'easyadmin_modal___multi_relation1':
+					case 'easyadmin_modal___trash_list1':
 						id = id.replace('1', '');
 						valEls[id] = jQuery(this).prop('checked') ? true : '';
 						break;

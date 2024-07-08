@@ -599,6 +599,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			!empty($element['dataLabel']) ? $data->label = $element['objLabel']->render((object) $element['dataLabel']) : $data->label = '';
 
 			$data->element = $element['objField']->render($element['dataField']);
+			$data->cssElement = $element['cssElement'];
 			$body .= $layoutBody->render($data);
 		}
 
@@ -662,6 +663,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementWidthList($elementsList, 'widthList');
 		$this->setElementLayoutMode($elementsList, 'layoutMode');
 		//$this->setElementDefaultLayout($elementsList, 'defaultLayout');
+		$this->setElementTrashList($elementsList, 'trashList');
 
 		$this->elementsList = $elementsList;
 	}
@@ -1097,6 +1099,46 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DEFAULT_LAYOUT_DESC'),
 		);
 		$elements[$nameElement]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method to trash element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 	version 4.1.2
+	 */
+	private function setElementTrashList(&$elements, $nameElement) 
+	{
+		$subject = $this->getSubject();
+		$id = 'easyadmin_modal___trash_list';
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$nameElement]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TRASH_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TRASH_LIST_DESC'),
+		);
+		$elements[$nameElement]['dataField'] = Array(
+			'value' => 0,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+		$elements[$nameElement]['cssElement'] = 'border-top: #ccc solid 2px;';
 	}
 
 	/**
@@ -2812,6 +2854,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$pluginsForm['plugin_state'] = $dataForm[$key]['plugin_state'];
 			}
 		}	
+
+		if($data['trash_list']) {
+			$dataList['published'] = '0';
+			$dataForm['published'] = '0';
+		}
 
 		if(!$validate->error) {
 			$modelList->save($dataList);
