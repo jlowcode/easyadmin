@@ -2248,7 +2248,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
 		$opts['label'] = $data['name'];
-		$opts['name'] = $opts['id'] == '0' ? strtolower($data['name']) : '';
+		$opts['name'] = $opts['id'] == '0' ? $data['name'] : '';
 		$opts['group_id'] = $group_id;
 		$opts['published'] = $data['trash'] == 'true' ? '0' : '1';
 		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
@@ -2991,7 +2991,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function validateElements($data, $listModel) {
+	private function validateElements(&$data, $listModel) {
 		$validate = new stdClass();
 		$validate->error = false;
 		$validate->message = "";
@@ -3054,10 +3054,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since		version 4.1.2
 	 */
-	private function checkColumnName($name, $listModel) {
+	private function checkColumnName(&$name, $listModel) {
 		$columnsNames = (array) $this->processElementsNames($listModel->getElements(true), false);
+		$name = substr(strtolower($name), 0, 40);
 
-		if(in_array(strtolower($name), $columnsNames)) {
+		if(in_array($name, $columnsNames)) {
 			return false;
 		}
 
