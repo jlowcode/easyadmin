@@ -2235,6 +2235,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$modelElement = new FabrikAdminModelElement();
 
+		$data['label'] = $data['name'];
 		$validate = $this->validateElements($data, $listModel);
 		if($validate->error) {
 			return json_encode($validate);
@@ -2247,7 +2248,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['easyadmin'] = true;
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
-		$opts['label'] = $data['name'];
+		$opts['label'] = $data['label'];
 		$opts['name'] = $opts['id'] == '0' ? $data['name'] : '';
 		$opts['group_id'] = $group_id;
 		$opts['published'] = $data['trash'] == 'true' ? '0' : '1';
@@ -2438,8 +2439,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		if($data['show_in_list']) {
-			$cssCel = 'width: ' . $data['width_field'] . '%; max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
-			$params['tablecss_cell'] = $data['width_field'] ? $cssCel : "";
+			$width = $data['width_field'];
+			$css = 'max-width: ' . $width . '%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+			$cssCel = 'width: ' . $width . '%; ' . $css;
+			$params['tablecss_cell'] = $width ? $cssCel : "";
 		}
 
 		$params['can_order'] = '1';
@@ -2449,7 +2452,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$this->syncParams($opts, $listModel);
 		}
 
-		$modelElement->validate($modelElement->getForm($opts, false), $opts);
 		$modelElement->save($opts);
 		//$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
 		//if(!$saveOrder) {
