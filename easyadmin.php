@@ -323,16 +323,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Function that process the name of elements to edit them
 	 *
-	 * @param   object		$elements 		Object of each element of the list
+	 * @param   	Object		$elements 		Object of each element of the list
+	 * @param   	Boolean		$mod 			Must be return label or name of the element
 	 * 
-	 * @return 	object
+	 * @return 		Object		
 	 */
-	protected function processElementsNames($elements) {
+	protected function processElementsNames($elements, $mod=true) {
 		$processedElements = new stdClass;
 
 		foreach($elements as $key => $element) {
 			$idElement = $element->getId();
-			$processedElements->$idElement = $element->element->label;	
+			$processedElements->$idElement = $mod ? $element->element->label : $element->element->name;	
 		}
 
 		return $processedElements;
@@ -2221,20 +2222,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Function that save the modal data to elements
 	 * 
-	 * @param	array		The data sent
-	 * @param	int			Group id of the list
-	 * @param	object		Object of the frontend list model
+	 * @param		Array		$data			The data sent
+	 * @param		Int			$group_id		Group id of the list
+	 * @param		Object		$listModel		Object of the frontend list model
 	 * 
-	 * @return  string		Success or false
+	 * @return  	String		Success or false
 	 * 
-	 * @since 	version 4.0
+	 * @since 		version 4.0
 	 */
 	private function saveModalElements($data, $group_id, $listModel) 
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$modelElement = new FabrikAdminModelElement();
 
-		$validate = $this->validateElements($data);
+		$validate = $this->validateElements($data, $listModel);
 		if($validate->error) {
 			return json_encode($validate);
 		}
@@ -2448,6 +2449,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$this->syncParams($opts, $listModel);
 		}
 
+		$modelElement->validate($modelElement->getForm($opts, false), $opts);
 		$modelElement->save($opts);
 		//$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
 		//if(!$saveOrder) {
@@ -2982,13 +2984,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * We need update the id saved from input to create the elements correctly
 	 *
-	 * @param   array 	$data		Source of options
+	 * @param   	Array 		$data			Source of options
+	 * @param		Object		$listModel		Object of the frontend list model
 	 *
-	 * @return  object
+	 * @return  	Object
 	 * 
-	 * @since 	version 4.0
+	 * @since 		version 4.0
 	 */
-	private function validateElements($data) {
+	private function validateElements($data, $listModel) {
 		$validate = new stdClass();
 		$validate->error = false;
 		$validate->message = "";
@@ -3020,17 +3023,55 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'));
 		}
 
+		// The new element must be a type
+		if($data['type'] == '') {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL'));
+		}
+
+		// The new element must be a name
+		if($data['name'] == '') {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_LABEL'));
+		}
+
+		// The new name must be unique
+		if(!$this->checkColumnName($data['name'], $listModel)) {
+			$validate->error = true;
+			$validate->message = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_NAME_UNIQUE');
+		}
+
 		return $validate;
+	}
+	
+	/**
+	 * Function that check if the name of the new element is already in use
+	 * 
+	 * @param		String		$name				The name to check
+	 * @param		Object		$listModel			Object of the frontend list model
+	 * 
+	 * @return		Boolean
+	 * 
+	 * @since		version 4.1.2
+	 */
+	private function checkColumnName($name, $listModel) {
+		$columnsNames = (array) $this->processElementsNames($listModel->getElements(true), false);
+
+		if(in_array(strtolower($name), $columnsNames)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
 	 * We need update the id saved from input to edit the list correctly
 	 *
-	 * @param   array 	$data		Source of options
+	 * @param   	Array 			$data		Source of options
 	 *
-	 * @return  object
+	 * @return  	Object
 	 * 
-	 * @since 	version 4.0
+	 * @since 		version 4.0
 	 */
 	private function validateList($data) {
 		$validate = new stdClass();
