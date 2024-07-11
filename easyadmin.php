@@ -20,6 +20,7 @@ use Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use Joomla\CMS\Form\Field\FolderlistField;
 use Joomla\CMS\Filesystem\Path;
 use Joomla\CMS\Filesystem\Folder;
+use Joomla\Component\Modules\Administrator\Model\ModuleModel;
 
 // Requires 
 // Change to namespaces on F5
@@ -33,6 +34,7 @@ require_once JPATH_BASE . '/components/com_fabrik/models/form.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/element.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/list.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/form.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_fabrik/models/group.php';
 
 /**
  *  Buttons to edit list and create elements on site Front-End
@@ -53,7 +55,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	
 	private $subject;
 
-	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs'];
+	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display'];
 
 	private $idModal = 'modal-elements';
 
@@ -72,18 +74,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		
 		$this->setListId($input->get('listid'));
 		
-		//We don't have run if the task is filter
+		//We don't have run
 		if(!$this->mustRun()) {
 			return;
 		}
 
 		parent::__construct($subject, $config);
-		
+
 		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list') {
 			$listModel = new FabrikFEModelList();
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 			$listModel->setId($this->listId);
-			
+
 			$this->db_table_name = $listModel->getTable()->db_table_name;
 
 			$this->setListModel($listModel);
@@ -133,7 +135,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function authorized() {
 		$user = Factory::getUser();
-		$db = Factory::getDbo();
+		$db = Factory::getContainer()->get('DatabaseDriver');
 		$listModel = $this->getListModel();
 
 		$groupsLevels = $user->groups;
@@ -157,6 +159,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
 			$input->get('format') == 'csv' ||
+			$input->get('view') == 'article' ||
 			in_array('form', explode('.', $input->get('task'))) &&
 			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin')
@@ -307,6 +310,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'thumbs':
 				$dataEl->type = 'thumbs';
 				break;
+			
+			case 'display':
+				$dataEl->type = 'related_list';
+				break;
 		}
 	}
 
@@ -357,10 +364,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @return null
 	 */
 	public function onPreLoadData(&$args) {
-		$app = Factory::getApplication();
-		$input = $app->input;
-		
-		//We don't have run if the task is filter
+		//We don't have run
 		if(!$this->mustRun()) {
 			return;
 		}
@@ -379,10 +383,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @since 	version 4.0
 	 */
 	public function onLoadData(&$args) {
-		$app = Factory::getApplication();
-		$input = $app->input;
-		
-		//We don't have run if the task is filter
+		//We don't have run
 		if(!$this->mustRun()) {
 			return;
 		}
@@ -502,6 +503,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($type == 'list') {
 			$footer .=  '<input type="hidden" id="easyadmin_modal___db_table_name" name="db_table_name" value="' . $this->db_table_name . '">';
 		}
+		
+		$footer .=  '<input type="hidden" id="easyadmin_modal___history_type" name="history_type" value="">';
 
 		$footer .= '</div>';
 
@@ -618,6 +621,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementOrderingElements($elements, 'OrderingElements');
 		$this->setElementWidthField($elements, 'widthField');
 		$this->setElementRequired($elements, 'required');
+		$this->setElementRelatedList($elements, 'related_list');
 		$this->setElementTrash($elements, 'trash');
 
 		$this->elements = $elements;
@@ -1001,6 +1005,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'dropdown' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DROPDOWN'),
 			'autocomplete' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_AUTOCOMPLETE'),
 			'treeview' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TREEVIEW'),
+			'related_list' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RELATED_LIST'),
 			'rating' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RATING'),
 			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS')
 		);
@@ -1239,6 +1244,82 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to related list element
+	 *
+	 * @param   array 	$elements		Reference to all elements
+	 * @param	string	$nameElement	Identity of the element
+	 *
+	 * @return  null
+	 * 
+	 * @since version 4.1.0
+	 */
+	private function setElementRelatedList(&$elements, $nameElement) 
+	{
+		$subject = $this->getSubject();
+		$id = 'easyadmin_modal___related_list';
+		$showOnTypes = ['related_list'];
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$dEl->options = $this->optionsElements($this->searchRelatedLists());
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = Array();
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$nameElement]['objField'] = $classDropdown->getLayout('form');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_DESC'), 
+			$showOnTypes, 
+			false
+		);
+		$elements[$nameElement]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Method that search the related lists in database to render the options to user
+	 *
+	 * @param		String		Optional to get the name of join element
+	 * 
+	 * @return		Array
+	 * 
+	 * @since version 4.1.0
+	 */
+	private function searchRelatedLists($table='')
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$findJoin = false;
+		$table == '' ?  $table = $this->db_table_name : $findJoin = true;
+
+		$query = $db->getQuery(true);
+		$query->select('DISTINCT l.label AS label, l.id AS id, e.name AS elementJoin')
+			->from($db->qn('#__fabrik_elements') . ' AS e')
+			->join('LEFT', $db->qn('#__fabrik_groups') . ' AS g ON g.id = e.group_id')
+			->join('LEFT', $db->qn('#__fabrik_formgroup') . ' AS `fg` ON fg.group_id = g.id')
+			->join('LEFT', $db->qn('#__fabrik_forms') . ' AS `f` ON f.id = fg.form_id')
+			->join('LEFT', $db->qn('#__fabrik_lists') . ' AS `l` ON l.form_id = f.id')
+			->where('e.plugin = ' . $db->q('databasejoin'))
+			->where('JSON_EXTRACT(e.`params`,"$.join_db_name") = ' . $db->q($table));
+		$db->setQuery($query);
+		$results = $db->loadObjectList();
+
+		$opts = Array();
+		foreach ($results as $list) {
+			$findJoin ? $opts[$list->id] = $list->elementJoin : $opts[$list->id] = $list->label;
+		}
+
+		return $opts;
+	}
+
+	/**
 	 * Setter method to trash element
 	 *
 	 * @param   array 	$elements		Reference to all elements
@@ -1253,7 +1334,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___trash';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1815,7 +1896,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
      */
     public function getViewLevels()
     {
-        $db    = Factory::getDbo();
+        $db    = Factory::getContainer()->get('DatabaseDriver');
         $query = $db->getQuery(true);
 
         // Get all the available view levels
@@ -1853,15 +1934,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		
 		$listId = $_POST['easyadmin_modal___listid'];
 		$listModel->setId($listId);
-		$app = Factory::getApplication();
 
-		$input = $app->input;
 		$data = $listModel->removeTableNameFromSaveData($_POST);
 		$mode = $data['mode'];
 
 		switch ($mode) {
 			case 'elements':
-				if($data['valIdEl'] != '0') {
+				if($data['history_type'] == 'related_list') {
+					// Changing the element related_list to another type, the group must to be the principal
+
+					$idEl = $data['valIdEl'];
+					$element = $listModel->getElements('id', true, false)[$idEl];
+					$element = $listModel->getElements('id', true, false)[$idEl];
+					preg_match('/{loadmoduleid (\d+)}/', $element->getElement()->get('default'), $match);
+					
+					$data['group_id_old'] = (string) $element->getGroup()->getId();
+					$data['module_id_old'] = $match[1];
+					$group_id = array_keys($listModel->getFormModel()->getGroups())[0];
+				} else if($data['valIdEl'] != '0') {
 					$idEl = $data['valIdEl'];
 					$element = $listModel->getElements('id', true, false)[$idEl];
 					$group_id = $element->getGroup()->getId();
@@ -1894,14 +1984,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 	version 4.0
 	 */
-	private function saveModalElements($data, $group_id, $listModel) {
-		$db = Factory::getDbo();
+	private function saveModalElements($data, $group_id, $listModel) 
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
 		$modelElement = new FabrikAdminModelElement();
 
 		$validate = $this->validateElements($data);
 		if($validate->error) {
-			echo json_encode($validate);
-			return;
+			return json_encode($validate);
 		}
 
 		$opts = Array();
@@ -1918,7 +2008,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
-		
+
 		$type = $data["type"];
 		switch ($type) {
 			case 'text':
@@ -2044,10 +2134,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				}
 
 				break;
-			
+
 			case 'thumbs':
 				$opts['plugin'] = 'thumbs';
 				$params['rate_in_from'] =  '0';
+				break;
+
+			case 'related_list':
+				$opts['related_list'] = $data['related_list'];
+
+				$groupIdRelated = $this->groupToElementRelatedList($listModel, $opts, $params);
+				$moduleId = $this->moduleToElementRelatedList($listModel, $opts, $params);
+				$this->configureListToElementRelatedList($listModel, $opts, $params);
+				$this->configureFormToElementRelatedList($listModel, $opts, $params);
+
+				$opts['plugin'] = 'display';
+				$opts['default'] = "{loadmoduleid $moduleId}";
+				$opts['group_id'] = $groupIdRelated;
+				$params['display_showlabel'] = "0";
 				break;
 		}
 
@@ -2086,15 +2190,237 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$this->syncParams($opts, $listModel);
 		}
 
-		if(!$validate->error) {
-			$modelElement->save($opts);
-			$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
-			if(!$saveOrder) {
-				$validate->error = Text::_("");
-			}
+		$modelElement->save($opts);
+		//$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
+		//if(!$saveOrder) {
+		//	$validate->error = Text::_("");
+		//}
+
+		if($data['history_type'] == 'related_list') {
+			// Changing the element related_list to another type, the group and module must to be unpublished
+			$opts['group_id_old'] = $data['group_id_old'];
+			$opts['module_id_old'] = $data['module_id_old'];
+
+			$this->groupToElementRelatedList($listModel, $opts, $params, true);
+			$this->moduleToElementRelatedList($listModel, $opts, $params, true);
 		}
 
 		return json_encode($validate);
+	}
+
+	/**
+	 * Function that save the related list element, creating/editing the new group
+	 * 
+	 * @param	object		The listmodel object
+	 * @param	array		The element options
+	 * @param	array		The element params
+	 * @param	boolean		The element will be moved to trash or not
+	 * 
+	 * @return  bool
+	 * 
+	 * @since 	version 4.1.0
+	 */
+	private function groupToElementRelatedList($listModel, &$opts, &$params, $trash=false)
+	{
+		$modelGroup = new FabrikAdminModelGroup();
+
+		$idForm = $listModel->getFormModel()->getId();
+
+		if($opts['id'] == '0' || !isset($opts['group_id_old'])) {
+			$new = true;
+			$optsGroup['form'] = (string) $idForm;
+		} else {
+			$new = false;
+			$optsGroup['id'] = $trash ? (string) $opts['group_id_old'] : (string) $opts['group_id'];
+		}
+
+		$optsGroup['name'] = $opts['label'];
+		$optsGroup['label'] = '';
+		$optsGroup['published'] = $trash ? '0' : '1';
+		$optsGroup['is_join'] = "0";
+		$optsGroup['tags'] = Array();
+
+		$optsGroup['params']['repeat_group_button'] = "0";
+		$optsGroup['params']['group_columns'] = "1";
+		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
+		$optsGroup['params']['labels_above'] = "1";
+		$optsGroup['params']['labels_above_details'] = "1";
+
+		$modelGroup->setState('task', 'apply');
+		$modelGroup->save($optsGroup);
+
+		return $new ? $modelGroup->getState('group.id') : $optsGroup['id'];
+	}
+
+	/**
+	 * Function that save the related list element, creating/editing the new module
+	 * 
+	 * @param	object		The listmodel object
+	 * @param	array		The element options
+	 * @param	array		The element params
+	 * @param	boolean		The element will be moved to trash or not
+	 * 
+	 * @return  bool
+	 * 
+	 * @since 	version 4.1.0
+	 */
+	private function moduleToElementRelatedList($listModel, &$opts, &$params, $trash=false) 
+	{
+		$modelModule = new ModuleModel();
+		$listModelRelated = new FabrikFEModelList();
+
+		$listModelRelated->setId($opts['related_list']);
+		$idRelatedList = $opts['related_list'];
+
+		if($opts['id'] == '0' || !isset($opts['module_id_old'])) {
+			$new = true;
+		} else {
+			$new = false;
+			if($trash) {
+				$optsModule['id'] = $opts['module_id_old'];
+			} else {
+				$displayElement = $listModel->getElements('id')[$opts['id']]->getElement();
+				$defaultColumn = $displayElement->get('default');
+				preg_match('/{loadmoduleid (\d+)}/', $defaultColumn, $match);
+				$optsModule['id'] = $match[1];
+			}
+		}
+
+		// Data to pre filters
+		$relatedTable = $listModelRelated->getTable()->get('db_table_name');
+		$relatedColumns = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'));
+		$optsPreFilters['filter-join'][] = 'AND';
+		$optsPreFilters['filter-fields'][] =  $relatedTable. '.' . $relatedColumns[$opts['related_list']] . '_raw';
+		$optsPreFilters['filter-conditions'][] = 'equals';
+		$optsPreFilters['filter-value'][] = '$app = JFactory::getApplication(); $jinput = $app->getInput(); $id = $jinput->getInt("rowid", 0);  return $id;';
+		$optsPreFilters['filter-eval'][] = '1';
+		$optsPreFilters['filter-access'][] = '1';
+
+		// Data to configure the module
+		$optsModule['title'] = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_NAME_MODULE', $idRelatedList);
+		$optsModule['module'] = 'mod_fabrik_list';
+		$optsModule['published'] = $trash ? '0' : $opts['published'];
+		$optsModule['is_join'] = "0";
+		$optsModule['access'] = "1";
+		$optsModule['tags'] = Array();
+		$optsModule['language'] = "*";
+
+		// Data to params
+		$optsModule['params']['list_id'] = "$idRelatedList";
+		$optsModule['params']['useajax'] = "0";
+		$optsModule['params']['fabriklayout'] = "jlowcode_admin";
+		$optsModule['params']['show_filters'] = "0";
+		$optsModule['params']['prefilters'] = json_encode($optsPreFilters);
+
+		$modelModule->save($optsModule);
+		return $new ? $modelModule->getState('module.id') : $optsModule['id'];
+	}
+
+	/**
+	 * Function that save the related list element, editing the related list
+	 * 
+	 * @param	object		The listmodel object
+	 * @param	array		The element options
+	 * @param	array		The element params
+	 * 
+	 * @return  bool
+	 * 
+	 * @since 	version 4.1.0
+	 */
+	private function configureListToElementRelatedList($listModel, &$opts, &$params) 
+	{
+		$listModelRelated = new FabrikAdminModelList();
+		$listModelRelatedFE = new FabrikFEModelList();
+
+		$listModelRelatedFE->setId($opts['related_list']);
+		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
+		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
+
+		// Data to configure the module
+		$optsList['id'] = $opts['related_list'];
+
+		// Data to params
+		$optsList['params']['addurl'] = "?{$tableName}___{$relatedColumn}_raw={{$relatedColumn}___id}";
+
+		$this->syncParams($optsList, $listModelRelatedFE, true);
+		$listModelRelated->save($optsList);
+
+		return true;
+	}
+
+	/**
+	 * Function that save the related list element, editing the related form
+	 * 
+	 * @param	object		The listmodel object
+	 * @param	array		The element options
+	 * @param	array		The element params
+	 * 
+	 * @return  bool
+	 * 
+	 * @since 	version 4.1.0
+	 */
+	private function configureFormToElementRelatedList($listModel, &$opts, &$params) 
+	{
+		$app = Factory::getApplication();
+		$input = $app->input;
+
+		$formModelRelated = new FabrikAdminModelForm();
+		$formModelRelatedFE = new FabrikFEModelForm();
+		$listModelRelatedFE = new FabrikFEModelList();
+
+		$listModelRelatedFE->setId($opts['related_list']);
+		$idFormRelated = $listModelRelatedFE->getFormModel()->getId();
+		$idForm = $listModel->getFormModel()->getId();
+		$formModelRelatedFE->setId($idFormRelated);
+
+		$groupsForm = $formModelRelatedFE->getGroups();
+		$propertiesForm = $formModelRelatedFE->getTable()->getProperties();
+		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
+		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
+	
+		/***
+		 * We dont need update the form if the redirect plugin already exists
+		 * Trash or modify the related list element
+		 */ 
+		if(in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
+			return;
+		}
+
+		// Data to configure the module
+		$optsForm['id'] = $idFormRelated;
+		$optsForm['current_groups'] = array_keys($groupsForm);
+		$optsForm['database_name'] = $propertiesForm['db_table_name'];
+		$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{{$tableName}___{$relatedColumn}_raw}";
+
+		$pluginsForm = Array();
+		foreach ($propertiesForm as $key => $val) {
+			if(!array_key_exists($key, $optsForm)) {
+				$optsForm[$key] = $propertiesForm[$key];
+			}
+
+			if($key == 'params') {
+				$optsForm[$key] = json_decode($optsForm[$key], true);
+				$optsForm[$key]['jump_page'] = $jumpPage;
+				$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
+				$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
+				$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
+				$pluginsForm['plugin_description'] = $optsForm[$key]['plugin_description'];
+				$pluginsForm['plugin_state'] = $optsForm[$key]['plugin_state'];
+			}
+		}
+
+		// Data to configure the new plugin redirect
+		$pluginsForm['plugin'][] = 'redirect';
+		$pluginsForm['plugin_locations'][] = 'both';
+		$pluginsForm['plugin_events'][] = 'both';
+		$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
+		$pluginsForm['plugin_state'][] = '1';
+
+		$input->set('jform', $pluginsForm);
+		$formModelRelated->getState(); 	//We need do this to set __state_set before the save
+		$formModelRelated->save($optsForm);
+
+		return true;
 	}
 
 	/**
@@ -2180,7 +2506,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					->where($db->qn("name") . " = " . $db->q("root.1"));
 				$db->setQuery($query);
 				$db->execute();
-				
+
 				break;
 			
 			case 'recover':
@@ -2215,7 +2541,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$modelForm = new FabrikAdminModelForm();
 		$formModel = new FabrikFEModelForm();
 
-		$formModel->setId("11");
+		$formModel->setId($listModel->getFormModel()->getId());
 		$groupsForm = $formModel->getGroups();
 
 		$properties = $listModel->getTable()->getProperties();
@@ -2242,9 +2568,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataList[$key] = json_decode($dataList[$key], true);
 				$dataList[$key]['admin_template'] = $data['default_layout'];
 			}
-		}	
+		}
 
 		$dataForm['current_groups'] = array_keys($groupsForm);
+		$dataForm['database_name'] = $propertiesForm['db_table_name'];
 		$pluginsForm = Array();
 		foreach ($propertiesForm as $key => $val) {
 			if(!array_key_exists($key, $dataForm)) {
@@ -2265,6 +2592,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if(!$validate->error) {
 			$modelList->save($dataList);
 			$input->set('jform', $pluginsForm);
+			$modelForm->getState(); 	//We need do this to set __state_set before the save
 			$modelForm->save($dataForm);
 		}
 
@@ -2272,19 +2600,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * We need update the params that already exists
+	 * We need update the params that already exists in elements
 	 *
-	 * @param   array 	$opts			Options and params
-	 * @param   object 	$listModel		Object of list
-	 *
+	 * @param   array 		$opts			Options and params
+	 * @param   object 		$listModel		Object of list
+	 * @param	boolean		$list			False for elements and true for lists
+	 * 
 	 * @return  null
 	 * 
 	 * @since 	version 4.0
 	 */
-	private function syncParams(&$opts, $listModel) {
-		$idEl = $opts['id'];
-		$element = $listModel->getElements('id', true, false)[$idEl];
-		$dataEl = $element->element->getProperties();
+	private function syncParams(&$opts, $listModel, $list=false) {
+		if($list) {
+			$dataEl = $listModel->getTable()->getProperties();
+		} else {
+			$idEl = $opts['id'];
+			$element = $listModel->getElements('id', true, false)[$idEl];
+			$dataEl = $element->element->getProperties();
+
+			// For new version - cause validations to be added and not overwritten
+			foreach ($element->getValidations() as $key => $validation) {
+				$a = $opts['validationrule'];
+			}
+		}
+
 
 		foreach ($dataEl as $key => $val) {
 			if(!array_key_exists($key, $opts)) {
@@ -2306,11 +2645,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$opts[$key] = $sub;
 			}
-		}
-
-		// For new version - cause validations to be added and not overwritten
-		foreach ($element->getValidations() as $key => $validation) {
-		 	$a = $opts['validationrule'];
 		}
 	}
 
@@ -2343,10 +2677,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			empty($data['list']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL')) : '';
 		}
 
-		// If the element is drodown, options must be exists
+		// If the element is dropdown, options must be exists
 		if($data['type'] == 'dropdown' && empty($data['options_dropdown'])) {
 			$validate->error = true;
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_LABEL'));
+		}
+
+		// If the element is related list, the list must be exists
+		if($data['type'] == 'related_list' && empty($data['related_list'])) {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'));
 		}
 
 		return $validate;
@@ -2387,7 +2727,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 		$id = $item->id;
 		
-		//We don't have run if the task is filter
+		//We don't have run
 		if(!$this->mustRun()) {
 			return;
 		}
