@@ -278,6 +278,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___ordering_list':
 					case 'easyadmin_modal___ordering_type_list':
 					case 'easyadmin_modal___collab_list':
+					case 'easyadmin_modal___width_list':
+					case 'easyadmin_modal___layout_mode':
 					case 'easyadmin_modal___default_layout':
 					case 'easyadmin_modal___width_field':
 					case 'easyadmin_modal___ordering_elements':
