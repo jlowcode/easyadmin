@@ -28,7 +28,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				self.setElementDatabasejoin();
 				self.setElementAdminsList();
 				self.setElementType();
-				self.setElementVisibilityList();
+				//self.setElementVisibilityList();
 				self.setElementShowInList();
 				self.setUpButtonSave();
 				self.setUpButtonsPainel();
@@ -241,7 +241,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 		/**
 		 * Function that set the events to visibility list element
-		 * 
+		 * Function don't needed
 		 */
 		setElementVisibilityList: function() {
 			var self = this;
@@ -467,7 +467,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			
 			button.on('click', function () {
 				if(jQuery(div).css('display') == 'none') {
-					jQuery(div).css({'display': 'block' });
+					jQuery(div).css({'display': 'flex' });
 				} else {
 					jQuery(div).css({'display': 'none' });
 				}
@@ -594,13 +594,13 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			var button = jQuery('<li class="nav-link"><a title="Admin"><span>' + this.options.images.admin +'</span> ' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") + '</a></li>');
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
-			var btnGroup = jQuery(heading).find('.dropdown-menu')[0];
+			var btnGroup = jQuery(heading).find('.dropdown-menu').css('width','100%')[0];
 
 			var editListButton = jQuery('<li class="subMenuAdmin" style="display: none; padding: 0px 10px;"><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") +'</button></li>');
 			var addElementButton = jQuery('<li class="subMenuAdmin" style="display: none; padding: 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") +'</button></li>');
 
 			if(!btnGroup) {
-				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-angle-down" aria-hidden="true"></i></button><ul class="dropdown-menu dropdown-menu-end" style=""></ul></div>');
+				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-angle-down" aria-hidden="true"></i></button><ul class="dropdown-menu dropdown-menu-end" style="width:100%"></ul></div>');
 				jQuery(heading).find("span").append(newBtnGroup);
 				btnGroup = jQuery(heading).find('.dropdown-menu')[0];
 			}
@@ -611,7 +611,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			button.on('click', function () {
 				jQuery.each(jQuery(this).parent().find('.subMenuAdmin'), function () {
 					if(jQuery(this).css('display') == 'none') {
-						jQuery(this).css({'display': 'block' });
+						jQuery(this).css({'display': 'flex' });
 					} else {
 						jQuery(this).css({'display': 'none' });
 					}

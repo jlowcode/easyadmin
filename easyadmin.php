@@ -2407,6 +2407,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['multiple'] = '1';
 				$params['advanced_behavior'] = '1';
 				$params['allow_frontend_addtodropdown'] = '1';
+				$params['dd-allowadd-onlylabel'] = '1';
+				$params['dd-savenewadditions'] = '1';
+				$params['sub_options'] = Array(
+					'sub_values' => '',
+					'sub_labels' => '',
+					'sub_initial_selection' => ''
+				);
 
 				if($data['use_filter']) {
 					$opts['filter_type'] = 'auto-complete';
@@ -2453,10 +2460,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$modelElement->save($opts);
-		//$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
-		//if(!$saveOrder) {
-		//	$validate->error = Text::_("");
-		//}
+		$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
+		if(!$saveOrder) {
+			$validate->error = Text::_("");
+		}
 
 		if($data['history_type'] == 'related_list') {
 			// Changing the element related_list to another type, the group and module must to be unpublished
