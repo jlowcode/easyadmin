@@ -3045,7 +3045,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		// The new name must be unique
-		if(!$this->checkColumnName($data['name'], $listModel)) {
+		if(!$this->checkColumnName($data['name'], $listModel) && $data['valIdEl'] == '0') {
 			$validate->error = true;
 			$validate->message = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_NAME_UNIQUE');
 		}
