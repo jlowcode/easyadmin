@@ -2235,7 +2235,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$modelElement = new FabrikAdminModelElement();
 
-		$data['label'] = $data['name'];
+		$labelElement = $data['name'];
 		$validate = $this->validateElements($data, $listModel);
 		if($validate->error) {
 			return json_encode($validate);
@@ -2248,7 +2248,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['easyadmin'] = true;
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
-		$opts['label'] = $data['label'];
+		$opts['label'] = $labelElement;
 		$opts['name'] = $opts['id'] == '0' ? preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower($data['name']))) : '';
 		$opts['group_id'] = $group_id;
 		$opts['published'] = $data['trash'] == 'true' ? '0' : '1';
@@ -2361,8 +2361,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
-					$params['jsSuggest'] =  '0';	// Before, we need fix this feature to acept several elements at the same time
-					$params['moldTags'] =  '0';		// Before, we need fix this feature to acept several elements at the same time
+					$params['jsSuggest'] =  '1';
+					$params['moldTags'] =  '1';
 				} else {
 					$params['database_join_display_style'] =  'both-treeview-autocomplete';
 					$params['tree_parent_id'] =  $data['father'];
@@ -2603,13 +2603,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$listModelRelatedFE->setId($opts['related_list']);
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
-		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
+		$tableNameActual = $listModel->getTable()->get('db_table_name');
+		$relatedColumn = $this->searchRelatedLists($tableNameActual)[$opts['related_list']];
 
 		// Data to configure the module
 		$optsList['id'] = $opts['related_list'];
 
 		// Data to params
-		$optsList['params']['addurl'] = "?{$tableName}___{$relatedColumn}_raw={{$relatedColumn}___id}";
+		$optsList['params']['addurl'] = "?{$tableName}___{$relatedColumn}_raw={{$tableNameActual}___id}";
 
 		$this->syncParams($optsList, $listModelRelatedFE, true);
 		$listModelRelated->save($optsList);
