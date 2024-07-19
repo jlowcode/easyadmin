@@ -2804,6 +2804,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function saveModalList($data, $listModel)
 	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
 		$app = Factory::getApplication();
 		$input = $app->input;
 
@@ -2870,6 +2871,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['trash_list']) {
 			$dataList['published'] = '0';
 			$dataForm['published'] = '0';
+
+			try {
+				$obj = new stdClass();
+				$obj->id_lista = $listModel->getId();
+				$obj->status = '0';
+
+				$db->updateObject('adm_cloner_listas', $obj, 'id_lista');	
+			} catch (\Throwable $th) {
+				//If the table not exists we do nothing
+			}
 		}
 
 		if(!$validate->error) {
