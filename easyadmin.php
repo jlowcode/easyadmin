@@ -120,6 +120,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->images = $this->getImages();
 		$opts->idModal = $this->idModal;
 		$opts->idModalList = $this->idModalList;
+		$opts->iconDropdown = FabrikHelperHTML::image('settings.png', 'list');
 
 		echo $this->setUpModalElements();
 		echo $this->setUpModalList();
@@ -2426,7 +2427,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$params['filter_access'] = '1';
 			$params['filter_length'] = '20';
 			$params['filter_required'] = '0';
-			$params['filter_build_method'] = '1';
+			$params['filter_build_method'] = '2';
 			$params['filter_groupby'] = 'text';
 			$params['filter_class'] = 'input-xxlarge';
 			$params['filter_responsive_class'] = '';
