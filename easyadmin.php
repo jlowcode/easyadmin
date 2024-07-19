@@ -2447,7 +2447,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		if($data['show_in_list']) {
 			$width = $data['width_field'];
-			$css = 'max-width: ' . $width . '%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+			$css = 'max-width: ' . $width . '%;';
 			$cssCel = 'width: ' . $width . '%; ' . $css;
 			$params['tablecss_cell'] = $width ? $cssCel : "";
 		}
