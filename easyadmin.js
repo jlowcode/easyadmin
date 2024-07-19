@@ -434,7 +434,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		setActionPanelInline: function (allElements) {
 			var self = this;
 
-			var button = jQuery('<a class="btn fabrik_view fabrik__rowlink btn-default"><span>' + this.options.images.admin + '</span><span class="hidden">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") +'</span></a>');
+			var button = jQuery('<a class="btn fabrik__rowlink btn-default"><span>' + this.options.images.settings + '</span><span class="hidden">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") +'</span></a>');
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			var btnGroup = jQuery(heading).find('.btn-group')[0];
 
@@ -467,7 +467,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			
 			button.on('click', function () {
 				if(jQuery(div).css('display') == 'none') {
-					jQuery(div).css({'display': 'flex' });
+					jQuery(div).css({'display': 'block' });
 				} else {
 					jQuery(div).css({'display': 'none' });
 				}
@@ -592,41 +592,26 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		setActionPanelDropdown: function (allElements) {
 			var self = this;
 
-			var button = jQuery('<li class="nav-link"><a title="Admin"><span>' + this.options.images.admin +'</span> ' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") + '</a></li>');
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			var btnGroup = jQuery(heading).find('.dropdown-menu').css('width','100%')[0];
 
-			var editListButton = jQuery('<li class="subMenuAdmin" style="display: none; padding: 0px 10px;"><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") +'</button></li>');
-			var addElementButton = jQuery('<li class="subMenuAdmin" style="display: none; padding: 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") +'</button></li>');
+			var editListButton = jQuery('<li class="subMenuAdmin" style="border-bottom: 2px solid #eee; padding: 0px 10px 5px 10px;"><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") +'</button></li>');
+			var addElementButton = jQuery('<li class="subMenuAdmin" style="border-top: 2px solid #eee; padding: 5px 10px 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") +'</button></li>');
 
 			if(!btnGroup) {
-				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-angle-down" aria-hidden="true"></i></button><ul class="dropdown-menu dropdown-menu-end" style="width:100%"></ul></div>');
+				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + self.options.images.settings + '</button><ul class="dropdown-menu dropdown-menu-end" style="width:100%"></ul></div>');
 				jQuery(heading).find("span").append(newBtnGroup);
 				btnGroup = jQuery(heading).find('.dropdown-menu')[0];
 			}
 			var JBtnGroup = jQuery(btnGroup);
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
-
-			button.on('click', function () {
-				jQuery.each(jQuery(this).parent().find('.subMenuAdmin'), function () {
-					if(jQuery(this).css('display') == 'none') {
-						jQuery(this).css({'display': 'flex' });
-					} else {
-						jQuery(this).css({'display': 'none' });
-					}
-				});
-
-				setTimeout(() => jQuery(this).closest('.dropdown').find('.dropdown-toggle').click(), 5);
-			});
-
-			JBtnGroup.append(button);
-            button.append(addElementButton);
+            JBtnGroup.append(addElementButton);
 
 			jQuery.each(allElements, function(state, elements) {
 				if(state == 'trash') {
-					var liSubTitle = jQuery('<li style="font-size: 12px; display: none; margin: 10px 0px 0px 8px;" class="subMenuAdmin"></li>')
-						.appendTo(button);
+					var liSubTitle = jQuery('<li style="font-size: 12px; margin: 10px 0px 0px 8px;" class="subMenuAdmin"></li>')
+						.appendTo(JBtnGroup);
 					jQuery(self.options.images.trash).appendTo(liSubTitle);
 					var sub = jQuery('<b>')
 						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH"))
@@ -639,8 +624,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				}
 				
 				jQuery.each(elements, function(index, value) {
-					var li = jQuery('<li value="' + index + '" style="font-size: 12px; display: none;" class="subMenuAdmin"></li>')
-						.appendTo(button);
+					var li = jQuery('<li value="' + index + '" style="font-size: 12px;" class="subMenuAdmin"></li>')
+						.appendTo(JBtnGroup);
 					if(value.enabled) {
 						var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
 						.text(self.options.elementsNames[index])
@@ -665,7 +650,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				});
 			});
 
-			button.append(editListButton);
+			JBtnGroup.append(editListButton);
 		},
 
 		setCssAndEventsButtons: function(editListButton, addElementButton) {

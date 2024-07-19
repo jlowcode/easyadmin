@@ -120,7 +120,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->images = $this->getImages();
 		$opts->idModal = $this->idModal;
 		$opts->idModalList = $this->idModalList;
-		$opts->iconDropdown = FabrikHelperHTML::image('settings.png', 'list');
 
 		echo $this->setUpModalElements();
 		echo $this->setUpModalList();
@@ -3298,9 +3297,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @since version 4.0
 	 */
 	public function setImages() {
-		$this->images['admin'] = FabrikHelperHTML::image('admin.png', 'list');
 		$this->images['edit'] = FabrikHelperHTML::image('edit.png', 'list');
 		$this->images['trash'] = FabrikHelperHTML::image('trash.png', 'list');
+		$this->images['settings'] = FabrikHelperHTML::image('settings.png', 'list');
 	}
 
 	/**
