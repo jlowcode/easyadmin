@@ -270,6 +270,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'field':
 			case 'textarea':
 				$dataEl->default_value = $dataElement->default;
+				$dataEl->text_format = $params['password'] == '5' ? 'url' : $params['text_format'];
 				$dataEl->type = $plugin == 'field' ? 'text' : 'longtext';
 			break;
 
@@ -620,6 +621,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
+		$this->setElementTextFormat($elements, 'textFormat');
 		$this->setElementDefaultValue($elements, 'defaultValue');
 		$this->setElementAjaxUpload($elements, 'ajaxUpload');
 		$this->setElementMakeThumbs($elements, 'makeThumbs');
@@ -1609,6 +1611,52 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 	
 	/**
+	 * Setter method to text format element
+	 *
+	 * @param   	Array 	$elements		Reference to all elements
+	 * @param		String	$nameElement	Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.1.3
+	 */
+	private function setElementTextFormat(&$elements, $nameElement) 
+	{
+		$subject = $this->getSubject();
+		$id = 'easyadmin_modal___text_format';
+		$dEl = new stdClass();
+		$showOnTypes = ['text'];
+
+		// Options to set up the element
+		$opts = Array(
+			'text' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_TEXT'),
+			'integer' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_INTEGER'),
+			'decimal' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_DECIMAL'),
+			'url' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_URL')
+		);
+		$dEl->options = $this->optionsElements($opts);
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = Array();
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$nameElement]['objField'] = $classDropdown->getLayout('form');
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_DESC'),
+			$showOnTypes,
+			false
+		);
+		$elements[$nameElement]['dataField'] = $dEl;
+	}
+
+	/**
 	 * Setter method to default value element
 	 *
 	 * @param   array 	$elements		Reference to all elements
@@ -2095,12 +2143,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Setter method to access rating element
 	 *
-	 * @param   array 	$elements		Reference to all elements
-	 * @param	string	$nameElement	Identity of the element
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
 	 *
-	 * @return  null
+	 * @return  	null
 	 * 
-	 * @since version 4.0
+	 * @since 		version 4.0
 	 */
 	private function setElementAccessRating(&$elements, $nameElement) 
 	{
@@ -2136,9 +2184,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
      * Get the list of all view levels
      *
-     * @return  \stdClass[]|boolean  An array of all view levels (id, title).
+     * @return  	\stdClass[]|boolean  	An array of all view levels (id, title).
      *
-     * @since   4.0
+     * @since   	4.0
      */
     public function getViewLevels()
     {
@@ -2167,9 +2215,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Function that save the modal data from ajax request
 	 * 
-	 * @return  string
+	 * @return  	String
 	 * 
-	 * @since 	version 4.0
+	 * @since 		version 4.0
 	 */
 	public function onSaveModal() 
 	{
@@ -2193,7 +2241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$element = $listModel->getElements('id', true, false)[$idEl];
 					$element = $listModel->getElements('id', true, false)[$idEl];
 					preg_match('/{loadmoduleid (\d+)}/', $element->getElement()->get('default'), $match);
-					
+
 					$data['group_id_old'] = (string) $element->getGroup()->getId();
 					$data['module_id_old'] = $match[1];
 					$group_id = array_keys($listModel->getFormModel()->getGroups())[0];
@@ -2210,7 +2258,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$r = $this->saveModalElements($data, $group_id, $listModel);
 				break;
-			
+
 			case 'list':
 				$r = $this->saveModalList($data, $listModel);
 				break;
@@ -2222,11 +2270,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Function that save the modal data to elements
 	 * 
-	 * @param		Array		$data			The data sent
-	 * @param		Int			$group_id		Group id of the list
-	 * @param		Object		$listModel		Object of the frontend list model
+	 * @param		Array			$data				The data sent
+	 * @param		Int				$group_id			Group id of the list
+	 * @param		Object			$listModel			Object of the frontend list model
 	 * 
-	 * @return  	String		Success or false
+	 * @return  	String			Success or false
 	 * 
 	 * @since 		version 4.0
 	 */
@@ -2266,13 +2314,21 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['default'] = $data['default_value'];
 				$opts['plugin'] = 'field';
 
+				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
+
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
 					$params['bootstrap_class'] = 'col-sm-12';
 				}
 
-				if($data['use_filter']) {
-					$opts['filter_type'] = 'auto-complete';
+				if($data['text_format'] == 'url') {
+					$params['guess_linktype'] = '1';
+					$params['link_target_options'] = '_blank';
+					$params['text_format'] = 'text';
+					$params['password'] = '5';
+				} else {
+					$params['password'] = '0';
+					$params['text_format'] = $data['text_format'];
 				}
 
 				break;
@@ -2295,9 +2351,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['thumb_dir'] = "images/stories/thumbs";
 				}
 
-				if($data['use_filter']) {
-					$opts['filter_type'] = 'auto-complete';
-				}
+				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 
 				break;
 
@@ -2312,9 +2366,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					'sub_initial_selection' => Array($sub_options[0])
 				);
 
-				if($data['use_filter']) {
-					$opts['filter_type'] = 'dropdown';
-				}
+				$data['use_filter'] ? $opts['filter_type'] = 'dropdown' : null;
 
 				break;
 
@@ -2323,9 +2375,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['date_table_format'] = $data['format'];
 				$params['date_form_format'] = $data['format'];
 
-				if($data['use_filter']) {
-					$opts['filter_type'] = 'range';
-				}
+				$data['use_filter'] ? $opts['filter_type'] = 'range' : null;
 
 				break;
 
@@ -2337,9 +2387,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['rating-rate-in-form'] = '1';
 				$params['rating_float'] = '0';
 
-				if($data['use_filter']) {
-					$opts['filter_type'] = 'stars';
-				}
+				$data['use_filter'] ? $opts['filter_type'] = 'stars' : null;
 
 				break;
 
@@ -2415,9 +2463,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					'sub_initial_selection' => ''
 				);
 
-				if($data['use_filter']) {
-					$opts['filter_type'] = 'auto-complete';
-				}
+				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
+
 				break;
 		}
 
@@ -2753,7 +2800,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 	version 4.0.2
 	 */
-	private function changeRulesPermissons($mode, $rule=null) 
+	private function changeRulesPermissons($mode, $rule=null)
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$user = Factory::getApplication()->getIdentity();
