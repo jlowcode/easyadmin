@@ -23,6 +23,7 @@ use Joomla\CMS\Filesystem\Folder;
 use Joomla\Component\Modules\Administrator\Model\ModuleModel;
 use Joomla\CMS\User\User;
 use Joomla\Component\Users\Administrator\Model\UserModel;
+use Joomla\CMS\Language\Transliterate;
 
 // Requires 
 // Change to namespaces on F5
@@ -210,7 +211,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$fullElementName = $this->processFullElementName($key);
 			$link = $this->createLink($element->element->id);
 			$idElement = $element->getId();
-			$enable = $this->isEnabledEdit($element->getElement()->plugin);
+			$enable = $this->isEnabledEdit($element->getElement());
 
 			$dataEl->fullname = $fullElementName;
 			$dataEl->enabled = $enable;
@@ -228,14 +229,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Function that return if the type of plugin is trated by us
+	 * Function that return if the type of plugin is trated by us or not
 	 *
-	 * @param   object		$elements 		Object of each element of the list
-	 * 
-	 * @return 	object
+	 * @param   	Object			$element 		Object of the element
+	 *
+	 * @return 		Object
 	 */
-	private function isEnabledEdit($type) {
-		return in_array($type, $this->plugins);
+	private function isEnabledEdit($element) {
+		$type = $element->plugin;
+		$name = $element->name;
+
+		return in_array($type, $this->plugins) && !str_contains($name, 'indexing_text');
 	}
 	
 	/**
@@ -1522,10 +1526,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 		
 		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
-			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_DESC'), 
-			$showOnTypes, 
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_DESC'),
+			$showOnTypes,
 			false
 		);
 		$elements[$nameElement]['dataField'] = $dEl;
@@ -1570,12 +1574,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Setter method to trash element
 	 *
-	 * @param   array 	$elements		Reference to all elements
-	 * @param	string	$nameElement	Identity of the element
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
 	 *
-	 * @return  null
+	 * @return  	Null
 	 * 
-	 * @since version 4.0.3
+	 * @since 		version 4.0.3
 	 */
 	private function setElementTrash(&$elements, $nameElement) 
 	{
@@ -1659,12 +1663,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Setter method to default value element
 	 *
-	 * @param   array 	$elements		Reference to all elements
-	 * @param	string	$nameElement	Identity of the element
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
 	 *
-	 * @return  null
+	 * @return  	Null
 	 * 
-	 * @since version 4.0
+	 * @since 		version 4.0
 	 */
 	private function setElementDefaultValue(&$elements, $nameElement) 
 	{
@@ -2293,11 +2297,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$params = Array();
 		$validation = Array();
 
+		
+		$nameEl = preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower((new Transliterate)->utf8_latin_to_ascii($data['name']))));
+
 		$opts['easyadmin'] = true;
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
 		$opts['label'] = $labelElement;
-		$opts['name'] = $opts['id'] == '0' ? preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower($data['name']))) : '';
+		$opts['name'] = $opts['id'] == '0' ? $nameEl : '';
 		$opts['group_id'] = $group_id;
 		$opts['published'] = $data['trash'] == 'true' ? '0' : '1';
 		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
@@ -2494,7 +2501,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		if($data['show_in_list']) {
 			$width = $data['width_field'];
-			$css = 'max-width: ' . $width . '%;';
+			$css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 			$cssCel = 'width: ' . $width . '%; ' . $css;
 			$params['tablecss_cell'] = $width ? $cssCel : "";
 		}
