@@ -575,7 +575,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 								case 'width_field':
 								case 'ordering_elements':
-									self.showHideElements('show_in_list');
+									self.showHideElements('show_in_list', 'element', 'yesno');
 									break;
 							}
 						} else {
