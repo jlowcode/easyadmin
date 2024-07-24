@@ -2297,8 +2297,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$params = Array();
 		$validation = Array();
 
-		
-		$nameEl = preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower((new Transliterate)->utf8_latin_to_ascii($data['name']))));
+		$nameEl = $this->formatValue($data['name']);
 
 		$opts['easyadmin'] = true;
 		$opts['asset_id'] = '';
@@ -2368,7 +2367,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$sub_options = explode(',', $data['options_dropdown']);
 				$params['sub_options'] = Array(
-					'sub_values' => array_map(function($opt) {return preg_replace('/[^A-Za-z0-9]/', '_', trim($opt));}, $sub_options),
+					'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $sub_options),
 					'sub_labels' => $sub_options,
 					'sub_initial_selection' => Array($sub_options[0])
 				);
@@ -2532,16 +2531,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Function that save the related list element, creating/editing the new group
+	 * Function that format the string to remove special caracters and accents
 	 * 
 	 * @param	object		The listmodel object
-	 * @param	array		The element options
-	 * @param	array		The element params
-	 * @param	boolean		The element will be moved to trash or not
 	 * 
 	 * @return  bool
 	 * 
-	 * @since 	version 4.1.0
+	 * @since 	version 4.1.3
+	 */
+	private function formatValue($val)
+	{
+		return preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower((new Transliterate)->utf8_latin_to_ascii($val))));
+	}
+
+	/**
+	 * Function that save the related list element, creating/editing the new group
+	 * 
+	 * @param		Object			$listModel			The listmodel object
+	 * @param		Array			&$opts				The element options
+	 * @param		Array			&params				The element params
+	 * @param		Boolean			$trash				The element will be moved to trash or not
+	 * 
+	 * @return  	Bool
+	 * 
+	 * @since 		version 4.1.0
 	 */
 	private function groupToElementRelatedList($listModel, &$opts, &$params, $trash=false)
 	{
@@ -2700,6 +2713,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$groupsForm = $formModelRelatedFE->getGroups();
 		$propertiesForm = $formModelRelatedFE->getTable()->getProperties();
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
+		$tableNameActual = $listModel->getTable()->get('db_table_name');
 		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
 	
 		/***
@@ -2715,6 +2729,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsForm['current_groups'] = array_keys($groupsForm);
 		$optsForm['database_name'] = $propertiesForm['db_table_name'];
 		$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{{$tableName}___{$relatedColumn}_raw}";
+		$redirectCond = '
+			use Joomla\CMS\Uri\Uri;
+			$uri = Uri::getInstance();
+			$var = $uri->getVar("' . $tableName . '___' . $relatedColumn . '_raw");
+			return $var != "{' . $tableNameActual . '___id}" ? true : false;
+		';
 
 		$pluginsForm = Array();
 		foreach ($propertiesForm as $key => $val) {
@@ -2725,6 +2745,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if($key == 'params') {
 				$optsForm[$key] = json_decode($optsForm[$key], true);
 				$optsForm[$key]['jump_page'] = $jumpPage;
+				$optsForm[$key]['redirect_conditon'] = $redirectCond;
 				$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
 				$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
 				$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
