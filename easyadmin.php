@@ -163,6 +163,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			strpos($input->get('task'), 'order') > 0 ||
 			$input->get('format') == 'csv' ||
 			$input->get('view') == 'article' ||
+			$input->get('task') == 'list.delete' ||
 			in_array('form', explode('.', $input->get('task'))) &&
 			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin')
@@ -2328,12 +2329,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				}
 
 				if($data['text_format'] == 'url') {
+					$opts['link_to_detail'] = '0';
 					$params['guess_linktype'] = '1';
 					$params['link_target_options'] = '_blank';
 					$params['text_format'] = 'text';
 					$params['password'] = '5';
 				} else {
-					$params['password'] = '0';
+					$params['password'] = in_array($data['text_format'], ['integer', 'decimal']) ? '6' : '0';
 					$params['text_format'] = $data['text_format'];
 				}
 
@@ -2498,8 +2500,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$opts['validationrule'] = $validation;
 		}
 
-		if($data['show_in_list']) {
-			$width = $data['width_field'];
+		if($data['show_in_list'] || $opts['id'] == '0') {
+			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
 			$css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 			$cssCel = 'width: ' . $width . '%; ' . $css;
 			$params['tablecss_cell'] = $width ? $cssCel : "";
