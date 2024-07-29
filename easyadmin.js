@@ -337,7 +337,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___type':
 					case 'easyadmin_modal___text_format':
 					case 'easyadmin_modal___default_value':
-					case 'easyadmin_modal___options_dropdown':
 					case 'easyadmin_modal___label':
 					case 'easyadmin_modal___father':
 					case 'easyadmin_modal___format':
@@ -369,6 +368,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___trash_list1':
 						id = id.replace('1', '');
 						valEls[id] = jQuery(this).prop('checked') ? true : '';
+						break;
+
+					case 'easyadmin_modal___options_dropdown':
+						valEls[id] = jQuery(this).val().join(',');
 						break;
 				}
 			});
@@ -577,6 +580,19 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 								case 'ordering_elements':
 									self.showHideElements('show_in_list', 'element', 'yesno');
 									break;
+								
+								case 'options_dropdown':
+									vals = value.split(',');
+									vals.forEach(function(option) {
+										jQuery('#easyadmin_modal___' + index).append(
+											jQuery('<option>', {
+												value: option.trim(),
+												text: option.trim(),
+												selected: true
+											})
+										);
+									});
+									break;
 							}
 						} else {
 							value ? p = 1 : p = 0;
@@ -588,6 +604,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
 			jQuery('#easyadmin_modal___type').trigger('change');
+			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
+			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
 
 		setActionPanelDropdown: function (allElements) {
@@ -691,6 +709,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 						case 'easyadmin_modal___type':
 							jQuery(this).val('text');
+							break;
 					}
 				});
 
@@ -699,6 +718,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});
 				jQuery('#easyadmin_modal___label').empty();
 				jQuery('#easyadmin_modal___father').empty();
+				jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 			});
 
 			editListButton.find('button').css({

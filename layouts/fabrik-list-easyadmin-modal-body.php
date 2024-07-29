@@ -22,7 +22,9 @@ switch ($d->labelPosition) {
 
 empty($d->label) ? $margin = '' : $margin = 'margin-top: 15px;';
 ?>
-<div style=" <?php echo $margin . $css ?> ">
+<div class="fabrikElementContainer col-sm-12" style=" <?php echo $margin . $css ?> ">
 	<?php echo $d->label ?>
-	<?php echo $d->element ?>
+	<div class="fabrikElement">
+		<?php echo $d->element ?>
+	</div>
 </div>
