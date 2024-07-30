@@ -113,53 +113,72 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 */
 		setUpElementList: function() {
 			var self = this;
-			var baseUri = this.options.baseUri;
 			var searchElementList = jQuery('#easyadmin_modal___list .select2-search__field');
+			var elLabel = jQuery('#easyadmin_modal___label');
+
 			searchElementList.on('change', function() {
 				setTimeout(function() {
-					var tid = jQuery('#modal-elements .select2-selection__choice').attr('title');
-
-					if (!tid) {
-						return;
-					}
-
-					var db_table_name = tid;
-					var url = baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
-					jQuery.ajax({
-						url     : url,
-						method	: 'get',
-						data: {
-							'showRaw': false,
-							'k': 2
-						},
-					}).done(function (r) {
-						var opts = eval(r);
-						var els = document.getElementsByClassName('child-element-list');
-						var notShow = ["id", "created_by", "created_date", "created_ip", "indexing_text", "updated_by", "updated_date"];
-
-						jQuery('.child-element-list').each(function(index, element) {
-							jQuery(element).empty();
-						});
-
-						Array.each(els, function (el) {
-							x = 0;
-							opts.forEach(opt => {
-								if(!notShow.includes(opt.value)) {
-									el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
-									var o = {'value': opt.value};
-
-									if (opt.value === val) {
-										o.selected = 'selected';
-										x = 1;
-									} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
-										o.selected = "selected";
-									}
-									new Element('option', o).set('text', opt.label).inject(el);
-								}
-							});
-						});
-					});
+					self.searchElementList();
 				}, 500);
+			});
+
+			if(jQuery('.refresh_label').length == 0) {
+				elRefresh = jQuery(self.options.images.refresh);
+				elRefresh.addClass('refresh_label');
+				elRefresh.css('margin-left', '5px');
+				elRefresh.on('click', function(){self.searchElementList()});
+				elLabel.closest('.fabrikElementContainer').find('.form-label').after(elRefresh);
+			}
+		},
+
+		/**
+		 * Function that search the value of the list and make the options
+		 * 
+		 */
+		searchElementList: function() {
+			var self = this;
+			var baseUri = this.options.baseUri;
+
+			var tid = jQuery('#modal-elements .select2-selection__choice').attr('title');
+			if (!tid) {
+				return;
+			}
+
+			var db_table_name = tid;
+			var url = baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
+			jQuery.ajax({
+				url     : url,
+				method	: 'get',
+				data: {
+					'showRaw': false,
+					'k': 2
+				},
+			}).done(function (r) {
+				var opts = eval(r);
+				var els = document.getElementsByClassName('child-element-list');
+				var notShow = ["id", "created_by", "created_date", "created_ip", "indexing_text", "updated_by", "updated_date"];
+
+				jQuery('.child-element-list').each(function(index, element) {
+					jQuery(element).empty();
+				});
+
+				Array.each(els, function (el) {
+					x = 0;
+					opts.forEach(opt => {
+						if(!notShow.includes(opt.value)) {
+							el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
+							var o = {'value': opt.value};
+
+							if (opt.value === val) {
+								o.selected = 'selected';
+								x = 1;
+							} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
+								o.selected = "selected";
+							}
+							new Element('option', o).set('text', opt.label).inject(el);
+						}
+					});
+				});
 			});
 		},
 

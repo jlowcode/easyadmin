@@ -2467,6 +2467,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'file':
+				$validFileupload = 'if ($_REQUEST["wfl_action"] = "list_requests"){
+					return false;
+				} else {
+					return true;
+				}';
+
 				$opts['plugin'] = 'fileupload';
 				$params['ajax_upload'] = $data['ajax_upload'] ? '1' : '0';
 				$params['ul_max_file_size'] = '1048576';
@@ -2485,6 +2491,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				}
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
+				$params['notempty-validation_condition'][0] = $data['required'] ? $validFileupload : '';
 
 				break;
 
@@ -3483,9 +3490,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Getter method to list id variable
 	 *
-	 * @return  String
+	 * @return  	String
 	 * 
-	 * @since version 4.0.2
+	 * @since 		version 4.0.2
 	 */
 	public function getListId() {
 		return $this->listId;
@@ -3494,22 +3501,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Setter method to images variable
 	 *
-	 * @return  null
+	 * @return  	Null
 	 * 
-	 * @since version 4.0
+	 * @since 		version 4.0
 	 */
 	public function setImages() {
 		$this->images['edit'] = FabrikHelperHTML::image('edit.png', 'list');
 		$this->images['trash'] = FabrikHelperHTML::image('trash.png', 'list');
 		$this->images['settings'] = FabrikHelperHTML::image('settings.png', 'list');
+		$this->images['refresh'] = FabrikHelperHTML::image('refresh.png', 'list');
 	}
 
 	/**
 	 * Getter method to images variable
 	 *
-	 * @return  Object
+	 * @return  	Object
 	 * 
-	 * @since version 4.0
+	 * @since 		version 4.0
 	 */
 	public function getImages() {
 		return $this->images;
@@ -3518,9 +3526,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Setter method to subject variable
 	 *
-	 * @return  null
+	 * @return  	Null
 	 * 
-	 * @since version 4.0
+	 * @since 		version 4.0
 	 */
 	public function setSubject($subject) {
 		$this->subject = $subject;
@@ -3529,9 +3537,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Getter method to subject variable
 	 *
-	 * @return  null
+	 * @return  	null
 	 * 
-	 * @since version 4.0
+	 * @since 		version 4.0
 	 */
 	public function getSubject() {
 		return $this->subject;
