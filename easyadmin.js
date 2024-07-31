@@ -640,7 +640,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + self.options.images.settings + '</button><ul class="dropdown-menu dropdown-menu-end" style="width:100%"></ul></div>');
 				jQuery(heading).find("span").append(newBtnGroup);
 				btnGroup = jQuery(heading).find('.dropdown-menu')[0];
+			} else {
+				jQuery(btnGroup).parent().find('.fabrikImg').remove();
+				jQuery(btnGroup).parent().find('.dropdown-toggle').append(self.options.images.settings);
 			}
+
 			var JBtnGroup = jQuery(btnGroup);
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
