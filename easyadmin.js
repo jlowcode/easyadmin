@@ -113,53 +113,72 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 */
 		setUpElementList: function() {
 			var self = this;
-			var baseUri = this.options.baseUri;
 			var searchElementList = jQuery('#easyadmin_modal___list .select2-search__field');
+			var elLabel = jQuery('#easyadmin_modal___label');
+
 			searchElementList.on('change', function() {
 				setTimeout(function() {
-					var tid = jQuery('#modal-elements .select2-selection__choice').attr('title');
-
-					if (!tid) {
-						return;
-					}
-
-					var db_table_name = tid;
-					var url = baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
-					jQuery.ajax({
-						url     : url,
-						method	: 'get',
-						data: {
-							'showRaw': false,
-							'k': 2
-						},
-					}).done(function (r) {
-						var opts = eval(r);
-						var els = document.getElementsByClassName('child-element-list');
-						var notShow = ["id", "created_by", "created_date", "created_ip", "indexing_text", "updated_by", "updated_date"];
-
-						jQuery('.child-element-list').each(function(index, element) {
-							jQuery(element).empty();
-						});
-
-						Array.each(els, function (el) {
-							x = 0;
-							opts.forEach(opt => {
-								if(!notShow.includes(opt.value)) {
-									el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
-									var o = {'value': opt.value};
-
-									if (opt.value === val) {
-										o.selected = 'selected';
-										x = 1;
-									} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
-										o.selected = "selected";
-									}
-									new Element('option', o).set('text', opt.label).inject(el);
-								}
-							});
-						});
-					});
+					self.searchElementList();
 				}, 500);
+			});
+
+			if(jQuery('.refresh_label').length == 0) {
+				elRefresh = jQuery(self.options.images.refresh);
+				elRefresh.addClass('refresh_label');
+				elRefresh.css('margin-left', '5px');
+				elRefresh.on('click', function(){self.searchElementList()});
+				elLabel.closest('.fabrikElementContainer').find('.form-label').after(elRefresh);
+			}
+		},
+
+		/**
+		 * Function that search the value of the list and make the options
+		 * 
+		 */
+		searchElementList: function() {
+			var self = this;
+			var baseUri = this.options.baseUri;
+
+			var tid = jQuery('#modal-elements .select2-selection__choice').attr('title');
+			if (!tid) {
+				return;
+			}
+
+			var db_table_name = tid;
+			var url = baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
+			jQuery.ajax({
+				url     : url,
+				method	: 'get',
+				data: {
+					'showRaw': false,
+					'k': 2
+				},
+			}).done(function (r) {
+				var opts = eval(r);
+				var els = document.getElementsByClassName('child-element-list');
+				var notShow = ["id", "created_by", "created_date", "created_ip", "indexing_text", "updated_by", "updated_date"];
+
+				jQuery('.child-element-list').each(function(index, element) {
+					jQuery(element).empty();
+				});
+
+				Array.each(els, function (el) {
+					x = 0;
+					opts.forEach(opt => {
+						if(!notShow.includes(opt.value)) {
+							el.id.indexOf("label") > 0 ? val = self.options.labelList : val = self.options.fatherList;
+							var o = {'value': opt.value};
+
+							if (opt.value === val) {
+								o.selected = 'selected';
+								x = 1;
+							} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
+								o.selected = "selected";
+							}
+							new Element('option', o).set('text', opt.label).inject(el);
+						}
+					});
+				});
 			});
 		},
 
@@ -337,7 +356,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___type':
 					case 'easyadmin_modal___text_format':
 					case 'easyadmin_modal___default_value':
-					case 'easyadmin_modal___options_dropdown':
 					case 'easyadmin_modal___label':
 					case 'easyadmin_modal___father':
 					case 'easyadmin_modal___format':
@@ -369,6 +387,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___trash_list1':
 						id = id.replace('1', '');
 						valEls[id] = jQuery(this).prop('checked') ? true : '';
+						break;
+
+					case 'easyadmin_modal___options_dropdown':
+						valEls[id] = jQuery(this).val().join(',');
 						break;
 				}
 			});
@@ -577,6 +599,19 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 								case 'ordering_elements':
 									self.showHideElements('show_in_list', 'element', 'yesno');
 									break;
+								
+								case 'options_dropdown':
+									vals = value.split(',');
+									vals.forEach(function(option) {
+										jQuery('#easyadmin_modal___' + index).append(
+											jQuery('<option>', {
+												value: option.trim(),
+												text: option.trim(),
+												selected: true
+											})
+										);
+									});
+									break;
 							}
 						} else {
 							value ? p = 1 : p = 0;
@@ -588,6 +623,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
 			jQuery('#easyadmin_modal___type').trigger('change');
+			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
+			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
 
 		setActionPanelDropdown: function (allElements) {
@@ -603,7 +640,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn btn-default btn-mini dropdown-toggle dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + self.options.images.settings + '</button><ul class="dropdown-menu dropdown-menu-end" style="width:100%"></ul></div>');
 				jQuery(heading).find("span").append(newBtnGroup);
 				btnGroup = jQuery(heading).find('.dropdown-menu')[0];
+			} else {
+				jQuery(btnGroup).parent().find('.fabrikImg').remove();
+				jQuery(btnGroup).parent().find('.dropdown-toggle').append(self.options.images.settings);
 			}
+
 			var JBtnGroup = jQuery(btnGroup);
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
@@ -691,6 +732,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 						case 'easyadmin_modal___type':
 							jQuery(this).val('text');
+							break;
 					}
 				});
 
@@ -699,6 +741,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});
 				jQuery('#easyadmin_modal___label').empty();
 				jQuery('#easyadmin_modal___father').empty();
+				jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 			});
 
 			editListButton.find('button').css({
