@@ -3752,7 +3752,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			`listas` int DEFAULT NULL,
   			`params` mediumtext,
 			PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+		)
 		";
 
 		$db->setQuery($query);
