@@ -4,7 +4,7 @@
  *
  * @package     Joomla.Plugin
  * @subpackage  Fabrik.list.js
- * @copyright   Copyright (C) 2005-2020  Media A-Team, Inc. - All rights reserved.
+ * @copyright   Copyright (C) 2024 Jlowcode Org - All rights reserved.
  * @license     GNU/GPL http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -65,6 +65,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	private $idModalList = 'modal-list';
 
+	private $dbTableNameModal = 'fabrik_easyadmin_modal';
+
+	private $modalParams;
+
 	/**
 	 * Constructor
 	 *
@@ -95,6 +99,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$this->setListModel($listModel);
 			$this->setSubject($subject);
+			$this->setModalParams();
 			$this->setElements();
 			$this->setElementsList();
 			$this->customizedStyle();
@@ -107,6 +112,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @return  	Null
 	 */
 	protected function init() {
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
 		if(!$this->authorized()) {
 			return;
 		}
@@ -123,6 +130,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->images = $this->getImages();
 		$opts->idModal = $this->idModal;
 		$opts->idModalList = $this->idModalList;
+		$opts->dbPrefix = $db->getPrefix();
 
 		echo $this->setUpModalElements();
 		echo $this->setUpModalList();
@@ -393,7 +401,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	public function onLoadData(&$args) {
+	public function onLoadData(&$args) 
+	{
+		$listModelModal = new FabrikFEModelList();
+		$pluginManager = FabrikWorker::getPluginManager();
+		$mediaFolder = FabrikHelperHTML::getMediaFolder();
+		$modalParams = json_decode($this->getModalParams(), true);
+
 		//We don't have run
 		if(!$this->mustRun()) {
 			return;
@@ -402,35 +416,48 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$formModel = $listModel->getFormModel();
 
+		$listModelModal->setId($modalParams['list']);
+		$formModelModal = $listModelModal->getFormModel();
+		$formModelModal->getData();
+		$formModelModal->getGroupsHiarachy();
+		$elementsModal = $listModelModal->getElements('id');
+
 		$elements = Array(
 			'elements' => ['list', 'optsDropdown'],
 			'elementsList' => ['adminsList']
 		);
-		$mediaFolder = FabrikHelperHTML::getMediaFolder();
-		$srcs                  = array_merge(
+		$srcs = array_merge(
 			array(
 				'FloatingTips' => $mediaFolder . '/tipsBootStrapMock.js',
 				'FbForm' => $mediaFolder . '/form.js',
 				'Fabrik' => $mediaFolder . '/fabrik.js'
 			),
-			FabrikHelperHTML::framework());
+			FabrikHelperHTML::framework()
+		);
+
 		$srcs['Placeholder'] = 'media/com_fabrik/js/lib/form_placeholder/Form.Placeholder.js';
 		$srcs['FormSubmit'] = $mediaFolder . '/form-submit.js';
 		$srcs['Element'] = $mediaFolder . '/element.js';
 
 		foreach ($elements as $key => $els) {
 			foreach ($els as $nameElement) {
-				$obj = $this->$key[$nameElement]['objField'];
-				$json = json_encode($obj->elementJavascript(0));
-				$elementJs[] = $obj->elementJavascript(0);
+				$idEl = $modalParams['elementsId'][$nameElement];
+				$obj = $idEl ? $elementsModal[$idEl] : $this->$key[$nameElement]['objField'];
+
+				$ref = $obj->elementJavascript(0);
 				$ext = FabrikHelperHTML::isDebug() ? '.js' : '-min.js';
+
+				if(is_array($ref) && count($ref) == 2) {
+					$elementJs[] = $ref[1];
+					$ref = $ref[0];
+				}
 
 				switch ($nameElement) {
 					case 'optsDropdown':
 						$plugin = 'ElementDropdown';
 						$nameFile = 'dropdown';
 						break;
-					
+
 					default:
 						$plugin = 'ElementDatabasejoin';
 						$nameFile = 'databasejoin';
@@ -439,7 +466,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$path = "plugins/fabrik_element/{$nameFile}/{$nameFile}" . $ext;
 				$srcs[$plugin] = $path;
-				FabrikHelperHTML::script([$plugin => $path], $json);
+				FabrikHelperHTML::script([$plugin => $path], json_encode($ref));
+
+				if (!empty($ref)) {
+					$elementJs[] = $ref;
+				}
 			}
 		}
 
@@ -2104,35 +2135,25 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function setElementList(&$elements, $nameElement) 
 	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$listModelModal = new FabrikFEModelList();
+
 		$subject = $this->getSubject();
-		$objDatabasejoin = new PlgFabrik_ElementDatabasejoin($subject);
-		$id = 'easyadmin_modal___list';
+		$modalParams = json_decode($this->getModalParams(), true);
+
+		$id = $db->getPrefix() . 'fabrik_easyadmin_modal___list';
 		$showOnTypes = ['autocomplete', 'treeview'];
 
-		$elContextModelElement = Array('name' => 'list');
-		$elContextTableElement = Array('label' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL'));
-		$elContextTableJoin = Array('table_join' => '#__fabrik_lists', 'table_key' => 'id');
-		$params = new Registry(json_encode(Array(
-			'database_join_display_type' => 'checkbox', 
-			'database_join_display_style' => 'only-autocomplete',
-			'join_db_name' => '#__fabrik_lists',
-			'join_val_column' => 'db_table_name',
-			'join_key_column' => 'db_table_name',
-			'database_join_show_please_select' => '1',
-			'dbjoin_autocomplete_rows' => 10,
-			'database_join_where_sql' => 'SUBSTRING(`label`, 1, 1) != "_"'
-		)));
+		$listModelModal->setId($modalParams['list']);
+		$formModelModal = $listModelModal->getFormModel();
+		$formModelModal->getData();
+		$groupsModal = $formModelModal->getGroupsHiarachy();
+		$elementsModal = $listModelModal->getElements('id');
+		$idEl = $modalParams['elementsId'][$nameElement];
 
-		$objDatabasejoin->setParams($params, 0);
+		$objDatabasejoin = $elementsModal[$idEl];
 		$objDatabasejoin->setEditable(true);
-		$objDatabasejoin->getListModel()->getTable()->bind(Array('db_table_name' => 'easyadmin_modal'));
-		$objDatabasejoin->getFormModel()->getTable()->bind(Array('record_in_database' => '1'));
-		$objDatabasejoin->getFormModel()->getData();
-		$objDatabasejoin->getJoinModel()->getJoin()->bind($elContextTableJoin);
-		$objDatabasejoin->getElement()->bind($elContextTableElement);
-		$objDatabasejoin->bindToElement($elContextModelElement);
-		$objDatabasejoin->jsJLayout();
-		$json = json_encode($objDatabasejoin->elementJavascript(0));
 
 		$elements[$nameElement]['objField'] = $objDatabasejoin;
 		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
@@ -3283,7 +3304,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since		version 4.1.2
 	 */
-	private function checkColumnName(&$name, $listModel) {
+	private function checkColumnName(&$name, $listModel) 
+	{
 		$columnsNames = (array) $this->processElementsNames($listModel->getElements(true), false);
 		$name = substr(strtolower($name), 0, 40);
 
@@ -3303,7 +3325,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function validateList($data) {
+	private function validateList($data) 
+	{
 		$validate = new stdClass();
 		$validate->error = false;
 		$validate->message = "";
@@ -3371,7 +3394,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	public function onContentAfterSave($context, $item, $isNew, $data = []) {
+	public function onContentAfterSave($context, $item, $isNew, $data = []) 
+	{
 		$app = Factory::getApplication();
 		$input = $app->input;
 		$id = $item->id;
@@ -3404,7 +3428,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function getDataLabel($id, $label, $tip, $showOnTypes='', $fixed=true, $modal='element') {
+	private function getDataLabel($id, $label, $tip, $showOnTypes='', $fixed=true, $modal='element') 
+	{
 		$class = $fixed ?  '' : "modal-$modal type-" . implode(' type-', $showOnTypes);
 
 		$data = Array(
@@ -3429,11 +3454,330 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function customizedStyle() {
+	private function customizedStyle() 
+	{
 		$document = Factory::getDocument();
-		$css = '.select2-container--open {z-index: 9999 !important;}';
+		$css = '.dropdown-menu {z-index: 9999 !important;}';
 		$css .= '.btn-easyadmin-modal {min-height: 30px; width: 100%; border-radius: 12px; color: rgb(255, 255, 255); background-color: rgb(0, 62, 161);}';
 		$document->addStyleDeclaration($css);
+	}
+
+	/**
+	 * Function that receives the request when installing the plugin to create the list, form and elements 
+	 * needed to render the modal on the front end
+	 * 
+	 * @return  	Json
+	 * 
+	 * @since 		version 4.2
+	 */
+	public function onRequestInstall() 
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$response = new stdClass();
+		$paramsToSave = Array();
+
+		$dbTableName = $db->getPrefix() . $this->dbTableNameModal;
+		$exist = $this->verifyTableExist($dbTableName);
+
+		if($exist) {
+			$response->msg = Text::_('PLG_FABRIK_LIST_EASYADMIN_REQUEST_INSTALL_SUCCESS');
+			$response->success = true;
+			echo json_encode($response);
+			exit;
+		}
+
+		try {
+			$formId = $this->createForm();
+			$listId = $this->createList($formId, $dbTableName);
+			$groupId = $this->createGroup();
+			$elementsId = $this->createElements($groupId);
+
+			$this->createBondFormGroup($formId, $groupId);
+			$this->createTable($dbTableName);
+
+			$response->msg = Text::_('PLG_FABRIK_LIST_EASYADMIN_REQUEST_INSTALL_SUCCESS');
+			$response->success = true;
+        }
+        catch (RuntimeException $e) {
+			$response->msg = $e->getMessage();
+			$response->success = false;
+        }
+
+		$paramsToSave['form'] = $formId;
+		$paramsToSave['list'] = $listId;
+		$paramsToSave['groupId'] = $groupId;
+		$paramsToSave['elementsId'] = $elementsId;
+		$this->saveParams($dbTableName, $paramsToSave);
+
+		echo json_encode($response);
+		exit;
+	}
+
+	/**
+	 * Function that verify if we need create the list, form and elements or not
+	 * 
+	 * @param		String 		$dbTableName		The name of the table that will be create
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	public function verifyTableExist($dbTableName) 
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = "
+			SELECT COUNT(*)
+			FROM information_schema.tables
+			WHERE table_schema = (SELECT DATABASE()) AND table_name = '$dbTableName';
+		";
+
+		$db->setQuery($query);
+        $exist = (bool) $db->loadResult();
+
+		return $exist;
+	}
+
+	/**
+	 * Function that create the form
+	 * 
+	 * @return  	String|Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createForm()
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+		$date = Factory::getDate();
+
+		$info = new stdClass();
+        $info->id = 0;
+        $info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_FORM_NAME');
+        $info->record_in_database = '1';
+        $info->intro = '';
+        $info->created = $date->toSql();
+        $info->created_by = $this->user->id;
+        $info->created_by_alias = $this->user->username;
+        $info->modified = $date->toSql();
+        $info->modified_by = $this->user->id;
+        $info->publish_up = $date->toSql();
+        $info->published = 1;
+        $info->params = Text::_('PLG_FABRIK_LIST_EASYADMIN_FORM_PARAMS');
+
+        $insert = $db->insertObject('#__fabrik_forms', $info, 'id');
+
+		return $insert ? $db->insertid() : false;
+	}
+
+	/**
+	 * Function that create the list
+	 * 
+	 * @param		Int 		$formId				The id of the form related
+	 * @param		String 		$dbTableName		The name of the table that will be create
+	 * 
+	 * @return  	String|Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createList($formId, $dbTableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+		$date = Factory::getDate();
+
+		$info = new stdClass();
+        $info->id = 0;
+        $info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_LIST_NAME');
+        $info->introduction = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_LIST_INTRODUCTION');
+        $info->form_id = $formId;
+        $info->db_table_name = $dbTableName;
+        $info->db_primary_key = $dbTableName . '.id';
+        $info->auto_inc = 1;
+        $info->connection_id = 1;
+        $info->created = $date->toSql();
+        $info->created_by = $this->user->id;
+        $info->created_by_alias = $this->user->username;
+        $info->modified = $date->toSql();
+        $info->modified_by = $this->user->id;
+        $info->published = 1;
+        $info->publish_up = $date->toSql();
+        $info->access = 1;
+        $info->rows_per_page = 10;
+        $info->filter_action = 'onchange';
+        $info->params = Text::_('PLG_FABRIK_LIST_EASYADMIN_FORM_PARAMS');
+
+        $insert = $db->insertObject('#__fabrik_lists', $info, 'id');
+
+		return $insert ? $db->insertid() : false;
+	}
+
+	/**
+	 * Function that create the group
+	 * 
+	 * @return  	String|Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createGroup()
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+		$date = Factory::getDate();
+
+		$info = new stdClass();
+        $info->id = 0;
+        $info->name = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_FORM_NAME');
+        $info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_FORM_NAME');
+        $info->css = '';
+        $info->published = 1;
+        $info->intro = '';
+        $info->created = $date->toSql();
+        $info->created_by = $this->user->id;
+        $info->created_by_alias = $this->user->username;
+        $info->modified = $date->toSql();
+        $info->modified_by = $this->user->id;
+        $info->params = Text::_('PLG_FABRIK_LIST_EASYADMIN_GROUP_PARAMS');
+
+        $insert = $db->insertObject('#__fabrik_groups', $info, 'id');
+
+		return $insert ? $db->insertid() : false;
+	}
+
+	/**
+	 * Function that create the bond between form and group created
+	 * 
+	 * @param		Int 		$formId			The id of the form related
+	 * @param		Int 		$groupId		The id of the group related
+	 * 
+	 * @return  	String|Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createBondFormGroup($formId, $groupId)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$info = new stdClass();
+		$info->id = 0;
+		$info->form_id = $formId;
+		$info->group_id = $groupId;
+		$info->ordering = 1;
+
+		$insert = $db->insertObject('#__fabrik_formgroup', $info, 'id');
+
+		return $insert ? $db->insertid() : false;
+	}
+
+	/**
+	 * Function that create the elements needed
+	 * 
+	 * @param		Int 		$groupId				The id of the group related
+	 * 
+	 * @return  	Array
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createElements($groupId)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+		$date = Factory::getDate();
+		
+		$idElements = Array();
+
+		$idElements['list'] = $this->createElementList($groupId);
+
+		return $idElements;
+	}
+
+	/**
+	 * Function that create the databasejoin list element
+	 * 
+	 * @param		Int 		$groupId			The id of the group related
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createElementList($groupId) {
+		$db = Factory::getContainer()->get('DatabaseDriver');
+		$date = Factory::getDate();
+
+		$params = json_encode(Array(
+			'database_join_display_type' => 'auto-complete', 
+			'database_join_display_style' => 'only-autocomplete',
+			'join_db_name' => '#__fabrik_lists',
+			'join_val_column' => 'db_table_name',
+			'join_key_column' => 'db_table_name',
+			'database_join_show_please_select' => '1',
+			'dbjoin_autocomplete_rows' => 10,
+			'database_join_where_sql' => 'SUBSTRING(`label`, 1, 1) != "_"'
+		));
+
+		$info = new stdClass();
+		$info->id = 0;
+		$info->name = 'list';
+		$info->group_id = $groupId;
+		$info->plugin = 'databasejoin';
+		$info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL');
+		$info->created = $date->toSql();
+        $info->created_by = $this->user->id;
+        $info->created_by_alias = $this->user->username;
+        $info->modified = $date->toSql();
+        $info->modified_by = $this->user->id;
+        $info->published = 1;
+        $info->access = 1;
+        $info->params = $params;
+
+		$insert = $db->insertObject('#__fabrik_elements', $info, 'id');
+
+		return $insert ? $db->insertid() : false;
+	}
+
+	/**
+	 * Function that create the table
+	 * 
+	 * @param		String 		$dbTableName		The name of the table that will be create
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since 		version 4.2
+	 */
+	private function createTable($dbTableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = "
+		CREATE TABLE `$dbTableName` (
+			`id` int NOT NULL AUTO_INCREMENT,
+			`date_time` datetime DEFAULT NULL,
+			`listas` int DEFAULT NULL,
+  			`params` mediumtext,
+			PRIMARY KEY (`id`)
+		) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+		";
+
+		$db->setQuery($query);
+        $insert = $db->execute();
+
+		return $insert ? true : false;
+	}
+
+	/**
+	 * Function that save the params of the modal table
+	 * 
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.2
+	 */
+	public function saveParams($dbTableName, $paramsToSave) 
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->insert($db->qn($dbTableName))
+			->columns($db->qn('params'))
+			->values($db->q(json_encode($paramsToSave)));
+		$db->setQuery($query);
+		$db->execute();
 	}
 
 	/**
@@ -3547,5 +3891,36 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	public function getSubject() {
 		return $this->subject;
+	}
+
+	/**
+	 * Setter method to modal params variable
+	 *
+	 * @return  	String
+	 * 
+	 * @since 		version 4.2
+	 */
+	public function setModalParams() {
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select($db->qn('params'))
+			->from($db->qn($db->getPrefix() . $this->dbTableNameModal))
+			->where($db->qn('id') . ' = 1');
+		$db->setQuery($query);
+		$modalParams = $db->loadResult();
+
+		$this->modalParams = $modalParams;
+	}
+
+	/**
+	 * Getter method to modalParams variable
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.2
+	 */
+	public function getModalParams() {
+		return $this->modalParams;
 	}
 }
