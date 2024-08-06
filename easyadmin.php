@@ -59,7 +59,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	
 	private $subject;
 
-	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display'];
+	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube'];
 
 	private $idModal = 'modal-elements';
 
@@ -324,13 +324,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataEl->label =  $params['join_val_column'];
 				$dataEl->father = $params['tree_parent_id'];
 				break;
-
-			case 'thumbs':
-				$dataEl->type = 'thumbs';
-				break;
 			
 			case 'display':
 				$dataEl->type = 'related_list';
+				break;
+			
+			default:
+				$dataEl->type = $plugin;
 				break;
 		}
 	}
@@ -1398,6 +1398,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'treeview' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TREEVIEW'),
 			'related_list' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RELATED_LIST'),
 			'rating' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RATING'),
+			'youtube' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_YOUTUBE'),
 			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS'),
 			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS')
 		);
@@ -1414,9 +1415,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 
 		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
-			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL'), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DESC'), 
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DESC'),
 		);
 		$elements[$nameElement]['dataField'] = $dEl;
 	}
@@ -1459,7 +1460,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___show_in_list';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1608,7 +1609,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___required';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'tags'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'tags', 'youtube'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1726,7 +1727,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___trash';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list', 'tags'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list', 'tags', 'youtube'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -2506,9 +2507,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($data['make_thumbs']) {
 					$params['fu_show_image'] = '2';
-					$params['make_thumbnail'] = '1';
+					$params['fu_show_image_in_table'] = '1';
 					$params['fu_make_pdf_thumb'] = '1';
-					$params['thumb_dir'] = "images/stories/thumbs";
+					$params['make_thumbnail'] = '1';
+					$params['thumb_dir'] = 'images/stories/thumbs';
+					$params['thumb_max_width'] = '400';
+					$params['thumb_max_height'] = '300';
 				}
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
@@ -2626,6 +2630,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 
+				break;
+			
+			case 'youtube':
+				$opts['plugin'] = 'youtube';
+				$params['width'] = '30';
+				$params['player_size'] = 'big';
 				break;
 		}
 
