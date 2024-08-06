@@ -768,7 +768,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementTextFormat($elements, 'textFormat');
 		$this->setElementDefaultValue($elements, 'defaultValue');
 		$this->setElementAjaxUpload($elements, 'ajaxUpload');
-		$this->setElementMakeThumbs($elements, 'makeThumbs');
+		//$this->setElementMakeThumbs($elements, 'makeThumbs');
 		$this->setElementFormat($elements, 'format');
 		$this->setElementOptsDropdown($elements, 'optsDropdown');
 		$this->setElementMultiSelect($elements, 'multiSelect');
