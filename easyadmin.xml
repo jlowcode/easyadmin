@@ -7,7 +7,7 @@
 	<license>GNU/GPL http://www.gnu.org/copyleft/gpl.html</license>
 	<authorEmail>contact@jlowcode.org</authorEmail>
 	<authorUrl>www.jlowcode.org</authorUrl>
-	<version>4.1.4</version>
+	<version>4.2</version>
 	<description>PLG_FABRIK_LIST_EASY_ADMIN_DESCRIPTION</description>
 	<files>
 		<filename plugin="easyadmin">easyadmin.php</filename>
@@ -18,4 +18,5 @@
 		<folder>forms</folder>
 		<folder>layouts</folder>
 	</files>
+	 <scriptfile>easyadmin_script.php</scriptfile>
 </extension>

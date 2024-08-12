@@ -1,7 +1,7 @@
 /**
  * Easy Admin
  *
- * @copyright: Copyright (C) 2005-2016  Media A-Team, Inc. - All rights reserved.
+ * @copyright: Copyright (C) 2024 Jlowcode Org - All rights reserved.
  * @license  : GNU/GPL http                         :                              //www.gnu.org/copyleft/gpl.html
  */
 define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
@@ -25,13 +25,13 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			Fabrik.addEvent('fabrik.list.loaded', function () {
-				self.setElementDatabasejoin();
 				self.setElementAdminsList();
 				self.setElementType();
 				//self.setElementVisibilityList();
 				self.setElementShowInList();
 				self.setUpButtonSave();
 				self.setUpButtonsPainel();
+				self.setUpElementList();
 			});
 		},
 
@@ -75,6 +75,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		/**
 		 * Function to make the multiselect databasejoin single and to set up the list element
 		 * 
+	 	 * @deprecated  	since 4.2 		This method was remove because the list element changed to autocomplete
 		 */
 		setElementDatabasejoin: function() {
 			var self = this;
@@ -113,10 +114,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 */
 		setUpElementList: function() {
 			var self = this;
-			var searchElementList = jQuery('#easyadmin_modal___list .select2-search__field');
-			var elLabel = jQuery('#easyadmin_modal___label');
+			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list';
+			var searchElementList = jQuery(idEl + '-auto-complete');
+			var elLabel = jQuery(idEl);
 
-			searchElementList.on('change', function() {
+			searchElementList.on('focusout', function() {
 				setTimeout(function() {
 					self.searchElementList();
 				}, 500);
@@ -138,8 +140,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		searchElementList: function() {
 			var self = this;
 			var baseUri = this.options.baseUri;
+			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list';
 
-			var tid = jQuery('#modal-elements .select2-selection__choice').attr('title');
+			var tid = jQuery(idEl).val();
 			if (!tid) {
 				return;
 			}
@@ -373,6 +376,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___width_field':
 					case 'easyadmin_modal___ordering_elements':
 					case 'easyadmin_modal___viewLevel_list':
+					case self.options.dbPrefix + 'fabrik_easyadmin_modal___list':
 						valEls[id] = jQuery(this).val();
 						break;
 					
@@ -397,7 +401,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			// Databasejoins values
 			valEls['easyadmin_modal___admins_list'] = jQuery('[name="easyadmin_modal___admins_list[]"]').val();
-			valEls['easyadmin_modal___list'] = jQuery('[name="easyadmin_modal___list[]"]').val()[0];
 
 			if(mode == 'list') {
 				valEls['order_by'] = [valEls['easyadmin_modal___ordering_list']];
@@ -562,7 +565,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 				jQuery.each(options, function(index, value) {
 					el = jQuery('#easyadmin_modal___' + index);
-					if(el.length > 0) {
+					el2 = jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___' + index);
+					if(el.length > 0 || el2.length > 0) {
+						el = el.length == 0 ? el2 : el; 
 						if(el.find('.switcher').length == 0) {
 							el.val(value);
 
@@ -576,23 +581,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 									break;
 								
 								case 'list':
-									var list = jQuery('<li class="select2-selection__choice" title="' + value + '" data-select2-id="18"><span class="select2-selection__choice__remove" role="presentation">×</span>' + value + '</li>');
-									var option = jQuery('<option value="' + value + '" data-select2-id="18">' + value + '</option>');
-
-									jQuery('[name="easyadmin_modal___list[]"] > option').remove();
-									jQuery('[name="easyadmin_modal___list[]"]').append(option);
-									jQuery('[name="easyadmin_modal___list[]"]').val(value);
-
-									jQuery('#easyadmin_modal___' + index + ' .select2-selection__choice').remove();
-									jQuery('#easyadmin_modal___' + index + ' .select2-selection__rendered').append(list);
-
-									self.setUpElementList();
-									jQuery('#easyadmin_modal___' + index + ' .select2-search__field').trigger('change');
-
-									setTimeout(() => {
-										jQuery("#modal-elements .select2-selection__choice__remove").css("display", "none");
-									}, 100);
-									
+									jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list').val(value);
+									jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').val(value);
 									break;
 
 								case 'width_field':
@@ -624,6 +614,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			jQuery('#easyadmin_modal___type').trigger('change');
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
+			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
 
@@ -716,6 +707,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___access_rating':
 						case 'easyadmin_modal___width_field':
 						case 'easyadmin_modal___ordering_elements':
+						case self.options.dbPrefix + 'fabrik_easyadmin_modal___list':
+						case self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete':
 							jQuery(this).val('')
 							break;
 
@@ -737,7 +730,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				});
 
 				jQuery('#easyadmin_modal___type').trigger('change');
-				jQuery('#easyadmin_modal___list .select2-selection__choice__remove').trigger('click');
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});
 				jQuery('#easyadmin_modal___label').empty();
 				jQuery('#easyadmin_modal___father').empty();
