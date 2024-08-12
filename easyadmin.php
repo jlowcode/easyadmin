@@ -25,6 +25,7 @@ use Joomla\CMS\User\User;
 use Joomla\Component\Users\Administrator\Model\UserModel;
 use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
+use \Joomla\CMS\Uri\Uri;
 
 // Requires 
 // Change to namespaces on F5
@@ -59,7 +60,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	
 	private $subject;
 
-	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube'];
+	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube', 'link'];
 
 	private $idModal = 'modal-elements';
 
@@ -121,7 +122,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->jsScriptTranslation();
 
 		$opts = new StdClass;
-		$opts->baseUri = JURI::base();
+		$opts->baseUri = URI::base();
 		$opts->allElements = $this->processElements($this->model->getElements(true, true, false));
 		$opts->elements = $this->processElements($this->model->getElements(true, true, false), true);
 		$opts->elementsNames = $this->processElementsNames($this->model->getElements(true, true, false));
@@ -286,7 +287,28 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'textarea':
 				$dataEl->default_value = $dataElement->default;
 				$dataEl->text_format = $params['password'] == '5' ? 'url' : $params['text_format'];
-				$dataEl->type = $plugin == 'field' ? 'text' : 'longtext';
+				$dataEl->type = $plugin == 'field' ? $params['element_link_easyadmin'] == '1' ? 'link' : 'text' : 'longtext';
+
+				// The element is field, but of type link
+				if((bool) $params['element_link_easyadmin']) {
+					$paramsForm = $this->getListModel()->getFormModel()->getParams();
+					$dataEl->thumb_link = $paramsForm->get('thumb');
+					$dataEl->title_link = $paramsForm->get('title');
+					$dataEl->description_link = $paramsForm->get('description');
+					$dataEl->subject_link = $paramsForm->get('subject');
+					$dataEl->creator_link = $paramsForm->get('creator');
+					$dataEl->date_link = $paramsForm->get('date');
+					$dataEl->format_link = $paramsForm->get('format');
+					$dataEl->coverage_link = $paramsForm->get('coverage');
+					$dataEl->publisher_link = $paramsForm->get('publisher');
+					$dataEl->identifier_link = $paramsForm->get('identifier');
+					$dataEl->language_link = $paramsForm->get('language');
+					$dataEl->type_link = $paramsForm->get('type');
+					$dataEl->contributor_link = $paramsForm->get('contributor');
+					$dataEl->relation_link = $paramsForm->get('relation');
+					$dataEl->rights_link = $paramsForm->get('rights');
+					$dataEl->source_link = $paramsForm->get('source');
+				}
 			break;
 
 			case 'fileupload':
@@ -366,12 +388,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	protected function createLink($elementId) {
-		$baseUri = JURI::base();
+		$baseUri = URI::base();
 		return $baseUri . "administrator/index.php?option=com_fabrik&view=element&layout=edit&id=". $elementId . "&modalView=1";
 	}
 
 	protected function createListLink($listId) {
-		$baseUri = JURI::base();
+		$baseUri = URI::base();
 		return $baseUri ."administrator/index.php?option=com_fabrik&view=list&layout=edit&id=". $listId . "&modalView=1";
 	}
 
@@ -713,7 +735,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		foreach ($elements as $nameElement => $element) {
 			$dEl = new stdClass();
 			$data->label = $element['objLabel']->render((object) $element['dataLabel']);
-			$data->element = $element['objField']->render($element['dataField']);
+			$data->element = isset($element['objField']) ? $element['objField']->render($element['dataField']) : '';
 			$data->cssElement = $element['cssElement'];
 			$body .= $layoutBody->render($data);
 		}
@@ -761,7 +783,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	public function setElements() {
 		$subject = $this->getSubject();
+		
 		$elements = Array();
+		$mainAuxLink = ['thumb', 'title', 'description'];
+		$secondaryAuxLink = ['subject', 'creator', 'date', 'format', 'coverage', 'publisher', 'identifier', 'language', 'type', 'contributor', 'relation', 'rights', 'source'];
 
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
@@ -778,6 +803,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementMultiRelations($elements, 'multiRelations');
 		$this->setElementAccessRating($elements, 'accessRating');
 		$this->setElementUseFilter($elements, 'useFilter');
+		$this->setElementsAuxLink($elements, 'mainAuxLink', $mainAuxLink);
+		$this->setElementLabelAdvancedLink($elements, 'labelAdvancedLink');
+		$this->setElementsAuxLink($elements, 'secondaryAuxLink', $secondaryAuxLink);
 		$this->setElementShowInList($elements, 'showInList');
 		$this->setElementOrderingElements($elements, 'OrderingElements');
 		$this->setElementWidthField($elements, 'widthField');
@@ -1399,6 +1427,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'related_list' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RELATED_LIST'),
 			'rating' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_RATING'),
 			'youtube' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_YOUTUBE'),
+			'link' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LINK'),
 			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS'),
 			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS')
 		);
@@ -1460,7 +1489,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___show_in_list';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1609,7 +1638,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___required';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'tags', 'youtube'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'tags', 'youtube', 'link'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1677,6 +1706,38 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Method that with cURL call the ajax fields function to return the list elements
+	 * 
+	 * @return		Array
+	 * 
+	 * @since 		version 4.2.1
+	 */
+	private function callAjaxFields() 
+	{
+		$optsFormated = Array();
+		$url = COM_FABRIK_LIVESITE . 'index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=0&t=119&published=1';
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HTTPGET, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+
+		if (!curl_errno($ch)) {
+			$opts = json_decode($response);
+
+			foreach ($opts as $opt) {
+				$optsFormated[$opt->value] = $opt->label;
+			}
+		}
+
+		curl_close($ch);
+
+		return $optsFormated;
+	}
+
+	/**
 	 * Method that search the related lists in database to render the options to user
 	 *
 	 * @param		String		Optional to get the name of join element
@@ -1727,7 +1788,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___trash';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list', 'tags', 'youtube'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'related_list', 'tags', 'youtube', 'link'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -2334,6 +2395,81 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to auxiliary elements of the link element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 * @param		String		$ids				The elements ids
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.2.1
+	 */
+	private function setElementsAuxLink(&$elements, $nameElement, $ids)
+	{
+		$subject = $this->getSubject();
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$opts = $this->optionsElements($this->callAjaxFields());
+		$showOnTypes = $nameElement == 'mainAuxLink' ? ['link'] : ['element-label_advanced_link'];
+
+		foreach ($ids as $idEl) {
+			$id = 'easyadmin_modal___' . $idEl . '_link';
+			$nameElement = $idEl . 'Link';
+
+			// Options to set up the element
+			$dEl = new stdClass();
+			$dEl->name = $id;
+			$dEl->id = $id;
+			$dEl->options = $opts;
+			$dEl->selected = Array();
+			$dEl->multiple = '0';
+			$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+			$dEl->multisize = '';
+
+			$elements[$nameElement]['objField'] = $classDropdown->getLayout('form');
+			$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+			$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+				$id,
+				Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_' . strtoupper($idEl) .'_LINK_LABEL'),
+				Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_' . strtoupper($idEl) .'_LINK_DESC'),
+				$showOnTypes,
+				false
+			);
+			$elements[$nameElement]['dataField'] = $dEl;
+		}
+	}
+
+	/**
+	 * Setter method to display the advanced settings label of the link type
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.2.1
+	 */
+	private function setElementLabelAdvancedLink(&$elements, $nameElement) 
+	{
+		$subject = $this->getSubject();
+
+		$id = 'easyadmin_modal___label_advanced_link';
+		$showOnTypes = ['link'];
+
+		$elements[$nameElement]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		$elements[$nameElement]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_ADVANCED_LINK_LABEL'),
+			Text::_(''),
+			$showOnTypes,
+			false
+		);
+		$elements[$nameElement]['cssElement'] = 'text-decoration: underline;';
+
+	}
+
+	/**
      * Get the list of all view levels
      *
      * @return  	\stdClass[]|Boolean
@@ -2421,19 +2557,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Function that save the modal data to elements
-	 * 
+	 *
 	 * @param		Array			$data				The data sent
 	 * @param		Int				$group_id			Group id of the list
 	 * @param		Object			$listModel			Object of the frontend list model
-	 * 
+	 *
 	 * @return  	String			Success or false
-	 * 
+	 *
 	 * @since 		version 4.0
 	 */
-	private function saveModalElements($data, $group_id, $listModel) 
+	private function saveModalElements($data, $group_id, $listModel)
 	{
+		$app = Factory::getApplication();
 		$db = Factory::getContainer()->get('DatabaseDriver');
+
 		$modelElement = new FabrikAdminModelElement();
+		$modelForm = new FabrikAdminModelForm();
+
+		$input = $app->input;
 
 		$labelElement = $data['name'];
 		$validate = $this->validateElements($data, $listModel);
@@ -2637,6 +2778,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['width'] = '30';
 				$params['player_size'] = 'big';
 				break;
+
+			case 'link':
+				$opts['plugin'] = 'field';
+				$params['element_link_easyadmin'] = '1';
+				break;
 		}
 
 		if($data['use_filter']) {
@@ -2690,6 +2836,60 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$this->groupToElementRelatedList($listModel, $opts, $params, true);
 			$this->moduleToElementRelatedList($listModel, $opts, $params, true);
+		}
+
+		//Save the form to add metadata_extract plugin and configure it
+		if($type == 'link' && $opts['published'] == '1') {
+			$formModel = $listModel->getFormModel();
+			$propertiesForm = $formModel->getTable()->getProperties();
+			$groupsForm = $formModel->getGroups();
+			$dataForm['current_groups'] = array_keys($groupsForm);
+			$dataForm['database_name'] = $propertiesForm['db_table_name'];
+			$pluginsForm = Array();
+			foreach ($propertiesForm as $key => $val) {
+				if(!array_key_exists($key, $dataForm)) {
+					$dataForm[$key] = $propertiesForm[$key];
+				}
+
+				if($key == 'params') {
+					$dataForm[$key] = json_decode($dataForm[$key], true);
+					$dataForm[$key]['thumb'] = $data['thumb_link'];
+					$dataForm[$key]['link'] = $modelElement->getState('element.id');
+					$dataForm[$key]['title'] = $data['title_link'];
+					$dataForm[$key]['description'] = $data['description_link'];
+					$dataForm[$key]['subject'] = $data['subject_link'];
+					$dataForm[$key]['creator'] = $data['creator_link'];
+					$dataForm[$key]['date'] = $data['date_link'];
+					$dataForm[$key]['format'] = $data['format_link'];
+					$dataForm[$key]['coverage'] = $data['coverage_link'];
+					$dataForm[$key]['publisher'] = $data['publisher_link'];
+					$dataForm[$key]['identifier'] = $data['identifier_link'];
+					$dataForm[$key]['language'] = $data['language_link'];
+					$dataForm[$key]['type'] = $data['type_link'];
+					$dataForm[$key]['contributor'] = $data['contributor_link'];
+					$dataForm[$key]['relation'] = $data['relation_link'];
+					$dataForm[$key]['rights'] = $data['rights_link'];
+					$dataForm[$key]['source'] = $data['source_link'];
+					$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
+					$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
+					$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];
+					$pluginsForm['plugin_description'] = $dataForm[$key]['plugin_description'];
+					$pluginsForm['plugin_state'] = $dataForm[$key]['plugin_state'];
+				}
+			}
+
+			// Data to configure the new plugin metadata_extract
+			if(!in_array('metadata_extract', $pluginsForm['plugin'])) {
+				$pluginsForm['plugin'][] = 'metadata_extract';
+				$pluginsForm['plugin_locations'][] = 'both';
+				$pluginsForm['plugin_events'][] = 'both';
+				$pluginsForm['plugin_description'][] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_METADATA_EXTRACT_DESC');
+				$pluginsForm['plugin_state'][] = '1';
+			}
+	
+			$input->set('jform', $pluginsForm);
+			$modelForm->getState(); 	//We need do this to set __state_set before the save
+			$modelForm->save($dataForm);
 		}
 
 		return json_encode($validate);
