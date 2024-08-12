@@ -2767,7 +2767,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['sub_options'] = Array(
 					'sub_values' => '',
 					'sub_labels' => '',
-					'sub_initial_selection' => ''
 				);
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
