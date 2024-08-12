@@ -1638,7 +1638,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 		$id = 'easyadmin_modal___required';
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'tags', 'youtube', 'link'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'tags', 'youtube', 'link'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -2687,6 +2687,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'rating':
 				$opts['plugin'] = 'rating';
+				$opts['hidden'] = '1';
 				$params['rating_access'] = $data['access_rating'];
 				$params['rating-mode'] = 'user-rating';
 				$params['rating-nonefirst'] = '1';
