@@ -463,6 +463,15 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				return;
 			}
 
+			// We need save the link element and ordering it to the first position of the form
+			if(valEls['easyadmin_modal___type'] == 'link' && valEls['easyadmin_modal___valIdEl'] == 0) {
+				var valOrder = '';
+				optsOrderingEls = jQuery('#easyadmin_modal___ordering_elements option');
+				optsOrderingEls.each(function(i, el) {
+					valOrder = el.label == 'ID' || el.label == 'Criado por' ? el.value : valOrder;
+				});
+				valEls['easyadmin_modal___ordering_elements'] = valOrder;
+			}
 			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
 			jQuery.ajax({
 				url     : url,
@@ -749,7 +758,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					id = this.id;
 					switch (id) {
 						case 'easyadmin_modal___name':
-						case 'easyadmin_modal___text_format':
 						case 'easyadmin_modal___default_value':
 						case 'easyadmin_modal___options_dropdown':
 						case 'easyadmin_modal___label':
@@ -792,6 +800,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 							break;
 
 						case 'easyadmin_modal___type':
+						case 'easyadmin_modal___text_format':
 							jQuery(this).val('text');
 							break;
 					}

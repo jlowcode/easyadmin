@@ -2824,6 +2824,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$modelElement->save($opts);
+		$data["valIdEl"] = $modelElement->getState('element.id');
 		$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
 		if(!$saveOrder) {
 			$validate->error = Text::_("");
@@ -3155,7 +3156,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements = $listModel->getElements("id");
 
 		//If element does not must show in list or the ordering not changed, nothing is gonna happen
-		if($data['show_in_list'] == '' || $idAtual == $idOrder) {
+		if(($data['show_in_list'] == '' && !$idAtual && $data['type'] != 'link') || $idAtual == $idOrder) {
 			return;
 		}
 
