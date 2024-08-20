@@ -25,7 +25,7 @@ use Joomla\CMS\User\User;
 use Joomla\Component\Users\Administrator\Model\UserModel;
 use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
-use \Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Uri\Uri;
 
 // Requires 
 // Change to namespaces on F5
@@ -165,6 +165,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return count(array_intersect($groupsLevels, $groups)) > 0 ? true : false;
 	}
 
+	/**
+	 * This method says if the plugin must run or not
+	 * 
+	 * @return		Boolean
+	 */
 	private function mustRun() {
 		$app = Factory::getApplication();
 		$input = $app->input;
@@ -209,6 +214,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * Function that process the data of elements to edit them
 	 *
 	 * @param   	Object		$elements		Object of each element of the list
+	 * @param   	Boolean		$div			True if the elements must return separated by trash elements and published elements
 	 * 
 	 * @return 		Object
 	 */
@@ -245,7 +251,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 *
 	 * @param   	Object			$element 		Object of the element
 	 *
-	 * @return 		Object
+	 * @return 		Boolean
 	 */
 	private function isEnabledEdit($element) {
 		$type = $element->plugin;
@@ -377,6 +383,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return $processedElements;
 	}
 
+	/**
+	 * Function that process the full name of elements to edit them
+	 *
+	 * @param   	String			$key 		The full element name to process
+	 * 
+	 * @return 		String		
+	 */
 	protected function processFullElementName($key) {
 		$pos = strpos($key, '.');
 		$firstName = substr ($key , 1, $pos-2);
@@ -387,11 +400,25 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return $processedKey;
 	}
 
+	/**
+	 * Function that create the link to modal view to elements
+	 *
+	 * @param   	Int			$elementId 		The id of the element
+	 *
+	 * @return 		String		
+	 */
 	protected function createLink($elementId) {
 		$baseUri = URI::base();
 		return $baseUri . "administrator/index.php?option=com_fabrik&view=element&layout=edit&id=". $elementId . "&modalView=1";
 	}
 
+	/**
+	 * Function that create the link to modal view to list
+	 *
+	 * @param   	Int			$listId 		The id of the list
+	 *
+	 * @return 		String		
+	 */
 	protected function createListLink($listId) {
 		$baseUri = URI::base();
 		return $baseUri ."administrator/index.php?option=com_fabrik&view=list&layout=edit&id=". $listId . "&modalView=1";
@@ -1243,7 +1270,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 * 
-	 * @deprecated  since 4.0.3 	This method was remove because this plugin is working only for jlowcode_admin template
+	 * @deprecated  since 4.0.3 	This method was remove because this plugin is working only for jlowcode_admin template by now
 	 */
 	private function setElementDefaultLayout(&$elements, $nameElement) {
 		$listModel = $this->getListModel();
@@ -2472,7 +2499,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
      * Get the list of all view levels
      *
-     * @return  	\stdClass[]|Boolean
+     * @return  	Object
      *
      * @since   	4.0
      */
@@ -3605,7 +3632,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	public function onContentAfterSave($context, $item, $isNew, $data = []) 
+	public function onContentAfterSave($context, $item, $isNew, $data=[]) 
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
@@ -3677,7 +3704,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * Function that receives the request when installing the plugin to create the list, form and elements 
 	 * needed to render the modal on the front end
 	 * 
-	 * @return  	Json
+	 * @return  	String
 	 * 
 	 * @since 		version 4.2
 	 */

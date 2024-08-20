@@ -56,8 +56,6 @@ class PlgFabrik_ListEasyAdminInstallerScript
     {
 		$app = Factory::getApplication();
 		$request = $this->requestCreateList();
-
-		//$app->enqueueMessage($request->msg);
     }
 
     /**
@@ -71,8 +69,6 @@ class PlgFabrik_ListEasyAdminInstallerScript
     {
 		$app = Factory::getApplication();
         $app->enqueueMessage('Install action executed.');
-
-
     }
 
     /**

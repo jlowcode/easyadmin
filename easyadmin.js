@@ -2,7 +2,7 @@
  * Easy Admin
  *
  * @copyright: Copyright (C) 2024 Jlowcode Org - All rights reserved.
- * @license  : GNU/GPL http                         :                              //www.gnu.org/copyleft/gpl.html
+ * @license  : GNU/GPL http://www.gnu.org/copyleft/gpl.html
  */
 define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 	var FbListEasyadmin = new Class({
@@ -13,6 +13,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			fatherList: '',
 			valIdEl: 0
 		},
+		/**
+		 * Init function
+		 * 
+		 */
 		initialize: function (options) {
             // Init options
 			var self = this;
@@ -59,8 +63,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 		},
 
-		// Create a button of an element edit link
-		// @link link of the button
+		/**
+		 * Create a button of an element edit link
+		 * 
+		 */
 		createButton: function(index) {
 			var self = this;
 			var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal">' + this.options.images.edit + '</a>');
@@ -376,6 +382,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			elSaveList.on('click', () => this.saveEvent('list'));
 		},
 
+		/**
+		 * Function that call the save method by ajax
+		 * 
+		 */
 		saveEvent: function(mode) {
 			self = this;
 			valEls = {};
@@ -493,8 +503,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 		},
 
-		// Set buttons to edit the elements
-		// @links array of the links
+		/**
+		 * Set buttons to edit the elements
+		 * 
+		 */
 		setButtons: function(links)  {
 			for (var key in links) {
 				if(links.hasOwnProperty(key) && links[key].enabled) {
@@ -511,6 +523,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 		},
 
+		/**
+		 * Function that redirect to corretly function to build the painel
+		 * 
+		 */
 		setActionPanel: function (elements) {
 			if(this.options.actionMethod == 'inline') {
 				this.setActionPanelInline(elements);
@@ -521,6 +537,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 		},
 
+		/**
+		 * Function that build the painel to inline option
+		 * 
+		 */
 		setActionPanelInline: function (allElements) {
 			var self = this;
 
@@ -683,6 +703,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
 
+		/**
+		 * Function that build the painel to dropdown option
+		 * 
+		 */
 		setActionPanelDropdown: function (allElements) {
 			var self = this;
 
@@ -751,6 +775,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			JBtnGroup.append(editListButton);
 		},
 
+		/**
+		 * Function that set the events on edit list button and add element button 
+		 * 
+		 */
 		setCssAndEventsButtons: function(editListButton, addElementButton) {
 			var self = this;
 
