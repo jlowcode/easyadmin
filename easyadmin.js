@@ -2,7 +2,7 @@
  * Easy Admin
  *
  * @copyright: Copyright (C) 2024 Jlowcode Org - All rights reserved.
- * @license  : GNU/GPL http                         :                              //www.gnu.org/copyleft/gpl.html
+ * @license  : GNU/GPL http://www.gnu.org/copyleft/gpl.html
  */
 define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 	var FbListEasyadmin = new Class({
@@ -13,7 +13,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			fatherList: '',
 			valIdEl: 0
 		},
-		initialize: function (options) { 
+		/**
+		 * Init function
+		 * 
+		 */
+		initialize: function (options) {
             // Init options
 			var self = this;
 			this.options = options;
@@ -29,9 +33,14 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				self.setElementType();
 				//self.setElementVisibilityList();
 				self.setElementShowInList();
+				self.setElementLabelAdvancedLink();
 				self.setUpButtonSave();
 				self.setUpButtonsPainel();
 				self.setUpElementList();
+
+				if(window.location.search.indexOf('manage') > 0) {
+					jQuery("#button_" + self.options.idModalList).trigger('click');
+				}
 			});
 		},
 
@@ -54,8 +63,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 		},
 
-		// Create a button of an element edit link
-		// @link link of the button
+		/**
+		 * Create a button of an element edit link
+		 * 
+		 */
 		createButton: function(index) {
 			var self = this;
 			var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal">' + this.options.images.edit + '</a>');
@@ -294,10 +305,36 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		},
 
 		/**
+		 * Function that set the events to show in list element
+		 * 
+		 */
+		setElementLabelAdvancedLink: function() {
+			var self = this;
+			var elLabelAdvancedLink = jQuery('label[for="easyadmin_modal___label_advanced_link"]');
+
+			elLabelAdvancedLink.on('click', function(e, params) {
+				self.showHideElements('label_advanced_link', 'element', 'label', params);
+			});
+
+			elLabelAdvancedLink.hover(
+				function() {
+					$(this).css({
+					  'cursor': 'pointer'
+					});
+				},
+				function() {
+					$(this).css({
+					  'cursor': 'default'
+					});
+				}
+			)
+		},
+
+		/**
 		 * Function that show elements when another element change
 		 * 
 		 */
-		showHideElements: function(name, modal, type) {
+		showHideElements: function(name, modal, type, params='') {
 			jQuery('.modal-'+modal).each(function() {
 				elementClass = jQuery(this).prop('class');
 				if(elementClass.indexOf(modal + '-' + name) > 0) {
@@ -308,6 +345,14 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					
 						case 'dropdown':
 							show = jQuery('#easyadmin_modal___' + name).val();
+							break;
+						
+						case 'label':
+							if(params.button == 'edit-element') {
+								show = false;
+							} else {
+								show = jQuery(this).parent().prop('class').indexOf('fabrikHide') > 0 ? true : false;
+							}
 							break;
 					}
 
@@ -337,6 +382,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			elSaveList.on('click', () => this.saveEvent('list'));
 		},
 
+		/**
+		 * Function that call the save method by ajax
+		 * 
+		 */
 		saveEvent: function(mode) {
 			self = this;
 			valEls = {};
@@ -363,6 +412,22 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___father':
 					case 'easyadmin_modal___format':
 					case 'easyadmin_modal___related_list':
+					case 'easyadmin_modal___thumb_link':
+					case 'easyadmin_modal___title_link':
+					case 'easyadmin_modal___description_link':
+					case 'easyadmin_modal___subject_link':
+					case 'easyadmin_modal___creator_link':
+					case 'easyadmin_modal___date_link':
+					case 'easyadmin_modal___format_link':
+					case 'easyadmin_modal___coverage_link':
+					case 'easyadmin_modal___publisher_link':
+					case 'easyadmin_modal___identifier_link':
+					case 'easyadmin_modal___language_link':
+					case 'easyadmin_modal___type_link':
+					case 'easyadmin_modal___contributor_link':
+					case 'easyadmin_modal___relation_link':
+					case 'easyadmin_modal___rights_link':
+					case 'easyadmin_modal___source_link':
 					case 'easyadmin_modal___access_rating':
 					case 'easyadmin_modal___name_list':
 					case 'easyadmin_modal___description_list':
@@ -412,6 +477,15 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				return;
 			}
 
+			// We need save the link element and ordering it to the first position of the form
+			if(valEls['easyadmin_modal___type'] == 'link' && valEls['easyadmin_modal___valIdEl'] == 0) {
+				var valOrder = '';
+				optsOrderingEls = jQuery('#easyadmin_modal___ordering_elements option');
+				optsOrderingEls.each(function(i, el) {
+					valOrder = el.label == 'ID' || el.label == 'Criado por' ? el.value : valOrder;
+				});
+				valEls['easyadmin_modal___ordering_elements'] = valOrder;
+			}
 			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
 			jQuery.ajax({
 				url     : url,
@@ -429,8 +503,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 		},
 
-		// Set buttons to edit the elements
-		// @links array of the links
+		/**
+		 * Set buttons to edit the elements
+		 * 
+		 */
 		setButtons: function(links)  {
 			for (var key in links) {
 				if(links.hasOwnProperty(key) && links[key].enabled) {
@@ -447,6 +523,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 		},
 
+		/**
+		 * Function that redirect to corretly function to build the painel
+		 * 
+		 */
 		setActionPanel: function (elements) {
 			if(this.options.actionMethod == 'inline') {
 				this.setActionPanelInline(elements);
@@ -457,6 +537,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 		},
 
+		/**
+		 * Function that build the painel to inline option
+		 * 
+		 */
 		setActionPanelInline: function (allElements) {
 			var self = this;
 
@@ -464,7 +548,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			var btnGroup = jQuery(heading).find('.btn-group')[0];
 
-			var editListButton = jQuery('<li><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") + '</button></li>');
+			var editListButton = jQuery('<li><button id="button_' + self.options.idModalList + '" href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") + '</button></li>');
 			var addElementButton = jQuery('<li><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") + '</button></li>');
 			
 			if(!btnGroup) {
@@ -613,18 +697,23 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
 			jQuery('#easyadmin_modal___type').trigger('change');
+			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click',{button: 'edit-element'});
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
 			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
 
+		/**
+		 * Function that build the painel to dropdown option
+		 * 
+		 */
 		setActionPanelDropdown: function (allElements) {
 			var self = this;
 
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			var btnGroup = jQuery(heading).find('.dropdown-menu').css('width','100%')[0];
 
-			var editListButton = jQuery('<li class="subMenuAdmin" style="border-bottom: 2px solid #eee; padding: 0px 10px 5px 10px;"><button href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") +'</button></li>');
+			var editListButton = jQuery('<li class="subMenuAdmin" style="border-bottom: 2px solid #eee; padding: 0px 10px 5px 10px;"><button  id="button_' + self.options.idModalList + '" href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") +'</button></li>');
 			var addElementButton = jQuery('<li class="subMenuAdmin" style="border-top: 2px solid #eee; padding: 5px 10px 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") +'</button></li>');
 
 			if(!btnGroup) {
@@ -686,6 +775,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			JBtnGroup.append(editListButton);
 		},
 
+		/**
+		 * Function that set the events on edit list button and add element button 
+		 * 
+		 */
 		setCssAndEventsButtons: function(editListButton, addElementButton) {
 			var self = this;
 
@@ -697,13 +790,28 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					id = this.id;
 					switch (id) {
 						case 'easyadmin_modal___name':
-						case 'easyadmin_modal___text_format':
 						case 'easyadmin_modal___default_value':
 						case 'easyadmin_modal___options_dropdown':
 						case 'easyadmin_modal___label':
 						case 'easyadmin_modal___father':
 						case 'easyadmin_modal___format':
 						case 'easyadmin_modal___related_list':
+						case 'easyadmin_modal___thumb_link':
+						case 'easyadmin_modal___title_link':
+						case 'easyadmin_modal___description_link':
+						case 'easyadmin_modal___subject_link':
+						case 'easyadmin_modal___creator_link':
+						case 'easyadmin_modal___date_link':
+						case 'easyadmin_modal___format_link':
+						case 'easyadmin_modal___coverage_link':
+						case 'easyadmin_modal___publisher_link':
+						case 'easyadmin_modal___identifier_link':
+						case 'easyadmin_modal___language_link':
+						case 'easyadmin_modal___type_link':
+						case 'easyadmin_modal___contributor_link':
+						case 'easyadmin_modal___relation_link':
+						case 'easyadmin_modal___rights_link':
+						case 'easyadmin_modal___source_link':
 						case 'easyadmin_modal___access_rating':
 						case 'easyadmin_modal___width_field':
 						case 'easyadmin_modal___ordering_elements':
@@ -724,6 +832,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 							break;
 
 						case 'easyadmin_modal___type':
+						case 'easyadmin_modal___text_format':
 							jQuery(this).val('text');
 							break;
 					}
@@ -731,6 +840,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 				jQuery('#easyadmin_modal___type').trigger('change');
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});
+				jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click');
 				jQuery('#easyadmin_modal___label').empty();
 				jQuery('#easyadmin_modal___father').empty();
 				jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
