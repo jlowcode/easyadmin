@@ -508,24 +508,29 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					hasPermission = JSON.parse(r);
 					valEls['hasPermission'] = hasPermission ? '1' : '0';
 					if(!hasPermission) {
-						url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=createLog";
+						url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=validateElements";
+
+						jQuery.ajax({
+							url     : url,
+							method	: 'post',
+							data	: {
+								'formData': valEls,
+								'requestWorkflow': '1',
+								'listid': valEls['easyadmin_modal___listid']
+							}
+						}).done(function (r) {
+							r = JSON.parse(r);
+							urlLog = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=createLog";
+
+							if(!r['error']) {
+								self.requestWorkflow(urlLog, valEls, hasPermission);
+							} else {
+								alert(r['message']);
+							}
+						});
+					} else {
+						self.requestWorkflow(url, valEls, hasPermission);
 					}
-
-					jQuery.ajax({
-						url     : url,
-						method	: 'post',
-						data: valEls,
-					}).done(function (r) {
-						r = JSON.parse(r);
-
-						if(!r['error']) {
-							msg = hasPermission ? Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS") : r['message'];
-							alert(msg);
-							window.location.reload();
-						} else {
-							alert(r['message']);
-						}
-					});
 				});
 			} else {
 				jQuery.ajax({
@@ -545,6 +550,28 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}			
 
 			//@Todos - Fazer com que crie o log nos casos que tem permissao como pre aprovados
+		},
+
+		/**
+		 * This function send requests when workflow is enabled
+		 * 
+		 */
+		requestWorkflow: function(url, data, hasPermission) {
+			jQuery.ajax({
+				url     : url,
+				method	: 'post',
+				data	: data,
+			}).done(function (r) {
+				r = JSON.parse(r);
+
+				if(!r['error']) {
+					msg = hasPermission ? Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS") : r['message'];
+					alert(msg);
+					window.location.reload();
+				} else {
+					alert(r['message']);
+				}
+			});
 		},
 
 		/**
