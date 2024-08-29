@@ -1522,7 +1522,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_DESC'), 
 		);
 		$elements[$idEasy]['dataField'] = $dEl;
@@ -1578,7 +1578,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DESC'),
 		);
 		$elements[$idEasy]['dataField'] = $dEl;
@@ -1640,7 +1640,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_IN_LIST_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_IN_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_IN_LIST_DESC'),
 			$showOnTypes, 
 			false
@@ -1696,7 +1696,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_FIELD_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_FIELD_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_FIELD_DESC'),
 			$showOnTypes, 
 			false
@@ -1743,7 +1743,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_DESC'),
 			$showOnTypes, 
 			false
@@ -1803,7 +1803,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_REQUIRED_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_REQUIRED_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_REQUIRED_DESC'),
 			$showOnTypes, 
 			false
@@ -1855,7 +1855,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_DESC'),
 			$showOnTypes,
 			false
@@ -1963,7 +1963,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TRASH_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TRASH_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TRASH_DESC'),
 			$showOnTypes,
 			false
@@ -2022,7 +2022,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_DESC'),
 			$showOnTypes,
 			false
@@ -2069,7 +2069,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DEFAULT_VALUE_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DEFAULT_VALUE_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DEFAULT_VALUE_DESC'), 
 			$showOnTypes, 
 			false
@@ -2109,7 +2109,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_USE_FILTER_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_USE_FILTER_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_USE_FILTER_DESC'), 
 			$showOnTypes, 
 			false
@@ -2157,7 +2157,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_AJAX_ELEMENT_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_AJAX_ELEMENT_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_AJAX_ELEMENT_DESC'), 
 			$showOnTypes, 
 			false
@@ -2205,7 +2205,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MAKE_THUMBS_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MAKE_THUMBS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MAKE_THUMBS_DESC'), 
 			$showOnTypes, 
 			false
@@ -2271,7 +2271,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_DESC'),
 			$showOnTypes,
 			false
@@ -2309,7 +2309,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Options to set up the element
 		$options = Array();
 		$elContextModelElement = Array('name' => $nameElement . $sufix);
-		$elContextTableElement = Array('label' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_LABEL'));
+		$elContextTableElement = Array('label' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''));
 		$params = new Registry(json_encode(Array(
 			'allow_frontend_addtodropdown' => $this->getRequestWorkflow() ? '0' : '1', 
 			'allow_frontend_addto' => $this->getRequestWorkflow() ? '0' : '1', 
@@ -2340,7 +2340,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_DESC'),
 			$showOnTypes,
 			false
@@ -2380,7 +2380,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MULTI_SELECT_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MULTI_SELECT_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MULTI_SELECT_DESC'), 
 			$showOnTypes, 
 			false
@@ -2437,7 +2437,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$id]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_DESC'), 
 			$showOnTypes,
 			false
@@ -2492,7 +2492,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_DESC'),
 			$showOnTypes,
 			false
@@ -2546,7 +2546,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FATHER_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FATHER_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FATHER_DESC'), 
 			$showOnTypes, 
 			false
@@ -2587,7 +2587,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MULTI_RELATIONS_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MULTI_RELATIONS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MULTI_RELATIONS_DESC'), 
 			$showOnTypes, 
 			false
@@ -2640,7 +2640,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ACCESS_RATING_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ACCESS_RATING_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ACCESS_RATING_DESC'),
 			$showOnTypes,
 			false
@@ -2686,7 +2686,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 				$id,
-				Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_' . strtoupper($idEl) .'_LINK_LABEL'),
+				Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_' . strtoupper($idEl) .'_LINK_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 				Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_' . strtoupper($idEl) .'_LINK_DESC'),
 				$showOnTypes,
 				false
@@ -2716,7 +2716,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_ADVANCED_LINK_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_ADVANCED_LINK_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_(''),
 			$showOnTypes,
 			false
@@ -4300,11 +4300,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Set old fields
 		$idEl = $newFormData[$this->prefixEl . '___valIdEl'];
-		$oldFormData = (Array) $this->processElements($elements)->$idEl;
-		$oldFormData = array_combine(
-			array_map(fn($key) => $this->prefixEl . '___' .  $key, array_keys($oldFormData)),
-			$oldFormData
-		);
+		if($input->getString('req_status') == 'verify') {
+			$oldFormData = (Array) $this->processElements($elements)->$idEl;
+			$oldFormData = array_combine(
+				array_map(fn($key) => $this->prefixEl . '___' .  $key, array_keys($oldFormData)),
+				$oldFormData
+			);
+		} else {
+			$oldFormData = $this->getLastRecordFormData($this->getListId(), $idEl);
+		}
+
 		$this->setFormData($oldFormData);
 		$this->setRequestWorkflowOrig(true);
 		$this->setElements();
@@ -4343,6 +4348,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		echo json_encode($changedFields);
 	}
+
+	/**
+     * This method get the last formData from #__fabrik_requests table to compare on approve a edit request
+     * 
+	 * @param		Int			$listId				Id of the list
+	 * @param		Int			$recordId			Id of the record
+	 * 
+     * @return      
+     */
+    private function getLastRecordFormData($listId, $recordId)
+    {
+        $db = Factory::getContainer()->get('DatabaseDriver');
+
+        $query = $db->getQuery(true);
+        $query->select($db->qn('form_data'))
+            ->from($db->qn('#__fabrik_requests'))
+            ->where($db->qn('req_record_id') . ' = ' . $db->q($recordId))
+            ->where($db->qn('req_list_id') . ' = ' . $db->q($listId))
+            ->where($db->qn('req_status') . ' <> ' . $db->q('verify'))
+            ->order('req_id desc');
+        $db->setQuery($query);
+
+        return json_decode($db->loadResult(), true);
+    }
 
 	/**
 	 * This method call validate elements method to validate the request for workflow
@@ -4484,7 +4513,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @since 		version 4.0.2
 	 */
 	public function setListId($listId) {
-		$this->listId = $listId;
+		$this->listId = (Int) $listId;
 	}
 
 	/**
