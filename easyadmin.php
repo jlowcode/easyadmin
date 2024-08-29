@@ -121,13 +121,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	protected function init() {
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
-		/*if(!$this->authorized()) {
-			return;
-		}*/
-
 		$this->jsScriptTranslation();
 		$listModel = $this->getListModel();
 		$elements = $listModel->getElements(true, true, false);
+
+		$workflowExist = $this->workflowExists();
+		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
+
+		if(!$this->authorized() && !$workflow) {
+			return;
+		}
 
 		$opts = new StdClass;
 		$opts->baseUri = URI::base();
@@ -140,7 +143,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->idModal = $this->idModal;
 		$opts->idModalList = $this->idModalList;
 		$opts->dbPrefix = $db->getPrefix();
-		$opts->workflow = $this->getListModel()->getParams()->get('workflow_list');
+		$opts->workflow = $workflow;
 
 		echo $this->setUpModalElements();
 		echo $this->setUpModalList();
@@ -148,6 +151,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Load the JS code and pass the opts
 		$this->loadJS($opts);
 	}
+
+	/**
+	 * This method verify if workflow extension is already installed
+	 * 
+	 * @return 		Boolean
+	 */
+    private function workflowExists()
+    {
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+        $query = $db->getQuery(true)
+            ->select($db->qn('extension_id'))
+            ->from($db->qn('#__extensions'))
+            ->where($db->qn('name') . ' = ' . $db->q('plg_fabrik_list_workflow_request'), 'OR')
+            ->where($db->qn('name') . ' = ' . $db->q('plg_fabrik_form_workflow'));
+        $db->setQuery($query);
+        $result = $db->loadColumn();
+
+        if (count($result) == 2) {
+            return true;
+        }
+
+        return false;
+    }
 
 	/**
 	 * Function to check if the user is authorized
