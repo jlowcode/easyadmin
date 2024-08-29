@@ -128,7 +128,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$workflowExist = $this->workflowExists();
 		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
 
-		if(!$this->authorized() && !$workflow) {
+		if(!$this->authorized($workflow)) {
 			return;
 		}
 
@@ -179,19 +179,27 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Function to check if the user is authorized
 	 *
+	 * @param		Boolean			$workflow			Should the authentication process have a workflow or not?
+	 * 
 	 * @return  	Boolean
 	 * 
 	 * @since 		version 4.0.2
 	 */
-	private function authorized() {
+	private function authorized($workflow) 
+	{
 		$user = Factory::getUser();
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$listModel = $this->getListModel();
 
 		$groupsLevels = $user->groups;
 		$levelEditList = (int) $listModel->getParams()->get("allow_edit_details");
-		$query = $db->getQuery(true);
 
+		// If workflow set, only registered can suggest with data model
+		if($workflow) {
+			return in_array('2', $groupsLevels);
+		}
+
+		$query = $db->getQuery(true);
 		$query->select($db->qn("rules"))
 			->from($db->qn("#__viewlevels"))
 			->where($db->qn("id") . " = " . $db->q($levelEditList));
@@ -1134,7 +1142,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
 
-		$value = (int) $listModel->getParams()->get('workflow_list');
+		$value = (int) $listModel->getParams()->get('workflow_list', '1');
 		$value = Array($value);
 
 		$id = $this->prefixEl . '___' . $nameElement;
@@ -4248,7 +4256,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$app = Factory::getApplication();
 		$input = $app->input;
 
-		if(!$this->getListModel()->getParams()->get('workflow_list')) {
+		if(!$this->getListModel()->getParams()->get('workflow_list', '1')) {
 			return;
 		}
 
@@ -4274,7 +4282,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$input = $app->input;
 		$x = 0;
 
-		if(!$this->getListModel()->getParams()->get('workflow_list')) {
+		if(!$this->getListModel()->getParams()->get('workflow_list', '1')) {
 			return;
 		}
 
