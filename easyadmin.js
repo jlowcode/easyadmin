@@ -498,7 +498,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			var url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
 			var hasPermission = false;
-			if(self.options.workflow) {
+			if(self.options.workflow && mode != 'list') {
 				var urlGetPermission = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=hasPermission";
 				jQuery.ajax({
 					url     : urlGetPermission,
