@@ -33,6 +33,7 @@ require_once COM_FABRIK_FRONTEND . '/models/plugin-list.php';
 require_once JPATH_PLUGINS . '/fabrik_element/field/field.php';
 require_once JPATH_PLUGINS . '/fabrik_element/dropdown/dropdown.php';
 require_once JPATH_PLUGINS . '/fabrik_element/databasejoin/databasejoin.php';
+require_once JPATH_PLUGINS . '/fabrik_list/easyadmin/easyadmin_script.php';
 require_once JPATH_BASE . '/components/com_fabrik/models/element.php';
 require_once JPATH_BASE . '/components/com_fabrik/models/list.php';
 require_once JPATH_BASE . '/components/com_fabrik/models/form.php';
@@ -3999,7 +4000,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * Method that receives the request when installing the plugin to create the list, form and elements 
 	 * needed to render the modal on the front end
 	 * 
-	 * @return  	String
+	 * @return  	Null
 	 * 
 	 * @since 		version 4.2
 	 */
@@ -4011,13 +4012,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$paramsToSave = Array();
 
 		$dbTableName = $db->getPrefix() . $this->dbTableNameModal;
-		$exist = $this->verifyTableExist($dbTableName);
+		$exist = PlgFabrik_ListEasyAdminInstallerScript::verifyTableExist($dbTableName);
 
 		if($exist) {
 			$response->msg = Text::_('PLG_FABRIK_LIST_EASYADMIN_REQUEST_INSTALL_SUCCESS');
 			$response->success = true;
 			echo json_encode($response);
-			exit;
+			return;
 		}
 
 		try {
@@ -4044,32 +4045,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->saveParams($dbTableName, $paramsToSave);
 
 		echo json_encode($response);
-		exit;
-	}
-
-	/**
-	 * Method that verify if we need create the list, form and elements or not
-	 * 
-	 * @param		String 		$dbTableName		The name of the table that will be create
-	 * 
-	 * @return  	Boolean
-	 * 
-	 * @since 		version 4.2
-	 */
-	public function verifyTableExist($dbTableName) 
-	{
-		$db = Factory::getContainer()->get('DatabaseDriver');
-
-		$query = "
-			SELECT COUNT(*)
-			FROM information_schema.tables
-			WHERE table_schema = (SELECT DATABASE()) AND table_name = '$dbTableName';
-		";
-
-		$db->setQuery($query);
-        $exist = (bool) $db->loadResult();
-
-		return $exist;
 	}
 
 	/**
@@ -4239,7 +4214,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'database_join_display_type' => 'auto-complete', 
 			'database_join_display_style' => 'only-autocomplete',
 			'join_db_name' => '#__fabrik_lists',
-			'join_val_column' => 'db_table_name',
+			'join_val_column' => 'label',
 			'join_key_column' => 'db_table_name',
 			'database_join_show_please_select' => '1',
 			'dbjoin_autocomplete_rows' => 10,
