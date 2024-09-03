@@ -754,8 +754,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
 			jQuery('#easyadmin_modal___type').trigger('change');
-			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click',{button: 'edit-element'});
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
+			jQuery('#jlow_fabrik_easyadmin_modal___list-auto-complete').prop('disabled', 'disabled');
+			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click',{button: 'edit-element'});
 			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},

@@ -131,7 +131,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$workflowExist = $this->workflowExists();
 		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
 
-		if(!$this->authorized($workflow)) {
+		if(!$this->authorized()) {
 			return;
 		}
 
@@ -181,25 +181,27 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Method to check if the user is authorized
-	 *
-	 * @param		Boolean			$workflow			Should the authentication process have a workflow or not?
 	 * 
 	 * @return  	Boolean
 	 * 
 	 * @since 		version 4.0.2
 	 */
-	private function authorized($workflow) 
+	private function authorized() 
 	{
 		$user = Factory::getUser();
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$listModel = $this->getListModel();
 
+		$workflowExist = $this->workflowExists();
+		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
+
 		$groupsLevels = $user->groups;
+		$viewLevels = $user->getAuthorisedViewLevels();
 		$levelEditList = (int) $listModel->getParams()->get("allow_edit_details");
 
 		// If workflow set, only registered can suggest with data model
 		if($workflow) {
-			return in_array('2', $groupsLevels);
+			return in_array('2', $viewLevels);
 		}
 
 		$query = $db->getQuery(true);
@@ -515,7 +517,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$modalParams = json_decode($this->getModalParams(), true);
 
 		//We don't have run
-		if(!$this->mustRun()) {
+		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
 
@@ -2469,9 +2471,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 
 		$elements[$id]['dataLabel'] = $this->getDataLabel(
-			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_DESC'), 
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_DESC'),
 			$showOnTypes,
 			false
 		);
@@ -3616,10 +3618,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$modelForm->getState(); 	//We need do this to set __state_set before the save
 			$modelForm->save($dataForm);
 
-			if($visibilityList == '3') {
-				$oldAdmins = $this->onGetUsersAdmins($viewLevel);
-				$this->configureAdminsList($data['admins_list'], $data['viewLevel_list'], $oldAdmins);
-			}
+			// Configure admins list
+			$oldAdmins = $this->onGetUsersAdmins($viewLevel);
+			$this->configureAdminsList($data['admins_list'], $data['viewLevel_list'], $oldAdmins);
 		}
 
 		try {
@@ -3992,6 +3993,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$document = Factory::getDocument();
 		$css = '.dropdown-menu {z-index: 9999 !important;}';
+		$css .= '.select2-dropdown {z-index: 9999 !important;}';
 		$css .= '.btn-easyadmin-modal {min-height: 30px; width: 100%; border-radius: 12px; color: rgb(255, 255, 255); background-color: rgb(0, 62, 161);}';
 		$document->addStyleDeclaration($css);
 	}
