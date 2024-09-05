@@ -350,16 +350,16 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'yesno':
 							show = jQuery('#easyadmin_modal___' + name + '1').prop('checked') ? true : '';							
 							break;
-					
+
 						case 'dropdown':
 							show = jQuery('#easyadmin_modal___' + name).val();
 							break;
-						
+
 						case 'label':
 							if(params.button == 'edit-element') {
 								show = false;
 							} else {
-								show = jQuery(this).parent().prop('class').indexOf('fabrikHide') > 0 ? true : false;
+								show = jQuery(this).parent().prop('class').indexOf('fabrikHide') > 0 && jQuery('#easyadmin_modal___type').val() == 'link' ? true : false;
 							}
 							break;
 					}
@@ -753,10 +753,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				})
 			}
 
+			jQuery('#easyadmin_modal___type').val() == 'treeview' || jQuery('#easyadmin_modal___type').val() == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___list-auto-complete').prop('disabled', 'disabled') : null;
+
 			jQuery('#easyadmin_modal___type').trigger('change');
+            jQuery('#easyadmin_modal___type').prop('disabled', 'disabled')
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
-			jQuery('#jlow_fabrik_easyadmin_modal___list-auto-complete').prop('disabled', 'disabled');
-			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click',{button: 'edit-element'});
 			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
@@ -896,13 +897,18 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					}
 				});
 
+			    jQuery('#easyadmin_modal___type').prop('disabled', false);
+			    jQuery('#jlow_fabrik_easyadmin_modal___list-auto-complete').prop('disabled', false);
+
 				jQuery('#easyadmin_modal___type').trigger('change');
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});
 				jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click');
-				jQuery('#easyadmin_modal___label').empty();
-				jQuery('#easyadmin_modal___father').empty();
 				jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
-				jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
+
+                jQuery('#easyadmin_modal___label').empty();
+				jQuery('#easyadmin_modal___father').empty();
+				
+                jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 			});
 
 			editListButton.find('button').css({

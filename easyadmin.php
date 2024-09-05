@@ -242,9 +242,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Method to load the javascript code for the plugin
-	 *
+	 * 
 	 * @param   	Array		$opts 		Configuration array for javascript.
-	 *
+	 * 
 	 * @return  	Null
 	 */
 	protected function loadJS($opts) 
@@ -2915,7 +2915,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['password'] = in_array($data['text_format'], ['integer', 'decimal']) ? '6' : '0';
 					$params['text_format'] = $data['text_format'];
 				}
-
 				break;
 
 			case 'file':
@@ -2947,7 +2946,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 				$params['notempty-validation_condition'][0] = $data['required'] ? $validFileupload : '';
-
 				break;
 
 			case 'dropdown':
@@ -2962,7 +2960,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				);
 
 				$data['use_filter'] ? $opts['filter_type'] = 'dropdown' : null;
-
 				break;
 
 			case 'date':
@@ -2971,7 +2968,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['date_form_format'] = $data['format'];
 
 				$data['use_filter'] ? $opts['filter_type'] = 'range' : null;
-
 				break;
 
 			case 'rating':
@@ -2984,7 +2980,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['rating_float'] = '0';
 
 				$data['use_filter'] ? $opts['filter_type'] = 'stars' : null;
-
 				break;
 
 			case 'autocomplete':
@@ -3023,7 +3018,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 					$params['databasejoin_popupform'] =  $options[0]->value;
 				}
-
 				break;
 
 			case 'thumbs':
@@ -3059,7 +3053,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				);
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
-
 				break;
 			
 			case 'youtube':
@@ -3109,14 +3102,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['params'] = $params;
 
 		if($opts['id'] != '0') {
-			$this->syncParams($opts, $listModel);
+			$origName = $this->syncParams($opts, $listModel);
+			$input->set('name_orig', $origName);
 		}
 
 		$modelElement->save($opts);
 		$data["valIdEl"] = $modelElement->getState('element.id');
+
 		$saveOrder = $this->saveOrder($modelElement, $data, $listModel);
 		if(!$saveOrder) {
-			$validate->error = Text::_("");
+			$validate->error = Text::_("PLG_FABRIK_LIST_EASYADMIN_ERROR_ORDERING");
 		}
 
 		if($data['history_type'] == 'related_list') {
@@ -3183,6 +3178,26 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return json_encode($validate);
+	}
+
+	/**
+	 * This method verify if the element need to update the structure and update them
+	 * 
+	 * @param		Object			$modelElement			Object of the element model
+	 * 
+	 * @return		Boolean
+	 * 
+	 * @since		v4.3
+	 */
+	private function updateElement($modelElement) 
+	{
+		$updateElement = empty($modelElement->app->getUserState('com_fabrik.redirect'));
+
+		if($updateElement) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -3718,13 +3733,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * We need update the params that already exists in elements
 	 *
-	 * @param   Array 			$opts				Options and params
-	 * @param   Object 			$listModel			Object of list
-	 * @param	Boolean			$list				False for elements and true for lists
+	 * @param   	Array 			$opts				Options and params
+	 * @param   	Object 			$listModel			Object of list
+	 * @param		Boolean			$list				False for elements and true for lists
 	 * 
-	 * @return  Null
+	 * @return  	String|Null
 	 * 
-	 * @since 	version 4.0
+	 * @since 		version 4.0
 	 */
 	private function syncParams(&$opts, $listModel, $list=false) 
 	{
@@ -3739,6 +3754,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			foreach ($element->getValidations() as $key => $validation) {
 				$a = $opts['validationrule'];
 			}
+
+			$origName = $element->element->name;
 		}
 
 
@@ -3763,6 +3780,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts[$key] = $sub;
 			}
 		}
+
+		return $origName;
 	}
 
 	/**
