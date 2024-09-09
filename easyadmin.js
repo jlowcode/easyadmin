@@ -685,7 +685,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				});
 			});
 
-			div.append(editListButton);
+			if(self.options.owner_id == self.options.user.id) {
+				div.append(editListButton);
+			}
+
 			JBtnGroup.append(div);
 		},
 
@@ -831,7 +834,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				});
 			});
 
-			JBtnGroup.append(editListButton);
+			if(self.options.owner_id == self.options.user.id) {
+				JBtnGroup.append(editListButton);
+			}
 		},
 
 		/**

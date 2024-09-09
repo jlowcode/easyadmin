@@ -147,6 +147,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->idModalList = $this->idModalList;
 		$opts->dbPrefix = $db->getPrefix();
 		$opts->workflow = $workflow;
+		$opts->owner_id = $listModel->getFormModel()->getTable()->get('created_by');
+		$opts->user = $this->user;
 
 		echo $this->setUpModalElements();
 		echo $this->setUpModalList();
