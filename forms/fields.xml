@@ -22,6 +22,17 @@
 					<option value="0">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0</option>
 					<option value="1">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1</option>
 			</field>
+
+            <field name="workflow_list"
+				type="radio"
+                class="btn-group"
+				default="1"
+                filter="integer"
+				description="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WORKFLOW_LIST_DESC"
+				label="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WORKFLOW_LIST_LABEL">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+			</field>
         </fieldset>
 
         <fieldset label="PLG_FABRIK_LIST_EASY_ADMIN_ADVANCED" name="plg-list-easyadmin-advanced">
