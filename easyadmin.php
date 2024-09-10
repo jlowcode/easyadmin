@@ -936,13 +936,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		//$this->setElementThumbList($elementsList, 'thumb_list');	// For new version
 		$this->setElementOrderingList($elementsList, 'ordering_list');
 		$this->setElementOrderingTypeList($elementsList, 'ordering_type_list');
-		$this->setElementCollab($elementsList, 'collab_list');
-		$this->setElementWorkflowList($elementsList, 'workflow_list');
 		$this->setElementVisibilityList($elementsList, 'visibility_list');
 		$this->setElementAdminsList($elementsList, 'admins_list');
 		$this->setElementWidthList($elementsList, 'width_list');
 		$this->setElementLayoutMode($elementsList, 'layout_mode');
 		//$this->setElementDefaultLayout($elementsList, 'default_layout');
+		$this->setElementWorkflowList($elementsList, 'workflow_list');
+		$this->setElementApproveByVotesList($elementsList, 'approve_by_votes_list');
+		$this->setElementVotesToApproveList($elementsList, 'votes_to_approve_list');
+		$this->setElementVotesToDisapproveList($elementsList, 'votes_to_disapprove_list');
+		$this->setElementCollab($elementsList, 'collab_list');
 		$this->setElementTrashList($elementsList, 'trash_list');
 
 		$this->elementsList = $elementsList;
@@ -1174,7 +1177,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 
 		$value = (int) $listModel->getParams()->get('workflow_list', '1');
-		$value = Array($value);
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass();
@@ -1200,6 +1202,144 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'class' => 'fbtn-default fabrikinput',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
+		$elements[$id]['cssElement'] = 'border-top: #ccc solid 2px;';
+	}
+
+	/**
+	 * Setter method to approve by votes element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementApproveByVotesList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_approval_by_vote', '0');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$id]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_APPROVE_BY_VOTES_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_APPROVE_BY_VOTES_LIST_DESC'),
+		);
+		$elements[$id]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+	}
+
+		/**
+	 * Setter method to votes to approve element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementVotesToApproveList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_approve');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass;
+		$showOnTypes = ['list-approve_by_votes_list'];
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text',
+			'value' => $value
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$id]['objField'] = $classField->getLayout('form');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_APPROVE_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_APPROVE_LIST_DESC'),
+			$showOnTypes,
+			false,
+			'list'
+		);
+		$elements[$id]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method to votes to disapprove element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementVotesToDisapproveList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_disapprove');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass;
+		$showOnTypes = ['list-approve_by_votes_list'];
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text',
+			'value' => $value
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$id]['objField'] = $classField->getLayout('form');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_DISAPPROVE_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_DISAPPROVE_LIST_DESC'),
+			$showOnTypes,
+			false,
+			'list'
+		);
+		$elements[$id]['dataField'] = $dEl;
 	}
 
 	/**
@@ -3606,6 +3746,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if($key == 'params') {
 				$dataForm[$key] = json_decode($dataForm[$key], true);
 				$dataForm[$key]['approve_for_own_records'] = $data['collab_list'];
+				$dataForm[$key]['workflow_approval_by_vote'] = $data['approve_by_votes_list'] == 'true' ? '1' : '0';
+				$dataForm[$key]['workflow_votes_to_approve'] = $data['votes_to_approve_list'];
+				$dataForm[$key]['workflow_votes_to_disapprove'] = $data['votes_to_disapprove_list'];
 				$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
 				$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
 				$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];

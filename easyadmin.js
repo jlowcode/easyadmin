@@ -34,6 +34,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				self.setElementAdminsList();
 				self.setElementType();
 				//self.setElementVisibilityList();
+				self.setElementApproveByVotes();
 				self.setElementShowInList();
 				self.setElementLabelAdvancedLink();
 				self.setUpButtonSave();
@@ -278,6 +279,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		/**
 		 * Function that set the events to visibility list element
 		 * Function don't needed
+		 * 
 		 */
 		setElementVisibilityList: function() {
 			var self = this;
@@ -288,6 +290,21 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			jQuery('#easyadmin_modal___visibility_list').trigger('change');
+		},
+
+		/**
+		 * Function that set the events to approve by votes list element
+		 * 
+		 */
+		setElementApproveByVotes: function() {
+			var self = this;
+			var elApproveByVotes = jQuery('input[name="easyadmin_modal___approve_by_votes_list"]');
+
+			elApproveByVotes.on('change', function(e, params) {
+				self.showHideElements('approve_by_votes_list', 'list', 'yesno');
+			});
+
+			jQuery('input[name="easyadmin_modal___approve_by_votes_list"]').trigger('change');
 		},
 
 		/**
@@ -342,6 +359,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 */
 		showHideElements: function(name, modal, type, params='', sufix='') {
 			var modalRef = sufix == '' ? '#modal-elements' : '.modalContent';
+			if(modal == 'list') {
+				modalRef = '#modal-list';
+			}
 
 			jQuery(modalRef + ' .modal-'+modal).each(function() {
 				elementClass = jQuery(this).prop('class');
@@ -445,6 +465,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___width_list':
 					case 'easyadmin_modal___layout_mode':
 					case 'easyadmin_modal___visibility_list':
+					case 'easyadmin_modal___votes_to_approve_list':
+					case 'easyadmin_modal___votes_to_disapprove_list':
 					case 'easyadmin_modal___default_layout':
 					case 'easyadmin_modal___width_field':
 					case 'easyadmin_modal___ordering_elements':
@@ -463,6 +485,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___multi_relation1':
 					case 'easyadmin_modal___trash_list1':
 					case 'easyadmin_modal___workflow_list1':
+					case 'easyadmin_modal___approve_by_votes_list1':
 						id = id.replace('1', '');
 						valEls[id] = jQuery(this).prop('checked') ? true : '';
 						break;
@@ -761,6 +784,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			jQuery('#easyadmin_modal___type').trigger('change');
             jQuery('#easyadmin_modal___type').prop('disabled', 'disabled')
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
+			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click');
 			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
