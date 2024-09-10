@@ -4389,7 +4389,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$info = new stdClass();
 		$info->id = 0;
-		$info->name = 'list';
+		$info->name = 'listas';
 		$info->group_id = $groupId;
 		$info->plugin = 'databasejoin';
 		$info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL');
