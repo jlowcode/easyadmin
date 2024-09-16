@@ -128,7 +128,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 */
 		setUpElementList: function() {
 			var self = this;
-			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list';
+			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas';
 			var searchElementList = jQuery(idEl + '-auto-complete');
 			var elLabel = jQuery(idEl);
 
@@ -154,7 +154,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		searchElementList: function() {
 			var self = this;
 			var baseUri = this.options.baseUri;
-			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list';
+			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas';
 
 			var tid = jQuery(idEl).val();
 			if (!tid) {
@@ -471,7 +471,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___width_field':
 					case 'easyadmin_modal___ordering_elements':
 					case 'easyadmin_modal___viewLevel_list':
-					case self.options.dbPrefix + 'fabrik_easyadmin_modal___list':
+					case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas':
 						valEls[id] = jQuery(this).val();
 						break;
 					
@@ -747,9 +747,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 									self.options.fatherList = value;
 									break;
 
-								case 'list':
-									jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list').val(value);
-									jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').val(value);
+								case 'listas':
+									jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas').val(value);
+									jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete').val(value);
 									break;
 
 								case 'width_field':
@@ -779,13 +779,13 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				})
 			}
 
-			jQuery('#easyadmin_modal___type').val() == 'treeview' || jQuery('#easyadmin_modal___type').val() == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___list-auto-complete').prop('disabled', 'disabled') : null;
+			jQuery('#easyadmin_modal___type').val() == 'treeview' || jQuery('#easyadmin_modal___type').val() == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', 'disabled') : null;
 
 			jQuery('#easyadmin_modal___type').trigger('change');
             jQuery('#easyadmin_modal___type').prop('disabled', 'disabled')
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
 			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click');
-			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete').trigger('focusout');
+			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
 		},
 
@@ -903,8 +903,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___access_rating':
 						case 'easyadmin_modal___width_field':
 						case 'easyadmin_modal___ordering_elements':
-						case self.options.dbPrefix + 'fabrik_easyadmin_modal___list':
-						case self.options.dbPrefix + 'fabrik_easyadmin_modal___list-auto-complete':
+						case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas':
+						case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete':
 							jQuery(this).val('')
 							break;
 
@@ -927,7 +927,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				});
 
 			    jQuery('#easyadmin_modal___type').prop('disabled', false);
-			    jQuery('#jlow_fabrik_easyadmin_modal___list-auto-complete').prop('disabled', false);
+			    jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', false);
 
 				jQuery('#easyadmin_modal___type').trigger('change');
 				jQuery('input[name="easyadmin_modal___show_in_list"]').trigger('change', {button: 'new-element'});

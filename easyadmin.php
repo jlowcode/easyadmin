@@ -88,7 +88,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$requestWorkflow = $input->getInt('requestWorkflow');
 
 		$this->setListId($input->get('listid'));
-		
+
 		//We don't have run
 		if(!$this->mustRun()) {
 			return;
@@ -396,7 +396,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'databasejoin':
-				$dataEl->list = $params['join_db_name'];
+				$dataEl->listas = $params['join_db_name'];
 
 				if(!in_array($params['database_join_display_type'], ['checkbox', 'auto-complete'])) {
 					$enable = false;
@@ -812,7 +812,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @param		Int			$return			Choose to string return (0) or array return (1)
 	 * 
-	 * @return  	String
+	 * @return  	String|Array
 	 * 
 	 * @since 		version 4.0
 	 */
@@ -900,7 +900,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementFormat($elements, 'format');
 		$this->setElementOptsDropdown($elements, 'options_dropdown');
 		$this->setElementMultiSelect($elements, 'multi_select');
-		$this->setElementList($elements, 'list');
+		$this->setElementList($elements, 'listas');
 		$this->setElementLabel($elements, 'label');
 		$this->setElementFather($elements, 'father');
 		$this->setElementMultiRelations($elements, 'multi_relation');
@@ -1263,7 +1263,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
 
-		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_approve');
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_approve', '2');
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
@@ -1310,7 +1310,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
 
-		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_disapprove');
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_disapprove', '2');
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
@@ -2050,7 +2050,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function callAjaxFields() 
 	{
 		$optsFormated = Array();
-		$url = COM_FABRIK_LIVESITE . 'index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=0&t=119&published=1';
+		$url = COM_FABRIK_LIVESITE . 'index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=0&t=' . $this->getListId() . '&published=1';
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -3128,7 +3128,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'treeview':
 				$opts['plugin'] = 'databasejoin';
 				$params['join_conn_id'] = '1';
-				$params['join_db_name'] = $data['list'];
+				$params['join_db_name'] = $data['listas'];
 				$params['join_key_column'] = 'id';
 				$params['join_val_column'] =  $data['label'];
 				$params['database_join_show_please_select'] =  '1';
@@ -3154,7 +3154,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$query = $db->getQuery(true);
 					$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
 						->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
-						->where('f.published = 1 AND l.db_table_name = ' . $db->q($data['list']));
+						->where('f.published = 1 AND l.db_table_name = ' . $db->q($data['listas']));
 					$db->setQuery($query);
 					$options = $db->loadObjectList();
 
@@ -3603,7 +3603,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		//If element does not must show in list or the ordering not changed, nothing is gonna happen
 		if(($data['show_in_list'] == '' && !$idAtual && $data['type'] != 'link') || $idAtual == $idOrder) {
-			return;
+			return true;
 		}
 
 		foreach ($elements as $id => $element) {
@@ -4528,7 +4528,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		foreach ($newFormData as $key => $value) {
 			$value = $value == 'true' ? true : $value;
 			$keyOrig = $key;
-			$key = $key == $db->getPrefix() . $this->dbTableNameModal . '___list' ? $this->prefixEl . '___list' : $key;
+			$key = $key == $db->getPrefix() . $this->dbTableNameModal . '___listas' ? $this->prefixEl . '___listas' : $key;
 			$oldVal = $oldFormData[$key];
 			if(array_key_exists($key, $oldFormData)) {
 				switch ($key) {
