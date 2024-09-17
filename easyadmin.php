@@ -3045,6 +3045,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
 					$params['bootstrap_class'] = 'col-sm-12';
+					$params['textarea_field_type'] = 'MEDIUMTEXT';
 				}
 
 				if($data['text_format'] == 'url') {
