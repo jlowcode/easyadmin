@@ -577,9 +577,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					msg = typeMsg ? Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS") : r['message'];
 					alert(msg);
 
-					let url = new URL(window.location.href);
-					url.searchParams.delete('manage');
-					window.location.assign(url.toString());
+					window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
 				} else {
 					alert(r['message']);
 				}
