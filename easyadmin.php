@@ -3207,6 +3207,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'link':
 				$opts['plugin'] = 'field';
 				$params['element_link_easyadmin'] = '1';
+				$params['maxlength'] = 255;
 				break;
 		}
 
