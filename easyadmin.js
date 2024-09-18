@@ -579,7 +579,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 					let url = new URL(window.location.href);
 					url.searchParams.delete('manage');
-					window.location.href = url.toString();
+					window.location.assign(url.toString());
 				} else {
 					alert(r['message']);
 				}
