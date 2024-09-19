@@ -2958,7 +2958,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 					$idEl = $data['valIdEl'];
 					$element = $listModel->getElements('id', true, false)[$idEl];
-					$element = $listModel->getElements('id', true, false)[$idEl];
 					preg_match('/{loadmoduleid (\d+)}/', $element->getElement()->get('default'), $match);
 
 					$data['group_id_old'] = (string) $element->getGroup()->getId();
@@ -3527,6 +3526,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$groupsForm = $formModelRelatedFE->getGroups();
 		$propertiesForm = $formModelRelatedFE->getTable()->getProperties();
 		$properties = $listModel->getFormModel()->getTable()->getProperties();
+		$groups = $listModel->getFormModel()->getGroups();
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
 		$tableNameActual = $listModel->getTable()->get('db_table_name');
 		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
@@ -3588,13 +3588,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		/**
 		 * Configure main form
 		 */
-		$formModelRelated = new FabrikAdminModelForm();
 		if(!in_array('redirect', json_decode($properties['params'], true)['plugins'])) {
 			// Data to configure the form
 			$placeholderId = "{{$tableNameActual}___id}";
 			$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{$placeholderId}";
 			$pluginsForm = Array();
 			$optsForm = Array();
+			$optsForm['id'] = $idForm;
+			$optsForm['current_groups'] = array_keys($groups);
+			$optsForm['database_name'] = $properties['db_table_name'];
+
 			foreach ($properties as $key => $val) {
 				if(!array_key_exists($key, $optsForm)) {
 					$optsForm[$key] = $properties[$key];
