@@ -1769,7 +1769,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function optionsElements($opts) 
+	private function optionsElements($opts)
 	{
 		$qtnTypes = count($opts);
 		$x = 0;
@@ -3526,58 +3526,103 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$groupsForm = $formModelRelatedFE->getGroups();
 		$propertiesForm = $formModelRelatedFE->getTable()->getProperties();
+		$properties = $listModel->getFormModel()->getTable()->getProperties();
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
 		$tableNameActual = $listModel->getTable()->get('db_table_name');
 		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
-	
+
 		/***
 		 * We dont need update the form if the redirect plugin already exists
 		 * Trash or modify the related list element
 		 */ 
-		if(in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
+		if(in_array('redirect', json_decode($propertiesForm['params'], true)['plugins']) && in_array('redirect', json_decode($properties['params'], true)['plugins'])) {
 			return;
 		}
 
+		/**
+		 * Configure related form
+		 */
 		// Data to configure the module
-		$optsForm['id'] = $idFormRelated;
-		$optsForm['current_groups'] = array_keys($groupsForm);
-		$optsForm['database_name'] = $propertiesForm['db_table_name'];
-		$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{{$tableName}___{$relatedColumn}_raw}";
-		$redirectCond = '
-			use Joomla\CMS\Uri\Uri;
-			$uri = Uri::getInstance();
-			$var = $uri->getVar("' . $tableName . '___' . $relatedColumn . '_raw");
-			return $var != "{' . $tableNameActual . '___id}" ? true : false;
-		';
+		if(!in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
+			$optsForm['id'] = $idFormRelated;
+			$optsForm['current_groups'] = array_keys($groupsForm);
+			$optsForm['database_name'] = $propertiesForm['db_table_name'];
+			$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{{$tableName}___{$relatedColumn}_raw}";
+			$redirectCond = '
+				use Joomla\CMS\Uri\Uri;
+				$uri = Uri::getInstance();
+				$var = $uri->getVar("' . $tableName . '___' . $relatedColumn . '_raw");
+				return $var != "{' . $tableNameActual . '___id}" ? true : false;
+			';
 
-		$pluginsForm = Array();
-		foreach ($propertiesForm as $key => $val) {
-			if(!array_key_exists($key, $optsForm)) {
-				$optsForm[$key] = $propertiesForm[$key];
+			$pluginsForm = Array();
+			foreach ($propertiesForm as $key => $val) {
+				if(!array_key_exists($key, $optsForm)) {
+					$optsForm[$key] = $propertiesForm[$key];
+				}
+
+				if($key == 'params') {
+					$optsForm[$key] = json_decode($optsForm[$key], true);
+					$optsForm[$key]['jump_page'] = $jumpPage;
+					$optsForm[$key]['redirect_conditon'] = $redirectCond;
+					$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
+					$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
+					$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
+					$pluginsForm['plugin_description'] = $optsForm[$key]['plugin_description'];
+					$pluginsForm['plugin_state'] = $optsForm[$key]['plugin_state'];
+				}
 			}
 
-			if($key == 'params') {
-				$optsForm[$key] = json_decode($optsForm[$key], true);
-				$optsForm[$key]['jump_page'] = $jumpPage;
-				$optsForm[$key]['redirect_conditon'] = $redirectCond;
-				$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
-				$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
-				$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
-				$pluginsForm['plugin_description'] = $optsForm[$key]['plugin_description'];
-				$pluginsForm['plugin_state'] = $optsForm[$key]['plugin_state'];
-			}
+			// Data to configure the new plugin redirect
+			$pluginsForm['plugin'][] = 'redirect';
+			$pluginsForm['plugin_locations'][] = 'both';
+			$pluginsForm['plugin_events'][] = 'both';
+			$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
+			$pluginsForm['plugin_state'][] = '1';
+
+			$input->set('jform', $pluginsForm);
+			$formModelRelated->getState(); 	//We need do this to set __state_set before the save
+			$formModelRelated->save($optsForm);
 		}
 
-		// Data to configure the new plugin redirect
-		$pluginsForm['plugin'][] = 'redirect';
-		$pluginsForm['plugin_locations'][] = 'both';
-		$pluginsForm['plugin_events'][] = 'both';
-		$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
-		$pluginsForm['plugin_state'][] = '1';
+		/**
+		 * Configure main form
+		 */
+		$formModelRelated = new FabrikAdminModelForm();
+		if(!in_array('redirect', json_decode($properties['params'], true)['plugins'])) {
+			// Data to configure the form
+			$placeholderId = "{{$tableNameActual}___id}";
+			$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{$placeholderId}";
+			$pluginsForm = Array();
+			$optsForm = Array();
+			foreach ($properties as $key => $val) {
+				if(!array_key_exists($key, $optsForm)) {
+					$optsForm[$key] = $properties[$key];
+				}
 
-		$input->set('jform', $pluginsForm);
-		$formModelRelated->getState(); 	//We need do this to set __state_set before the save
-		$formModelRelated->save($optsForm);
+				if($key == 'params') {
+					$optsForm[$key] = json_decode($optsForm[$key], true);
+					$optsForm[$key]['jump_page'] = $jumpPage;
+					$optsForm[$key]['redirect_conditon'] = '';
+					$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
+					$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
+					$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
+					$pluginsForm['plugin_description'] = $optsForm[$key]['plugin_description'];
+					$pluginsForm['plugin_state'] = $optsForm[$key]['plugin_state'];
+				}
+			}
+
+			// Data to configure the new plugin redirect
+			$pluginsForm['plugin'][] = 'redirect';
+			$pluginsForm['plugin_locations'][] = 'both';
+			$pluginsForm['plugin_events'][] = 'both';
+			$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_MAIN_FORM_DESC");
+			$pluginsForm['plugin_state'][] = '1';
+
+			$input->set('jform', $pluginsForm);
+			$formModelRelated->getState(); 	//We need do this to set __state_set before the save
+			$formModelRelated->save($optsForm);
+		}
 
 		return true;
 	}
