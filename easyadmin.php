@@ -894,7 +894,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
-		$this->setElementDefaultValue($elements, 'default_value');
+		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
 		//$this->setElementMakeThumbs($elements, 'make_thumbs');
 		$this->setElementFormat($elements, 'format');
@@ -2216,6 +2216,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @return  	Null
 	 * 
 	 * @since 		version 4.0
+	 * 
+	 * @deprecated  since 4.3.1 	This method was remove by admin option 
+	 *
 	 */
 	private function setElementDefaultValue(&$elements, $nameElement) 
 	{
@@ -3145,11 +3148,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['jsSuggest'] =  '1';
 					$params['moldTags'] =  '1';
 				} else {
-					$params['database_join_display_style'] =  'both-treeview-autocomplete';
+					$params['database_join_display_style'] =  'only-treeview';
 					$params['tree_parent_id'] =  $data['father'];
 					$params['fabrikdatabasejoin_frontend_add'] =  '1';
 					$params['fabrikdatabasejoin_frontend_blank_page'] =  '0';
 					$params['join_popupwidth'] =  '80%';
+					$params['rollover'] = 'Clique em + para adicionar. Após clique na seta para atualizar as categorias.';
 
 					$query = $db->getQuery(true);
 					$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
