@@ -337,7 +337,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		preg_match('/(\d+)/', $params["tablecss_cell"], $matches);
 
 		$dataEl->use_filter = $dataElement->filter_type ? true : false;
-		$dataEl->required = !empty($element->getValidations()) ? true : false;
+		$dataEl->required = $this->verifyRequiredValidation($element, 'notempty');
 		$dataEl->show_in_list = $dataElement->show_in_list_summary ? true : false;
 		$dataEl->width_field = $matches[0];
 		$dataEl->name = $dataElement->label;
@@ -419,6 +419,28 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 	}
 
+	/**
+	 * This method iterate by validations element and return if exist some the validation passed
+	 * 
+	 * @param		Object			$element			Element object
+	 * @param		String			$validation			Validation name to search
+	 * 
+	 * @return 		Boolean
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function verifyRequiredValidation($element, $validation)
+	{
+		$validations = $element->getValidations();
+
+		foreach ($validations as $modelValidation) {
+			if(stripos($modelValidation->getName(), $validation)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Method that process the name of elements to edit them
@@ -3078,9 +3100,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
+				$params['fu_show_image'] = '2';
 
 				if($data['make_thumbs']) {
-					$params['fu_show_image'] = '2';
 					$params['fu_show_image_in_table'] = '1';
 					$params['fu_make_pdf_thumb'] = '1';
 					$params['make_thumbnail'] = '1';
@@ -3211,9 +3233,22 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['plugin'] = 'field';
 				$params['element_link_easyadmin'] = '1';
 				$params['maxlength'] = 255;
+				$params['guess_linktype'] = '1';
+				$params['link_target_options'] = '_blank';
+				$params['isuniquevalue_message-0'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_VALIDATION_ISUNIQUE");
+
+				$pluginValidation[] = 'isuniquevalue';
+				$publishedValidation[] = '1';
+				$validateInValidation[] = 'both';
+				$validateOnValidation[] = 'both';
+				$validateHidenValidation[] = '0';
+				$mustValidateValidation[] = '1';
+				$showIconValidation[] = '1';
+
 				break;
 		}
 
+		// Filter rules
 		if($data['use_filter']) {
 			$opts['filter_exact_match'] = '0';
 			$params['filter_access'] = '1';
@@ -3227,17 +3262,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$opts['filter_type'] = '';
 		}
 
+		// Required rules
 		if($data['required']) {
-			$validation['plugin'] = ['notempty'];
-			$validation['plugin_published'] = ['1'];
-			$validation['validate_in'] = ['both'];
-			$validation['validate_on'] = ['both'];
-			$validation['validate_hidden'] = ['0'];
-			$validation['must_validate'] = ['1'];
-			$validation['show_icon'] = ['1'];
-			$opts['validationrule'] = $validation;
+			$pluginValidation[] = 'notempty';
+			$publishedValidation[] = '1';
+			$validateInValidation[] = 'both';
+			$validateOnValidation[] = 'both';
+			$validateHidenValidation[] = '0';
+			$mustValidateValidation[] = '1';
+			$showIconValidation[] = '1';
 		}
 
+		// Show in list rules
 		if($data['show_in_list'] || $opts['id'] == '0') {
 			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
 			$css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
@@ -3245,6 +3281,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$params['tablecss_cell'] = $width ? $cssCel : "";
 		}
 
+		// Validation rules
+		$validation['plugin'] = $pluginValidation;
+		$validation['plugin_published'] = $publishedValidation;
+		$validation['validate_in'] = $validateInValidation;
+		$validation['validate_on'] = $validateOnValidation;
+		$validation['validate_hidden'] = $validateHidenValidation;
+		$validation['must_validate'] = $mustValidateValidation;
+		$validation['show_icon'] = $showIconValidation;
+		$opts['validationrule'] = $validation;
+	
 		$params['can_order'] = '1';
 		$opts['params'] = $params;
 
@@ -3302,6 +3348,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$dataForm[$key]['relation'] = $data['relation_link'];
 					$dataForm[$key]['rights'] = $data['rights_link'];
 					$dataForm[$key]['source'] = $data['source_link'];
+
 					$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
 					$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
 					$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];
@@ -4024,6 +4071,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['type'] == 'related_list' && empty($data['related_list'])) {
 			$validate->error = true;
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'));
+		}
+
+		// If the element is link, thumb, title and description must be exists
+		if($data['type'] == 'link' && (empty($data['thumb_link']) || empty($data['title_link']) || empty($data['description_link']))) {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENTS_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_THUMB_LINK_LABEL'), Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TITLE_LINK_LABEL'), Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DESCRIPTION_LINK_LABEL'));
 		}
 
 		// The new element must be a type
