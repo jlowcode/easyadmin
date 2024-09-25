@@ -234,7 +234,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$input->get('task') == 'list.delete' ||
 			in_array('form', explode('.', $input->get('task'))) &&
 			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
-			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin')
+			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
+			($input->get('action') == 'getFilhos')
 		) {
 			return false;
 		}
