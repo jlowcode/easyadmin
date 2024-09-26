@@ -612,7 +612,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			if(this.options.actionMethod == 'inline') {
 				this.setActionPanelInline(elements);
 			} else if (this.options.actionMethod == 'dropdown') {
-				this.setActionPanelDropdown(elements);
+				this.setActionPainelDropdown(elements);
 			} else {
 				throw new Error(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ACTION_METHOD_ERROR"));
 			}
@@ -793,7 +793,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 * Function that build the painel to dropdown option
 		 * 
 		 */
-		setActionPanelDropdown: function (allElements) {
+		setActionPainelDropdown: function (allElements) {
 			var self = this;
 
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];

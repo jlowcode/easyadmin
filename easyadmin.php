@@ -1422,6 +1422,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
+		$elsList = $listModel->getElements('id');
 
 		$layoutMode = (int) $listModel->getParams()->get('layout_mode');
 		$val = Array($layoutMode);
@@ -1430,10 +1431,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl = new stdClass();
 
 		// Options to set up the element
-		$dEl->options = $this->optionsElements(Array(
+		$options = Array(
 			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0"),
 			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1")
-		));
+		);
+
+		foreach ($elsList as $el) {
+			$params = $el->getParams();
+			if(
+				str_contains($el->getName(), 'Databasejoin') &&
+				$params->get('database_join_display_type') == 'auto-complete' && 
+				$params->get('join_db_name') == $listModel->getTable()->get('db_table_name') && 
+				($params->get('database_join_display_style') == 'both-treeview-autocomplete' || $params->get('database_join_display_style') == 'only-treeview')
+			) {
+				$options['2'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_2");
+			}
+		}
+		
+		$dEl->options = $this->optionsElements($options);
 		$dEl->name = $id;
 		$dEl->id = $id;
 		$dEl->selected = $val;
