@@ -3044,6 +3044,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$nameEl = $this->formatValue($data['name']);
 
+		// If the user change the type we need create a new element and send to trash the old one
+		if($data['valIdEl'] != '0' && $data['history_type'] != $data['type'] && !empty($data['history_type'])) {
+			$oldId = $data['valIdEl'];
+			$data['valIdEl'] = '0';
+
+			$element = $listModel->getElements('id', true, false)[$oldId];
+
+			$optsOld['id'] = $oldId;
+			$optsOld['published'] = '-2';
+			$optsOld['validationrule'] = $element->getValidations();
+			$optsOld['params'] = json_decode($element->getParams(), true);
+			$this->syncParams($optsOld, $listModel);
+			$modelElement->save($optsOld);
+
+			$nameEl = $this->checkNameElementToChangeType($nameEl, $listModel);
+		}
+
 		$opts['easyadmin'] = true;
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
@@ -3296,8 +3313,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['params'] = $params;
 
 		if($opts['id'] != '0') {
+			$opts['id'] = $data['history_type'] != $data['type'] ? $oldId : $opts['id'];
+
 			$origName = $this->syncParams($opts, $listModel);
 			$input->set('name_orig', $origName);
+
+			$opts['id'] = $data['history_type'] != $data['type'] ? '0' : $opts['id'];
 		}
 
 		$modelElement->save($opts);
@@ -3374,6 +3395,51 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		return json_encode($validate);
 	}
+
+	/**
+	 * This method adds a flag on element name to change the type
+	 * 
+	 * @param		String		$name			The name to check
+	 * @param		Object			$listModel			Object of the frontend list model
+	 * 
+	 * @return		String
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function checkNameElementToChangeType($name, $listModel) 
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select('name')->from('#__fabrik_elements')->where('group_id IN (' . implode(',', array_keys($listModel->getFormModel()->getGroups())) . ')');
+		$db->setQuery($query);
+		$elements = $db->loadColumn();
+
+        $continue = false;
+        $flag = 1;
+
+        while ($continue === false) {
+            if($flag == 1) {
+                $result = in_array($name, $elements);
+            } else {
+                $result = in_array($name . '_' . $flag, $elements);
+            }
+
+            if ($result) {
+                $flag++;
+            } else {
+                $continue = true;
+            }
+        }
+
+        if($flag == 1) {
+            $result = $name;
+        } else {
+            $result = $name . "_{$flag}";
+        }
+
+        return $result;
+    }
 
 	/**
 	 * This method verify if the element need to update the structure and update them

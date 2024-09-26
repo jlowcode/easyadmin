@@ -783,7 +783,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			jQuery('#easyadmin_modal___type').val() == 'treeview' || jQuery('#easyadmin_modal___type').val() == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', 'disabled') : null;
 
 			jQuery('#easyadmin_modal___type').trigger('change');
-            jQuery('#easyadmin_modal___type').prop('disabled', 'disabled')
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
 			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click');
 			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete').trigger('focusout');
@@ -927,7 +926,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					}
 				});
 
-			    jQuery('#easyadmin_modal___type').prop('disabled', false);
 			    jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', false);
 
 				jQuery('#easyadmin_modal___type').trigger('change');
