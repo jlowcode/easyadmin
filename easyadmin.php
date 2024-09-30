@@ -3315,15 +3315,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		// Validation rules
-		$validation['plugin'] = $pluginValidation;
-		$validation['plugin_published'] = $publishedValidation;
-		$validation['validate_in'] = $validateInValidation;
-		$validation['validate_on'] = $validateOnValidation;
-		$validation['validate_hidden'] = $validateHidenValidation;
-		$validation['must_validate'] = $mustValidateValidation;
-		$validation['show_icon'] = $showIconValidation;
-		$opts['validationrule'] = $validation;
-	
+		if(isset($pluginValidation)) {
+			$validation['plugin'] = $pluginValidation;
+			$validation['plugin_published'] = $publishedValidation;
+			$validation['validate_in'] = $validateInValidation;
+			$validation['validate_on'] = $validateOnValidation;
+			$validation['validate_hidden'] = $validateHidenValidation;
+			$validation['must_validate'] = $mustValidateValidation;
+			$validation['show_icon'] = $showIconValidation;
+			$opts['validationrule'] = $validation;
+		}
+
 		$params['can_order'] = '1';
 		$opts['params'] = $params;
 
