@@ -3255,11 +3255,32 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 				break;
-			
+
 			case 'youtube':
 				$opts['plugin'] = 'youtube';
 				$params['width'] = '30';
 				$params['player_size'] = 'big';
+
+				$params['php-message'][0] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_YOUTUBE_LINK");
+				$params['php-code'][0] = "
+					if (filter_var($data, FILTER_VALIDATE_URL)) {
+						$domain = parse_url($data, PHP_URL_HOST);
+						$domain = strtolower($domain);
+
+						if (strpos($domain, 'youtube.com') !== false || strpos($domain, 'youtu.be') !== false) {
+							return true;
+						}
+					}
+
+					return false;";
+				$pluginValidation[] = 'php';
+				$publishedValidation[] = '1';
+				$validateInValidation[] = 'both';
+				$validateOnValidation[] = 'both';
+				$validateHidenValidation[] = '0';
+				$mustValidateValidation[] = '1';
+				$showIconValidation[] = '1';
+
 				break;
 
 			case 'link':
