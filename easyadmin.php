@@ -3021,6 +3021,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'list':
 				$r = $this->saveModalList($data, $listModel);
 				break;
+			case 'columns':
+				$modelElement = new FabrikAdminModelElement();
+				$r = $this->saveOrder($modelElement, $data, $listModel);
+				break;
 		}
 
 		echo $r;
