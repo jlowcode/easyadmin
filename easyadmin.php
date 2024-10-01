@@ -3021,7 +3021,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'list':
 				$r = $this->saveModalList($data, $listModel);
 				break;
-			case 'columns':
+			
+				case 'columns':
 				$modelElement = new FabrikAdminModelElement();
 				$r = $this->saveOrder($modelElement, $data, $listModel);
 				break;
@@ -3266,17 +3267,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['player_size'] = 'big';
 
 				$params['php-message'][0] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_YOUTUBE_LINK");
-				$params['php-code'][0] = "
+				$params['php-code'][0] = '
 					if (filter_var($data, FILTER_VALIDATE_URL)) {
 						$domain = parse_url($data, PHP_URL_HOST);
 						$domain = strtolower($domain);
 
-						if (strpos($domain, 'youtube.com') !== false || strpos($domain, 'youtu.be') !== false) {
+						if ((strpos($domain, "youtube.com") !== false || strpos($domain, "youtu.be") !== false) && !str_contains($data, "list=")) {
 							return true;
 						}
 					}
 
-					return false;";
+					return false;';
 				$pluginValidation[] = 'php';
 				$publishedValidation[] = '1';
 				$validateInValidation[] = 'both';
