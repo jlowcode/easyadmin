@@ -344,6 +344,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataEl->name = $dataElement->label;
 		$dataEl->ordering_elements = $dataElement->show_in_list_summary ? $element->getId() : '-2';
 		$dataEl->trash = $dataElement->published == 1 ? false : true;
+		$dataEl->white_space = !str_contains($params["tablecss_cell"], 'nowrap');
 
 		switch ($plugin) {
 			case 'field':
@@ -935,6 +936,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementShowInList($elements, 'show_in_list');
 		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementWidthField($elements, 'width_field');
+		$this->setElementWhiteSpace($elements, 'white_space');
 		$this->setElementRequired($elements, 'required');
 		$this->setElementRelatedList($elements, 'related_list');
 		$this->setElementTrash($elements, 'trash');
@@ -1987,6 +1989,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to white space element
+	 * 
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 * 
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementWhiteSpace(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
+
+		$dEl = new stdClass();
+		$showOnTypes = ['element-show_in_list'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_WHITE_SPACE_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_WHITE_SPACE_DESC'),
+			$showOnTypes, 
+			false
+		);
+		$elements[$idEasy]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
+	}
+
+	/**
 	 * Setter method to required element
 	 *
 	 * @param   	Array 		$elements			Reference to all elements
@@ -3021,11 +3071,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'list':
 				$r = $this->saveModalList($data, $listModel);
 				break;
-			
-				case 'columns':
-				$modelElement = new FabrikAdminModelElement();
-				$r = $this->saveOrder($modelElement, $data, $listModel);
-				break;
 		}
 
 		echo $r;
@@ -3335,7 +3380,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Show in list rules
 		if($data['show_in_list'] || $opts['id'] == '0') {
 			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
-			$css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+			$data['white_space'] == 'true'? $css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : $css = '';
 			$cssCel = 'width: ' . $width . '%; ' . $css;
 			$params['tablecss_cell'] = $width ? $cssCel : "";
 		}
