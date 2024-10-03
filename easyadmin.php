@@ -302,7 +302,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Method that return if the type of plugin is trated by us or not
+	 * Method that return if the type of plugin is treated by us or not
 	 *
 	 * @param   	Object			$element 		Object of the element
 	 *
@@ -321,7 +321,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 *
 	 * @param   	Object			$dataEl 		Element data object
 	 * @param   	Object			$element 		Element object
-	 * @param   	Boolean			$enable 		The element is trated by us or not
+	 * @param   	Boolean			$enable 		The element is treated by us or not
 	 * 
 	 * @return 		Null
 	 */
@@ -3070,6 +3070,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'list':
 				$r = $this->saveModalList($data, $listModel);
+				break;
+			
+			case 'columns':
+				$modelElement = new FabrikAdminModelElement();
+				$r = $this->saveOrder($modelElement, $data, $listModel);
 				break;
 		}
 
