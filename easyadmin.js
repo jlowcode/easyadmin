@@ -40,6 +40,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				self.setUpButtonSave();
 				self.setUpButtonsPainel();
 				self.setUpElementList();
+                self.sortColumns();
 
 				if(window.location.search.indexOf('manage') > 0) {
 					jQuery("#button_" + self.options.idModalList).trigger('click');
@@ -414,7 +415,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 * Function that call the save method by ajax
 		 * 
 		 */
-		saveEvent: function(mode) {
+		saveEvent: function(mode, columns = '') {
 			self = this;
 			valEls = {};
 			inputs = jQuery('.fabrikinput');
@@ -426,8 +427,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			valEls['easyadmin_modal___mode'] = mode;
 			valEls['easyadmin_modal___listid'] = listId;
 			valEls['easyadmin_modal___history_type'] = history_type;
-			valEls['easyadmin_modal___valIdEl'] = self.options.valIdEl;
 			valEls['jform'] = {'db_table_name': db_table_name};
+            valEls['easyadmin_modal___valIdEl'] = mode == 'columns' ? columns.idAtual : self.options.valIdEl;
 
 			inputs.each(function() {
 				id = this.id;
@@ -520,9 +521,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				valEls['easyadmin_modal___ordering_elements'] = valOrder;
 			}
 
+            mode == 'columns' ? valEls['easyadmin_modal___ordering_elements'] = columns.idOrder : '';
+
 			var url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
 			var hasPermission = false;
-			if(self.options.workflow && mode != 'list') {
+            if(self.options.workflow && mode == 'elements') {
 				var urlGetPermission = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=hasPermission";
 				jQuery.ajax({
 					url     : urlGetPermission,
@@ -977,6 +980,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					Sortable.create(thead, {
 						animation: 150,
 						onEnd: function (evt) {
+
+							var result = [];
 							const oldIndex = evt.oldIndex;
 							const newIndex = evt.newIndex;
 							// Reordena as células no tbody
@@ -992,11 +997,14 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 							});
 
-							showSpinner();
 							const currentOrder = self.getColumnOrder(table);
-							const differences = self.getDifferencesByPosition(initialOrder, currentOrder);
-							if (differences.length != 0) {
-								self.saveEvent('columns', differences[0])
+							if (oldIndex != newIndex && newIndex != 0) {
+								showSpinner();
+								result.push({
+									idOrder: currentOrder[newIndex-1].order.replace('_order', ''),
+									idAtual: initialOrder[oldIndex].order.replace('_order', '')
+								});
+								self.saveEvent('columns', result[0]);
 							}
 						}
 					});
@@ -1014,24 +1022,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				name: column.classList[2],
 				order: column.classList[3]
 			}));
-		},
-
-		getDifferencesByPosition: function (arr1, arr2) {
-			const differences = [];
-
-			// Determine the maximum length to avoid undefined errors
-			const maxLength = Math.max(arr1.length, arr2.length);
-
-			for (let i = 0; i < maxLength; i++) {
-				if (arr1[i].name !== arr2[i].name) {
-					differences.push({
-						idOrder: arr1[i].order.replace('_order', ''),
-						idAtual: arr2[i].order.replace('_order', '')
-					});
-					//break;
-				}
-			}
-			return differences;
 		}
 	});
 
