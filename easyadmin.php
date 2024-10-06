@@ -3385,9 +3385,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Show in list rules
 		if($data['show_in_list'] || $opts['id'] == '0') {
 			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
-			$data['white_space'] == 'true'? $css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' : $css = '';
-			$cssCel = 'width: ' . $width . '%; ' . $css;
+			$css = 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+			$data['white_space'] == 'true'? $cssCel = $css : $cssCel = '';
+
+			$cssCel = 'width: ' . $width . '%; max-width: 1px; ' . $cssCel;
+			$cssHeader = 'width: ' . $width . '%; ' . $css;
+
 			$params['tablecss_cell'] = $width ? $cssCel : "";
+			$params['tablecss_header'] = $width ? $cssHeader : "";
 		}
 
 		// Validation rules
