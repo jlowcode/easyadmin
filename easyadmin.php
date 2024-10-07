@@ -235,7 +235,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			in_array('form', explode('.', $input->get('task'))) &&
 			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
-			($input->get('action') == 'getFilhos')
+			($input->get('action') == 'getFilhos') ||
+			isset($_REQUEST['resetfilters'])
 		) {
 			return false;
 		}
@@ -3998,6 +3999,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataList[$key]['width_list'] = $data['width_list'];
 				$dataList[$key]['layout_mode'] = $data['layout_mode'];
 				$dataList[$key]['allow_view_details'] = $viewLevel;
+				$dataList[$key]['workflow_list'] = $data['workflow_list'] == 'true' ? '1' : '0';
 			}
 		}
 
