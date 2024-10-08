@@ -45,6 +45,13 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				if(window.location.search.indexOf('manage') > 0) {
 					jQuery("#button_" + self.options.idModalList).trigger('click');
 				}
+
+				//When 'manage' variable present we need remove
+				jQuery('#modal-list .btn-close').on('click', function() {
+					if(window.location.search.indexOf('manage') > 0) {
+						window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
+					}
+				});
 			});
 		},
 

@@ -765,9 +765,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			[
 				'title'       	=> $config['title'],
-				'backdrop'    	=> true,
-				'keyboard'    	=> true,	
-				'focus'			=> true,
+				'backdrop'    	=> 'static',
+				'keyboard'    	=> false,
+				'focus'			=> false,
 				'closeButton' 	=> true,
 				'height'      	=> '400px',
 				'width'       	=> '600px',
