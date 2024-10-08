@@ -470,7 +470,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___votes_to_disapprove_list':
 					case 'easyadmin_modal___default_layout':
 					case 'easyadmin_modal___width_field':
-                    case 'easyadmin_modal___white_space':
 					case 'easyadmin_modal___ordering_elements':
 					case 'easyadmin_modal___viewLevel_list':
 					case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas':
@@ -488,6 +487,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___trash_list1':
 					case 'easyadmin_modal___workflow_list1':
 					case 'easyadmin_modal___approve_by_votes_list1':
+                    case 'easyadmin_modal___white_space1':
 						id = id.replace('1', '');
 						valEls[id] = jQuery(this).prop('checked') ? true : '';
 						break;
