@@ -3389,7 +3389,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['show_in_list'] || $opts['id'] == '0') {
 			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
 			$css = 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
-			$data['white_space'] == 'true'? $cssCel = $css : $cssCel = '';
+			$data['white_space'] == 'true'? $cssCel = '' : $cssCel = $css;
 
 			$cssCel = 'width: ' . $width . '%; max-width: 1px; ' . $cssCel;
 			$cssHeader = 'width: ' . $width . '%; ' . $css;
