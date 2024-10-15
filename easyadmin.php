@@ -3011,7 +3011,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
             ->select($db->qn('title'))
             ->from($db->qn('#__viewlevels'))
             ->order($db->qn('id'))
-			->where($db->qn("id") . " IN ('" . implode("','", [1, $this->getListModel()->getTable()->access]) . "')");
+			->where($db->qn("id") . " IN ('" . implode("','", [1, $this->getListModel()->getParams()->get('allow_edit_details')]) . "')");
 
         $db->setQuery($query);
         $result = $db->loadObjectList();
