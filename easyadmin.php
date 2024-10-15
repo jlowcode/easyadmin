@@ -281,8 +281,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		foreach($elements as $key => $element) {
 			$dataEl = new stdClass();
-
 			$fullElementName = $this->processFullElementName($key);
+
+			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
+
 			$link = $this->createLink($element->element->id);
 			$idElement = $element->getId();
 			$enable = $this->isEnabledEdit($element->getElement());
@@ -469,10 +471,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * Method that process the full name of elements to edit them
 	 *
 	 * @param   	String			$key 		The full element name to process
+	 * @param   	Boolean			$func 		If true, return only lastName
 	 * 
 	 * @return 		String		
 	 */
-	protected function processFullElementName($key) 
+	protected function processFullElementName($key, $func=false) 
 	{
 		$pos = strpos($key, '.');
 		$firstName = substr ($key , 1, $pos-2);
@@ -480,7 +483,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$lastName = substr ($lastName , 0, strlen($lastName) - 1);
 		$processedKey = $firstName . "___" . $lastName;
 
-		return $processedKey;
+		return $func ? $lastName : $processedKey;
 	}
 
 	/**
