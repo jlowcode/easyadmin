@@ -418,6 +418,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataEl->type = 'related_list';
 				break;
 			
+			case 'thumbs':
+				$dataEl->type = 'thumbs';
+				$dataEl->show_down_thumb = isset($params['show_down']) ? $params['show_down'] ? true : false : true;
+				break;
+
 			default:
 				$dataEl->type = $plugin;
 				break;
@@ -937,6 +942,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementsAuxLink($elements, 'mainAuxLink', $mainAuxLink);
 		$this->setElementLabelAdvancedLink($elements, 'label_advanced_link');
 		$this->setElementsAuxLink($elements, 'secondaryAuxLink', $secondaryAuxLink);
+		$this->setElementShowDownThumb($elements, 'show_down_thumb');
 		$this->setElementShowInList($elements, 'show_in_list');
 		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementWidthField($elements, 'width_field');
@@ -1827,6 +1833,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Setter method to show down thumb element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementShowDownThumb(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
+
+		$dEl = new stdClass();
+		$showOnTypes = ['thumbs'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_DOWN_THUMB_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_DOWN_THUMB_DESC'),
+			$showOnTypes, 
+			false
+		);
+		$elements[$idEasy]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
 	}
 
 	/**
@@ -3285,6 +3339,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'thumbs':
 				$opts['plugin'] = 'thumbs';
 				$params['rate_in_from'] =  '0';
+				$params['show_down'] =  $data['show_down_thumb'] != '' ? '1' : '0';
 				break;
 
 			case 'related_list':

@@ -488,6 +488,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___required1':
 					case 'easyadmin_modal___trash1':
 					case 'easyadmin_modal___show_in_list1':
+					case 'easyadmin_modal___show_down_thumb1':
 					case 'easyadmin_modal___ajax_upload1':
 					case 'easyadmin_modal___make_thumbs1':
 					case 'easyadmin_modal___multi_select1':
@@ -950,6 +951,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___required0':
 						case 'easyadmin_modal___trash0':
 						case 'easyadmin_modal___show_in_list0':
+						case 'easyadmin_modal___show_down_thumb0':
 						case 'easyadmin_modal___ajax_upload0':
 						case 'easyadmin_modal___make_thumbs0':
 						case 'easyadmin_modal___multi_select0':
