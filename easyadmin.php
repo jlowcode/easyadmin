@@ -3454,6 +3454,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$params['tablecss_cell'] = $width ? $cssCel : "";
 			$params['tablecss_header'] = $width ? $cssHeader : "";
+
+			// We need add the width to width of the list
+			if($opts['id'] == '0') {
+				$newWidthList = (int) $listModel->getParams()->get('width_list') + $width;
+				$data['width_list'] = $newWidthList;
+
+				$validate = json_decode($this->saveModalList($data, $listModel));
+			}
 		}
 
 		// Validation rules
