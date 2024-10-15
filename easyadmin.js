@@ -25,6 +25,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			this.options = options;
 
 			jQuery(".modal-body").css("overflow-y", "scroll");
+			jQuery(".table").css("table-layout", "fixed");
 
 			Fabrik.addEvent('fabrik.list.submit.ajax.complete', function () {
 				self.setUpButtonsPainel();
