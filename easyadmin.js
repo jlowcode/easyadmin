@@ -616,7 +616,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		},
 
 		/**
-		 * Function that redirect to corretly function to build the painel
+		 * Function that redirect to correctly function to build the painel
 		 * 
 		 */
 		setActionPanel: function (elements) {
@@ -654,6 +654,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				btnGroup = jQuery(heading).find('.btn-group')[0];
 			}
 			var JBtnGroup = jQuery(btnGroup);
+			JBtnGroup.css('width', '200px');
+			JBtnGroup.css('height', '500px');
+			JBtnGroup.css('overflow-y', 'auto');
+			JBtnGroup.css('overflow-x', 'auto');
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
 
@@ -701,10 +705,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				jQuery.each(elements, function(index, value) {
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
-					var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="' + classTrash +'"></li>')
+					var li = jQuery('<li value="' + index + '" style="padding-left:10px; font-size: 12px; ' + display + '" class="' + classTrash +'"></li>')
 						.appendTo(state == 'trash' ? divTrash : div);
 					if(value.enabled) {
-						var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
+						var sub = jQuery('<a style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;" href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
 						.text(self.options.elementsNames[index])
 						.css({
 							'cursor': 'pointer',
@@ -837,6 +841,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
 			var JBtnGroup = jQuery(btnGroup);
+			JBtnGroup.css('width', '200px');
+			JBtnGroup.css('max-height', '500px');
+			JBtnGroup.css('overflow-y', 'auto');
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
@@ -863,7 +870,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="subMenuAdmin ' + classTrash + '"></li>')
 						.appendTo(state == 'trash' ? divTrash : JBtnGroup);
 					if(value.enabled) {
-						var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
+						var sub = jQuery('<a style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;" href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
 						.text(self.options.elementsNames[index])
 						.css({
 							'cursor': 'pointer',
