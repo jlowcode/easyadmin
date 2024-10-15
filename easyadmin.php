@@ -4748,7 +4748,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			return;
 		}
 
-		$formData = $input->get('formData');
+		$formData = $input->getString('formData');
 		$this->setFormData($formData);
 		$this->setRequestWorkflow(true);
 		$this->setElements();
