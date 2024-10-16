@@ -3264,8 +3264,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'dropdown':
 				$opts['plugin'] = 'dropdown';
 				$params['multiple'] = $data['multi_select'] ? '1' : '0';
+				$params['advanced_behavior'] = $params['multiple'];
 
 				$sub_options = explode(',', $data['options_dropdown']);
+				if(empty($sub_options[0])) {
+					unset($sub_options[0]);
+				}
+				$sub_options = array_values($sub_options);
 				$params['sub_options'] = Array(
 					'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $sub_options),
 					'sub_labels' => $sub_options,
