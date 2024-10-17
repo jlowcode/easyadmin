@@ -3449,7 +3449,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		// Show in list rules
-		if($data['show_in_list'] || $opts['id'] == '0') {
+		if($data['show_in_list']) {
 			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
 			$css = 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 			$data['white_space'] == 'true'? $cssCel = '' : $cssCel = $css;
@@ -3461,8 +3461,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$params['tablecss_header'] = $width ? $cssHeader : "";
 
 			// We need add the width to width of the list
-			if($opts['id'] == '0') {
-				$newWidthList = (int) $listModel->getParams()->get('width_list') + $width;
+			$verifyWidth = $this->verifyWidthList($width, $opts['id'], $listModel);
+			if(!$oldId && $verifyWidth['makeBigger']) {
+				$newWidthList = (int) $listModel->getParams()->get('width_list') + $verifyWidth['increase'];
 				$data['width_list'] = $newWidthList;
 
 				$validate = json_decode($this->saveModalList($data, $listModel));
@@ -3566,6 +3567,37 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return json_encode($validate);
+	}
+
+	/**
+	 * This method checks if the width of the elements exceeds the width of the list.
+	 * 
+	 * @param		Int				$widthElement		The new width to add
+	 * @param		Int				$elId				The id element
+	 * @param		Object			$listModel			Object of the frontend list model
+	 * 
+	 * @return		Array
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function verifyWidthList($widthElement, $elId, $listModel)
+	{
+		$response = Array();
+		$elements = $listModel->getElements();
+		$widthList = (int) $listModel->getParams()->get('width_list');
+		$width = 0;
+
+		foreach ($elements as $el) {
+			$cssCel = $el->getParams()->get('tablecss_cell');
+			preg_match('/(\d+)/', $cssCel, $matches);
+			$count = $el->getElement()->show_in_list_summary && $el->getElement()->published && $el->getId() != (int) $elId;
+			$width += ($count ? (int) $matches[0] : 0);
+		}
+
+		$response['makeBigger'] = ($width + (int) $widthElement) > $widthList;
+		$response['increase'] = ($width + (int) $widthElement) - $widthList;
+
+		return $response;
 	}
 
 	/**
