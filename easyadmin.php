@@ -2189,9 +2189,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Method that with cURL call the ajax fields function to return the list elements
 	 * 
-	 * @return		Array
+	 * @return			Array
 	 * 
-	 * @since 		version 4.2.1
+	 * @since 			version 4.2.1
+	 * 
+	 * @deprecated		since v4.3.1 because rules about show options in link elements changed. Will be removed in 5.0
 	 */
 	private function callAjaxFields() 
 	{
@@ -2989,13 +2991,45 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$subject = $this->getSubject();
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
-		$opts = $this->optionsElements($this->callAjaxFields());
+		$elementsList = $this->getListModel()->getElements();
 		$showOnTypes = $nameElement == 'mainAuxLink' ? ['link'] : ['element-label_advanced_link' . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '')];
 
 		foreach ($ids as $idEl) {
+			$optsDropdown = Array();
 			$idEasy = $this->prefixEl . '___' . $idEl . '_link';
 			$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 			$value = $formData[$idEasy];
+
+			foreach ($elementsList as $classEl) {
+				$el = $classEl->getElement();
+
+				$hide = ['id', 'created_by', 'indexing_text', 'created_ip'];
+				if(in_array($el->get('name'), $hide) || $classEl->getParams()->get('element_link_easyadmin')) continue;
+
+				switch ($idEl) {
+					case 'thumb':
+						$el->get('plugin') == 'fileupload' ? $optsDropdown[$el->get('id')] = $el->get('label') : null;
+						break;
+
+					case 'title':
+						$el->get('plugin') == 'field' ? $optsDropdown[$el->get('id')] = $el->get('label') : null;
+						break;
+
+					case 'description':
+						$el->get('plugin') == 'textarea' ? $optsDropdown[$el->get('id')] = $el->get('label') : null;
+						break;
+					
+					default:
+						$default = true;
+						if($el->get('plugin') != 'fileupload') {
+							$optsDropdown[$el->get('id')] = $el->get('label');
+						}
+						break;
+				}
+			}
+
+			$default ? array_unshift($optsDropdown, Text::_("COM_FABRIK_PLEASE_SELECT")): null;
+			$opts = $this->optionsElements($optsDropdown);
 
 			// Options to set up the element
 			$dEl = new stdClass();
