@@ -354,6 +354,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'textarea':
 				$dataEl->default_value = $dataElement->default;
 				$dataEl->text_format = $params['password'] == '5' ? 'url' : $params['text_format'];
+				$dataEl->format_long_text = $params['use_wysiwyg'];
 				$dataEl->type = $plugin == 'field' ? $params['element_link_easyadmin'] == '1' ? 'link' : 'text' : 'longtext';
 
 				// The element is field, but of type link
@@ -927,6 +928,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
+		$this->setElementFormatToLongText($elements, 'format_long_text');
 		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
 		//$this->setElementMakeThumbs($elements, 'make_thumbs');
@@ -2306,6 +2308,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 	
 	/**
+	 * Setter method to format element to the long text type
+	 *
+	 * @param   	Array 	$elements		Reference to all elements
+	 * @param		String	$nameElement	Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.1.3
+	 */
+	private function setElementFormatToLongText(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy];
+		$dEl = new stdClass();
+		$showOnTypes = ['longtext'];
+
+		// Options to set up the element
+		$opts = Array(
+			'0' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_SIMPLE'),
+			'1' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_RICH'),
+		);
+		$dEl->options = $this->optionsElements($opts);
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = Array($value);
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium"' . ($this->getRequestWorkflow() ? ' disabled' : '');
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$idEasy]['objField'] = $classDropdown->getLayout('form');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_DESC'),
+			$showOnTypes,
+			false
+		);
+		$elements[$idEasy]['dataField'] = $dEl;
+	}
+
+	/**
 	 * Setter method to text format element
 	 *
 	 * @param   	Array 	$elements		Reference to all elements
@@ -3136,7 +3186,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		switch ($mode) {
 			case 'elements':
-				if($data['history_type'] == 'related_list') {
+				if(in_array($data['history_type'], ['related_list', 'longtext'])) {
 					// Changing the element related_list to another type, the group must to be the principal
 
 					$idEl = $data['valIdEl'];
@@ -3250,6 +3300,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$opts['plugin'] = 'textarea';
 					$params['bootstrap_class'] = 'col-sm-12';
 					$params['textarea_field_type'] = 'MEDIUMTEXT';
+					$params['use_wysiwyg'] = $data['format_long_text'];
+					$params['height'] = '6';
+
+					if($data['format_long_text']) {
+						$params['height'] = '20';
+
+						$groupIdRelated = $this->groupToLongtextElement($listModel, $opts, $params);
+						$opts['group_id'] = $groupIdRelated;
+					} else {
+						$opts['group_id_old'] = $data['group_id_old'];
+						$this->groupToLongtextElement($listModel, $opts, $params, true);
+					}
 				}
 
 				if($data['text_format'] == 'url') {
@@ -3727,8 +3789,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function groupToElementRelatedList($listModel, &$opts, &$params, $trash=false)
 	{
-		$modelGroup = new FabrikAdminModelGroup();
-
 		$idForm = $listModel->getFormModel()->getId();
 
 		if($opts['id'] == '0' || !isset($opts['group_id_old'])) {
@@ -3740,14 +3800,64 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$optsGroup['name'] = $opts['label'];
-		$optsGroup['label'] = '';
 		$optsGroup['published'] = $trash ? '0' : '1';
+		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
+
+		return $this->newGroupToElements($listModel, $optsGroup, $new);
+	}
+
+	/**
+	 * Method that save the longtext element, creating/editing the new group
+	 * 
+	 * @param		Object			$listModel			The listmodel object
+	 * @param		Array			&$opts				The element options
+	 * @param		Array			&params				The element params
+	 * @param		Boolean			$trash				The element will be moved to trash or not
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since		version 4.3.1
+	 */
+	private function groupToLongtextElement($listModel, &$opts, &$params, $trash=false)
+	{
+		$idForm = $listModel->getFormModel()->getId();
+
+		if(!$trash) {
+			$new = true;
+			$optsGroup['form'] = (string) $idForm;
+		} else {
+			$new = false;
+			$optsGroup['id'] = $trash ? (string) $opts['group_id_old'] : (string) $opts['group_id'];
+		}
+
+		$optsGroup['name'] = $opts['label'];
+		$optsGroup['published'] = $trash ? '0' : '1';
+		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "1";
+
+		return $this->newGroupToElements($listModel, $optsGroup, $new);
+	}
+
+	/**
+	 * Method that create/edit the new group
+	 * 
+	 * @param		Object			$listModel			The listmodel object
+	 * @param		Array			$optsGroup			The group options
+	 * @param		Boolean			$new				Is it a new element?
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since		version 4.3.1
+	 */
+	private function newGroupToElements($listModel, $optsGroup, $new)
+	{
+		$modelGroup = new FabrikAdminModelGroup();
+
+		$optsGroup['label'] = '';
 		$optsGroup['is_join'] = "0";
 		$optsGroup['tags'] = Array();
 
 		$optsGroup['params']['repeat_group_button'] = "0";
 		$optsGroup['params']['group_columns'] = "1";
-		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
 		$optsGroup['params']['labels_above'] = "1";
 		$optsGroup['params']['labels_above_details'] = "1";
 
@@ -4977,7 +5087,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param		Int			$listId				Id of the list
 	 * @param		Int			$recordId			Id of the record
 	 * 
-     * @return      
+     * @return      Array
      */
     private function getLastRecordFormData($listId, $recordId)
     {

@@ -444,6 +444,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___name':
 					case 'easyadmin_modal___type':
 					case 'easyadmin_modal___text_format':
+					case 'easyadmin_modal___format_long_text':
 					case 'easyadmin_modal___default_value':
 					case 'easyadmin_modal___label':
 					case 'easyadmin_modal___father':
@@ -942,6 +943,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___width_field':
                         case 'easyadmin_modal___white_space':
 						case 'easyadmin_modal___ordering_elements':
+						case 'easyadmin_modal___history_type':
 						case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas':
 						case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete':
 							jQuery(this).val('');
@@ -963,6 +965,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___text_format':
 							jQuery(this).val('text');
 							break;
+                        
+						case 'easyadmin_modal___format_long_text':
+                            jQuery(this).val('0');
+                            break;
 					}
 				});
 
