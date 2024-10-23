@@ -26,6 +26,7 @@ use Joomla\Component\Users\Administrator\Model\UserModel;
 use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Editor\Editor;
 
 // Requires 
 // Change to namespaces on F5
@@ -1055,18 +1056,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl = new stdClass;
 
 		// Options to set up the element
-		$dEl->attributes = Array(
-			'type' => 'text',
-			'id' => $id,
-			'name' => $id,
-			'size' => 0,
-			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
-			'value' => $val
-		);
+		$rows = 10;
+		$cols = 60;
+		$editor = Editor::getInstance($this->config->get('editor'));
+		$dEl->editor = $editor->display($nameElement, $val, '100%', 100+$rows * 15, $cols, $rows, true, $id, 'com_fabrik');
 
-		$classField = new PlgFabrik_ElementField($subject);
-		$elements[$id]['objField'] = $classField->getLayout('form');
+		$classField = new PlgFabrik_ElementTextarea($subject);
+		$elements[$id]['objField'] = $classField->getLayout('wysiwyg');
 		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 
 		$elements[$id]['dataLabel'] = $this->getDataLabel(

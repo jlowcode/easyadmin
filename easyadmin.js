@@ -26,6 +26,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			jQuery(".modal-body").css("overflow-y", "scroll");
 			jQuery(".table").css("table-layout", "fixed");
+			jQuery('#easyadmin_modal___description_list').addClass('fabrikinput');
 
 			Fabrik.addEvent('fabrik.list.submit.ajax.complete', function () {
 				self.setUpButtonsPainel();
@@ -440,51 +441,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			inputs.each(function() {
 				id = this.id;
-				switch (id) {
-					case 'easyadmin_modal___name':
-					case 'easyadmin_modal___type':
-					case 'easyadmin_modal___text_format':
-					case 'easyadmin_modal___format_long_text':
-					case 'easyadmin_modal___default_value':
-					case 'easyadmin_modal___label':
-					case 'easyadmin_modal___father':
-					case 'easyadmin_modal___format':
-					case 'easyadmin_modal___related_list':
-					case 'easyadmin_modal___thumb_link':
-					case 'easyadmin_modal___title_link':
-					case 'easyadmin_modal___description_link':
-					case 'easyadmin_modal___subject_link':
-					case 'easyadmin_modal___creator_link':
-					case 'easyadmin_modal___date_link':
-					case 'easyadmin_modal___format_link':
-					case 'easyadmin_modal___coverage_link':
-					case 'easyadmin_modal___publisher_link':
-					case 'easyadmin_modal___identifier_link':
-					case 'easyadmin_modal___language_link':
-					case 'easyadmin_modal___type_link':
-					case 'easyadmin_modal___contributor_link':
-					case 'easyadmin_modal___relation_link':
-					case 'easyadmin_modal___rights_link':
-					case 'easyadmin_modal___source_link':
-					case 'easyadmin_modal___access_rating':
-					case 'easyadmin_modal___name_list':
-					case 'easyadmin_modal___description_list':
-					case 'easyadmin_modal___ordering_list':
-					case 'easyadmin_modal___ordering_type_list':
-					case 'easyadmin_modal___collab_list':
-					case 'easyadmin_modal___width_list':
-					case 'easyadmin_modal___layout_mode':
-					case 'easyadmin_modal___visibility_list':
-					case 'easyadmin_modal___votes_to_approve_list':
-					case 'easyadmin_modal___votes_to_disapprove_list':
-					case 'easyadmin_modal___default_layout':
-					case 'easyadmin_modal___width_field':
-					case 'easyadmin_modal___ordering_elements':
-					case 'easyadmin_modal___viewLevel_list':
-					case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas':
-						valEls[id] = jQuery(this).val();
-						break;
-					
+				switch (id) {					
 					case 'easyadmin_modal___use_filter1':
 					case 'easyadmin_modal___required1':
 					case 'easyadmin_modal___trash1':
@@ -505,6 +462,14 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 					case 'easyadmin_modal___options_dropdown':
 						valEls[id] = jQuery(this).val().join(',');
+						break;
+
+					case 'easyadmin_modal___description_list':
+						valEls[id] = tinyMCE.activeEditor.getContent();
+						break;
+
+					default:
+						valEls[id] = jQuery(this).val();
 						break;
 				}
 			});
@@ -533,6 +498,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
             mode == 'columns' ? valEls['easyadmin_modal___ordering_elements'] = columns.idOrder : '';
+			tinyMCE.activeEditor.save();
 
 			var url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
 			var hasPermission = false;
@@ -917,39 +883,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				Els.each(function() {
 					id = this.id;
 					switch (id) {
-						case 'easyadmin_modal___name':
-						case 'easyadmin_modal___default_value':
-						case 'easyadmin_modal___options_dropdown':
-						case 'easyadmin_modal___label':
-						case 'easyadmin_modal___father':
-						case 'easyadmin_modal___format':
-						case 'easyadmin_modal___related_list':
-						case 'easyadmin_modal___thumb_link':
-						case 'easyadmin_modal___title_link':
-						case 'easyadmin_modal___description_link':
-						case 'easyadmin_modal___subject_link':
-						case 'easyadmin_modal___creator_link':
-						case 'easyadmin_modal___date_link':
-						case 'easyadmin_modal___format_link':
-						case 'easyadmin_modal___coverage_link':
-						case 'easyadmin_modal___publisher_link':
-						case 'easyadmin_modal___identifier_link':
-						case 'easyadmin_modal___language_link':
-						case 'easyadmin_modal___type_link':
-						case 'easyadmin_modal___contributor_link':
-						case 'easyadmin_modal___relation_link':
-						case 'easyadmin_modal___rights_link':
-						case 'easyadmin_modal___source_link':
-						case 'easyadmin_modal___access_rating':
-						case 'easyadmin_modal___width_field':
-                        case 'easyadmin_modal___white_space':
-						case 'easyadmin_modal___ordering_elements':
-						case 'easyadmin_modal___history_type':
-						case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas':
-						case self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete':
-							jQuery(this).val('');
-							break;
-
 						case 'easyadmin_modal___use_filter0':
 						case 'easyadmin_modal___required0':
 						case 'easyadmin_modal___trash0':
@@ -970,6 +903,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___format_long_text':
                             jQuery(this).val('0');
                             break;
+
+						default:
+							jQuery(this).val('');
+							break;
 					}
 				});
 
