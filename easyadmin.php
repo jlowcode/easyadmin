@@ -977,6 +977,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementAdminsList($elementsList, 'admins_list');
 		$this->setElementWidthList($elementsList, 'width_list');
 		$this->setElementLayoutMode($elementsList, 'layout_mode');
+		$this->setElementComparisonList($elementsList, 'comparison_list');
 		//$this->setElementDefaultLayout($elementsList, 'default_layout');
 		$this->setElementWorkflowList($elementsList, 'workflow_list');
 		$this->setElementApproveByVotesList($elementsList, 'approve_by_votes_list');
@@ -1478,6 +1479,50 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_LABEL'),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_DESC'),
+		);
+	}
+
+	/**
+	 * Setter method to comparison element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3
+	 */
+	private function setElementComparisonList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$plgComparison = array_search('comparison', $listModel->getParams()->get('plugins'));
+		$value = $plgComparison && (bool) $listModel->getParams()->get('plugin_state')[$plgComparison];
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$id]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COMPARISON_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COMPARISON_DESC'),
+		);
+		$elements[$id]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 	}
 
@@ -2995,6 +3040,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$formData = $this->getFormData();
 		$subject = $this->getSubject();
+		$listModel = $this->getListModel();
 
 		$idEasy = $this->prefixEl . '___' . $nameElement;
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
@@ -3004,6 +3050,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$opts = $this->getViewLevels();
+		$opts = Array(
+			'1' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ACCESS_RATING_PUBLIC'),
+			$listModel->getParams()->get('allow_edit_details') => $listModel->getTable()->get('label')
+		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
 		$dEl->id = $id;
@@ -4249,6 +4299,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataList[$key]['layout_mode'] = $data['layout_mode'];
 				$dataList[$key]['allow_view_details'] = $viewLevel;
 				$dataList[$key]['workflow_list'] = $data['workflow_list'] == 'true' ? '1' : '0';
+
+				$this->configurePluginComparison($data, $dataList[$key], $listModel);
 			}
 		}
 
@@ -4307,6 +4359,65 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return json_encode($validate);
+	}
+
+	/**
+	 * This method verify if plugin comparison was request or not
+	 * 
+	 * @param		Array			$data				The data sent
+	 * @param		Array			$params				Params data of the list
+	 * @param		Object			$listModel			Object of the frontend list model
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function configurePluginComparison($data, &$params, $listModel) 
+	{
+		$trash = empty($data['comparison_list']);
+
+		$plgComparison = array_search('comparison', $params['plugins']);
+		if((!$plgComparison && $trash) || ($plgComparison && !$trash)) {
+			return;
+		}
+
+		if($trash) {
+			unset($params['plugins'][$plgComparison]);
+			unset($params['plugin_description'][$plgComparison]);
+			unset($params['plugin_state'][$plgComparison]);
+			return;
+		}
+
+		$params['plugins'][] = 'comparison';
+		$params['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_COMPARISON_DESCRIPTION");
+		$params['plugin_state'][] = "1";
+
+		$elements = $listModel->getElements('id', true, true);
+		foreach ($elements as $classEl) {
+			$el = $classEl->getElement();
+
+			$hide = ['id', 'created_by', 'indexing_text', 'created_ip', 'date_time'];
+			if(in_array($el->get('name'), $hide)) continue;
+
+			switch ($el->get('plugin')) {
+				case 'fileupload':
+					!isset($elFile) ? $elFile = $el->get('id') : $columns['comparison_columns'][] = $el->get('id');
+					break;
+
+				case 'field':
+					$el->get('name') == 'name' && !isset($name) ? $elName = $el->get('id') : null;
+					$columns['comparison_columns'][] = $el->get('id');
+					break;
+
+				default:
+					$columns['comparison_columns'][] = $el->get('id');
+					break;
+			}
+		}
+
+		$params['main_column'] = $elName;
+		$params['thumb_column'] = $elFile;
+		$params['list_comparison_columns'] = json_encode($columns);
 	}
 
 	/**

@@ -497,6 +497,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___trash_list1':
 					case 'easyadmin_modal___workflow_list1':
 					case 'easyadmin_modal___approve_by_votes_list1':
+					case 'easyadmin_modal___comparison_list1':
                     case 'easyadmin_modal___white_space1':
 						id = id.replace('1', '');
 						valEls[id] = jQuery(this).prop('checked') ? true : '';
