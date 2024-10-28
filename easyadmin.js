@@ -482,11 +482,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				valEls['order_dir'] = [valEls['easyadmin_modal___ordering_type_list']];
 			}
 
-			if(valEls['easyadmin_modal___name_list'] == '') {
-				alert(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE"));
-				return;
-			}
-
 			// We need save the link element and ordering it to the first position of the form
 			if(valEls['easyadmin_modal___type'] == 'link' && valEls['easyadmin_modal___valIdEl'] == 0) {
 				var valOrder = '';
@@ -905,7 +900,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
                             break;
 
 						default:
-							jQuery(this).val('');
+							if(!jQuery(this).hasClass('input-list')) {
+								jQuery(this).val('');
+							}
 							break;
 					}
 				});

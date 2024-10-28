@@ -1018,7 +1018,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'name' => $id,
 			'size' => 0,
 			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
+			'class' => 'form-control fabrikinput inputbox text input-list',
 			'value' => $val
 		);
 
@@ -1099,7 +1099,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $selected;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1142,7 +1142,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1181,7 +1181,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1233,7 +1233,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'options' => $this->optionsElements($opts),
 			'name' => $id,
 			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
+			'class' => 'fbtn-default fabrikinput input-list',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 		$elements[$id]['cssElement'] = 'border-top: #ccc solid 2px;';
@@ -1277,7 +1277,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'options' => $this->optionsElements($opts),
 			'name' => $id,
 			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
+			'class' => 'fbtn-default fabrikinput input-list',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 	}
@@ -1310,7 +1310,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'name' => $id,
 			'size' => 0,
 			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
+			'class' => 'form-control fabrikinput inputbox text input-list',
 			'value' => $value
 		);
 
@@ -1357,7 +1357,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'name' => $id,
 			'size' => 0,
 			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
+			'class' => 'form-control fabrikinput inputbox text input-list',
 			'value' => $value
 		);
 
@@ -1403,7 +1403,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'name' => $id,
 			'size' => 0,
 			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
+			'class' => 'form-control fabrikinput inputbox text input-list',
 			'value' => $listWidth == 0 ? 100 : $listWidth
 		);
 
@@ -1464,7 +1464,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1517,7 +1517,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'options' => $this->optionsElements($opts),
 			'name' => $id,
 			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
+			'class' => 'fbtn-default fabrikinput input-list',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 	}
@@ -1552,7 +1552,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = (array) $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1652,7 +1652,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = [$val];
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1701,7 +1701,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'options' => $this->optionsElements($opts),
 			'name' => $id,
 			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
+			'class' => 'fbtn-default fabrikinput input-list',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 		$elements[$id]['cssElement'] = 'border-top: #ccc solid 2px;';
