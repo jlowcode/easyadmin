@@ -929,7 +929,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
-		$this->setElementFormatToLongText($elements, 'format_long_text');
+		//$this->setElementFormatToLongText($elements, 'format_long_text');
 		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
 		//$this->setElementMakeThumbs($elements, 'make_thumbs');
