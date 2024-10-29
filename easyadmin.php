@@ -929,7 +929,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
-		//$this->setElementFormatToLongText($elements, 'format_long_text');
+		$this->setElementFormatToLongText($elements, 'format_long_text');
 		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
 		//$this->setElementMakeThumbs($elements, 'make_thumbs');
@@ -3232,7 +3232,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		switch ($mode) {
 			case 'elements':
-				if(in_array($data['history_type'], ['related_list'])) {
+				if(in_array($data['history_type'], ['related_list', 'longtext'])) {
 					// Changing the element related_list to another type, the group must to be the principal
 
 					$idEl = $data['valIdEl'];
@@ -3872,6 +3872,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$new = true;
 			$optsGroup['form'] = (string) $idForm;
 		} else {
+			if($opts['group_id_old'] == $opts['group_id']) {
+				return;
+			}
+
 			$new = false;
 			$optsGroup['id'] = $trash ? (string) $opts['group_id_old'] : (string) $opts['group_id'];
 		}
