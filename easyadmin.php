@@ -3232,7 +3232,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		switch ($mode) {
 			case 'elements':
-				if(in_array($data['history_type'], ['related_list', 'longtext'])) {
+				if(in_array($data['history_type'], ['related_list'])) {
 					// Changing the element related_list to another type, the group must to be the principal
 
 					$idEl = $data['valIdEl'];
