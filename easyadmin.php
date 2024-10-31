@@ -3604,16 +3604,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			// We need add the width to width of the list
 			$verifyWidth = $this->verifyWidthList($width, $opts['id'], $listModel);
-			if(!$oldId && $verifyWidth['makeBigger']) {
-				$newWidthList = (int) $listModel->getParams()->get('width_list') + $verifyWidth['increase'];
-				$data['width_list'] = $newWidthList;
-
-				$validate = json_decode($this->saveModalList($data, $listModel));
+			if($verifyWidth['overWidth']) {
+				$this->resizeWidthElements($verifyWidth['resize'], $verifyWidth['weigth'], $opts['id'], $listModel);
 			}
 		}
 
 		// Validation rules
-		if(isset($pluginValidation)) {
+			if(isset($pluginValidation)) {
 			$validation['plugin'] = $pluginValidation;
 			$validation['plugin_published'] = $publishedValidation;
 			$validation['validate_in'] = $validateInValidation;
@@ -3730,16 +3727,67 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$width = 0;
 
 		foreach ($elements as $el) {
+			if(!$el->getElement()->show_in_list_summary || !$el->getElement()->published || $el->getId() == (int) $elId) {
+				continue;
+			}
+
 			$cssCel = $el->getParams()->get('tablecss_cell');
-			preg_match('/(\d+)/', $cssCel, $matches);
-			$count = $el->getElement()->show_in_list_summary && $el->getElement()->published && $el->getId() != (int) $elId;
-			$width += ($count ? (int) $matches[0] : 0);
+			preg_match('/\d+(\.\d+)?/', $cssCel, $matches);
+			$width += (float) $matches[0];
 		}
 
-		$response['makeBigger'] = ($width + (int) $widthElement) > $widthList;
-		$response['increase'] = ($width + (int) $widthElement) - $widthList;
+		$response['overWidth'] = ($width + (float) $widthElement) > $widthList + 2;
+		$response['resize'] = ($width + (float) $widthElement) - $widthList;
+		$response['weigth'] = $width;
 
 		return $response;
+	}
+
+	/**
+	 * This method resize all elements of the list to ensure that the sum do not exceed 100%
+	 * 
+	 * @param		Float			$resize				The percent to resize
+	 * @param		Float			$elId				The id element
+	 * @param		Object			$listModel			Object of the frontend list model
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function resizeWidthElements($resize, $weigth, $elId, $listModel) 
+	{
+		$modelElement = new FabrikAdminModelElement();
+
+		$elements = $listModel->getElements();
+
+		foreach ($elements as $el) {
+			if(!$el->getElement()->show_in_list_summary || !$el->getElement()->published || $el->getId() == (int) $elId) {
+				continue;
+			}
+
+			$opts = Array();
+			$params = $el->getParams();
+			$paramsEl = json_decode($params, true);
+
+			$cssCel = $params->get('tablecss_cell');
+			$cssHeader = $params->get('tablecss_header');
+			preg_match('/\d+(\.\d+)?/', $cssCel, $matches);
+
+			$actualWidth = (float) $matches[0];
+			$newWidth = round($actualWidth - ($actualWidth / $weigth * $resize), 2);
+			$cssCellNew = preg_replace('/'.$actualWidth.'/', $newWidth, $cssCel, 1);
+			$cssHeaderNew = preg_replace('/'.$actualWidth.'/', $newWidth, $cssHeader, 1);
+
+			$paramsEl['tablecss_cell'] = $cssCellNew;
+			$paramsEl['tablecss_header'] = $cssHeaderNew;
+
+			$opts['id'] = $el->getId();
+			$opts['published'] = $el->getElement()->published;
+			$opts['validationrule'] = $el->getValidations();
+			$opts['params'] = $paramsEl;
+			$this->syncParams($opts, $listModel);
+			$modelElement->save($opts);
+		}
 	}
 
 	/**
