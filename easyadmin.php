@@ -3446,13 +3446,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'autocomplete':
 			case 'treeview':
+				$opts['link_to_detail'] = '0';
 				$opts['plugin'] = 'databasejoin';
+
 				$params['join_conn_id'] = '1';
 				$params['join_db_name'] = $data['listas'];
 				$params['join_key_column'] = 'id';
 				$params['join_val_column'] =  $data['label'];
 				$params['database_join_show_please_select'] =  '1';
 				$params['dbjoin_autocomplete_rows'] =  10;
+				$params['databasejoin_readonly_link'] = '1';
 
 				$params['database_join_display_type'] = $data['multi_relation'] ? 'checkbox' : 'auto-complete';
 
