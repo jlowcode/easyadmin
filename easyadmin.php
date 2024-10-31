@@ -4076,6 +4076,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function configureFormToElementRelatedList($listModel, &$opts, &$params) 
 	{
 		$app = Factory::getApplication();
+		$listModel->reset();
 		$input = $app->input;
 
 		$formModelRelated = new FabrikAdminModelForm();
