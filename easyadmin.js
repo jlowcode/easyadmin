@@ -651,6 +651,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			JBtnGroup.append(button);
 			div.append(addElementButton);
+			if(self.options.owner_id == self.options.user.id) {
+				div.append(editListButton);
+			}
 
 			jQuery.each(allElements, function(state, elements) {
 				if(state == 'trash') {
@@ -697,9 +700,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			divTrash.appendTo(div);
-			if(self.options.owner_id == self.options.user.id) {
-				div.append(editListButton);
-			}
 
 			JBtnGroup.append(div);
 		},
@@ -793,7 +793,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				jQuery('.trashEl').css('display', 'none');
 			});
 
-			var editListButton = jQuery('<li class="subMenuAdmin" style="border-bottom: 2px solid #eee; padding: 0px 10px 5px 10px;"><button  id="button_' + self.options.idModalList + '" href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") + '</button></li>');
+			var editListButton = jQuery('<li class="subMenuAdmin" style="padding: 0px 10px 5px 10px;"><button  id="button_' + self.options.idModalList + '" href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST") + '</button></li>');
 			var addElementButton = jQuery('<li class="subMenuAdmin" style="border-top: 2px solid #eee; padding: 5px 10px 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") + '</button></li>');
 
 			if(!btnGroup) {
@@ -812,6 +812,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
+			if(self.options.owner_id == self.options.user.id) {
+				JBtnGroup.append(editListButton);
+			}
 
 			jQuery.each(allElements, function(state, elements) {
 				var state = state;
@@ -859,9 +862,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			divTrash.appendTo(JBtnGroup);
-			if(self.options.owner_id == self.options.user.id) {
-				JBtnGroup.append(editListButton);
-			}
 		},
 
 		/**
@@ -925,9 +925,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				'font-size': '12px',
 				'width': '100%',
 				'border-radius': '12px',
-				'color': '#000',
+				'color': '#011627',
 				'background-color': '#e3ecf1',
-				'margin-top': '20px'
 			});
 
 			addElementButton.find('button').css({
@@ -935,8 +934,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				'font-size': '12px',
 				'width': '100%',
 				'border-radius': '12px',
-				'color': '#fff',
-				'background-color': '#003EA1',
+				'color': '#011627',
+				'background-color': '#e3ecf1',
 				'margin-bottom': '5px'
 			});
 		},
