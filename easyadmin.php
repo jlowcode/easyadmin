@@ -3554,6 +3554,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['database_join_show_please_select'] =  '1';
 				$params['dbjoin_autocomplete_rows'] =  10;
 				$params['databasejoin_readonly_link'] = '1';
+				$params['fabrikdatabasejoin_frontend_add'] =  '0';
 
 				$params['database_join_display_type'] = $data['multi_relation'] ? 'checkbox' : 'auto-complete';
 
