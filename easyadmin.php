@@ -414,6 +414,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataEl->type = $params['database_join_display_style'] == 'only-autocomplete' ? 'autocomplete' : 'treeview';
 				$dataEl->label =  $params['join_val_column'];
 				$dataEl->father = $params['tree_parent_id'];
+				$dataEl->tags = (bool) $params['moldTags'] ? true : false;
 				break;
 
 			case 'display':
@@ -942,6 +943,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementList($elements, 'listas');
 		$this->setElementLabel($elements, 'label');
 		$this->setElementFather($elements, 'father');
+		$this->setElementTags($elements, 'tags');
 		$this->setElementMultiRelations($elements, 'multi_relation');
 		$this->setElementAccessRating($elements, 'access_rating');
 		$this->setElementUseFilter($elements, 'use_filter');
@@ -3071,6 +3073,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to tags element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementTags(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
+
+		$dEl = new stdClass();
+		$showOnTypes = ['autocomplete'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_DESC'),
+			$showOnTypes,
+			false
+		);
+		$elements[$idEasy]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 10px; padding: 0px"',
+		);
+		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
+	}
+
+	/**
 	 * Setter method to access rating element
 	 *
 	 * @param		Array 		$elements			Reference to all elements
@@ -3514,24 +3564,22 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
 					$params['jsSuggest'] =  '1';
-					$params['moldTags'] =  '1';
+					$data['tags'] ? $params['moldTags'] = '1' : $formPopup = true;
 				} else {
 					$params['database_join_display_style'] =  'only-treeview';
 					$params['tree_parent_id'] =  $data['father'];
+					$formPopup = true;
+				}
+
+				if($formPopup) {
 					$params['fabrikdatabasejoin_frontend_add'] =  '1';
 					$params['fabrikdatabasejoin_frontend_blank_page'] =  '0';
 					$params['join_popupwidth'] =  '80%';
-					$params['rollover'] = 'Clique em + para adicionar. Após clique na seta para atualizar as categorias.';
-
-					$query = $db->getQuery(true);
-					$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
-						->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
-						->where('f.published = 1 AND l.db_table_name = ' . $db->q($data['listas']));
-					$db->setQuery($query);
-					$options = $db->loadObjectList();
-
-					$params['databasejoin_popupform'] =  $options[0]->value;
+					$params['rollover'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ROLLOVER_DATABASEJOIN");
+					$params['databasejoin_popupform'] = $this->getIdPopupForm($data['listas']);
+					$params['moldTags'] = '0';
 				}
+
 				break;
 
 			case 'thumbs':
@@ -3762,6 +3810,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return json_encode($validate);
 	}
 
+	/**
+	 * 
+	 * 
+	 */
+	private function getIdPopupForm($tableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
+			->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
+			->where('f.published = 1 AND l.db_table_name = ' . $db->q($tableName));
+		$db->setQuery($query);
+		$options = $db->loadObjectList();
+
+		return $options[0]->value;
+	}
+	
 	/**
 	 * This method checks if the width of the elements exceeds the width of the list.
 	 * 
