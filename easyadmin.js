@@ -874,6 +874,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			addElementButton.on('click', function() {
 				self.options.valIdEl = 0;
+				jQuery('[name=history_type]').val('')
 
 				Els = jQuery('.fabrikinput');
 				Els.each(function() {
