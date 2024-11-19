@@ -3323,7 +3323,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$listModel = new FabrikFEModelList();
 		$model = JModelLegacy::getInstance('Element', 'FabrikAdminModel');
-		
+
 		$listId = $_POST['easyadmin_modal___listid'];
 		$listModel->setId($listId);
 
@@ -4519,8 +4519,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$modelForm->save($dataForm);
 
 			// Configure admins list
-			$oldAdmins = $this->onGetUsersAdmins($viewLevel);
-			$this->configureAdminsList($data['admins_list'], $data['viewLevel_list'], $oldAdmins);
+			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
+			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
 		}
 
 		try {
