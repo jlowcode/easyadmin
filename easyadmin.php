@@ -3698,7 +3698,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Show in list rules
 		if($data['show_in_list']) {
-			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
+			$width = !$data['width_field'] ? '10' : $data['width_field'];
 			$css = 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 			$data['white_space'] == 'true'? $cssCel = '' : $cssCel = $css;
 
@@ -4796,6 +4796,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['name'] == '') {
 			$validate->error = true;
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_LABEL'));
+		}
+
+		// Element width cant be zero
+		if($data['show_in_list'] && $data['width_field'] == '0'&& $data['valIdEl'] != '0') {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_WIDTH_ELEMENT', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_FIELD_LABEL'));
 		}
 
 		// The new name must be unique
