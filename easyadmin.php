@@ -3417,6 +3417,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$modelElement->save($optsOld);
 
 			$nameEl = $this->checkNameElementToChangeType($nameEl, $listModel);
+			$elChangedType = true;
 		}
 
 		$opts['easyadmin'] = true;
@@ -3708,9 +3709,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$params['tablecss_header'] = $width ? $cssHeader : "";
 
 			// We need add the width to width of the list
-			$verifyWidth = $this->verifyWidthList($width, $opts['id'], $listModel);
+			$verifyWidth = $this->verifyWidthList($width, $opts['id'], $listModel, $elChangedType);
 			if($verifyWidth['overWidth']) {
-				$this->resizeWidthElements($verifyWidth['resize'], $verifyWidth['weigth'], $opts['id'], $listModel);
+				$this->resizeWidthElements($verifyWidth['resize'], $verifyWidth['weigth'], $opts['id'], $listModel, $elChangedType);
 			}
 		}
 
@@ -3834,15 +3835,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * This method checks if the width of the elements exceeds the width of the list.
 	 * 
-	 * @param		Int				$widthElement		The new width to add
-	 * @param		Int				$elId				The id element
-	 * @param		Object			$listModel			Object of the frontend list model
+	 * @param		Int				$widthElement			The new width to add
+	 * @param		Int				$elId					The id element
+	 * @param		Object			$listModel				Object of the frontend list model
+	 * @param		Boolean			$elChangedType			Does element changed the type?
 	 * 
 	 * @return		Array
 	 * 
 	 * @since		v4.3.1
 	 */
-	private function verifyWidthList($widthElement, $elId, $listModel)
+	private function verifyWidthList($widthElement, $elId, $listModel, $elChangedType)
 	{
 		$response = Array();
 		$elements = $listModel->getElements();
@@ -3850,7 +3852,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$width = 0;
 
 		foreach ($elements as $el) {
-			if(!$el->getElement()->show_in_list_summary || !$el->getElement()->published || $el->getId() == (int) $elId) {
+			if(!$el->getElement()->show_in_list_summary || $el->getId() == (int) $elId || $elChangedType) {
 				continue;
 			}
 
@@ -3869,9 +3871,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * This method resize all elements of the list to ensure that the sum do not exceed 100%
 	 * 
-	 * @param		Float			$resize				The percent to resize
-	 * @param		Float			$elId				The id element
-	 * @param		Object			$listModel			Object of the frontend list model
+	 * @param		Float			$resize					The percent to resize
+	 * @param		Float			$elId					The id element
+	 * @param		Object			$listModel				Object of the frontend list model
+	 * @param		Boolean			$elChangedType			Does element changed the type?
 	 * 
 	 * @return		Null
 	 * 
@@ -3884,7 +3887,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements = $listModel->getElements();
 
 		foreach ($elements as $el) {
-			if(!$el->getElement()->show_in_list_summary || !$el->getElement()->published || $el->getId() == (int) $elId) {
+			if(!$el->getElement()->show_in_list_summary || $el->getId() == (int) $elId || $elChangedType) {
 				continue;
 			}
 
