@@ -3816,8 +3816,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * This method get in database the list id
 	 * 
+	 * @param			String			$tableName			Table name requiered
 	 * 
+	 * @return			Int
+	 * 
+	 * @since			v4.1
 	 */
 	private function getIdPopupForm($tableName)
 	{
@@ -3826,7 +3831,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$query = $db->getQuery(true);
 		$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
 			->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
-			->where('f.published = 1 AND l.db_table_name = ' . $db->q($tableName));
+			->where('l.db_table_name = ' . $db->q($tableName));
 		$db->setQuery($query);
 		$options = $db->loadObjectList();
 
