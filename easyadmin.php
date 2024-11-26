@@ -3629,6 +3629,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['plugin'] = 'youtube';
 				$params['width'] = '30';
 				$params['player_size'] = 'big';
+				$params['display_in_table'] = '2';
 
 				$params['php-message'][0] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_YOUTUBE_LINK");
 				$params['php-code'][0] = '
@@ -4266,7 +4267,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if(!in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
 			$pluginsForm['plugin'][] = 'redirect';
 			$pluginsForm['plugin_locations'][] = 'both';
-			$pluginsForm['plugin_events'][] = 'both';
+			$pluginsForm['plugin_events'][] = 'new';
 			$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
 			$pluginsForm['plugin_state'][] = '1';
 		}
