@@ -4591,7 +4591,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$params['main_column'] = $elName;
-		$params['thumb_column'] = $elFile;
+		$params['thumb_column'] = isset($elFile) ? $elFile : '';
+		$params['comparison_access'] = '1';
 		$params['list_comparison_columns'] = json_encode($columns);
 	}
 
