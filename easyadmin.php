@@ -26,6 +26,7 @@ use Joomla\Component\Users\Administrator\Model\UserModel;
 use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Editor\Editor;
 
 // Requires 
 // Change to namespaces on F5
@@ -88,7 +89,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$requestWorkflow = $input->getInt('requestWorkflow');
 
 		$this->setListId($input->get('listid'));
-		
+
 		//We don't have run
 		if(!$this->mustRun()) {
 			return;
@@ -147,6 +148,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->idModalList = $this->idModalList;
 		$opts->dbPrefix = $db->getPrefix();
 		$opts->workflow = $workflow;
+		$opts->owner_id = $listModel->getFormModel()->getTable()->get('created_by');
+		$opts->user = $this->user;
 
 		echo $this->setUpModalElements();
 		echo $this->setUpModalList();
@@ -232,7 +235,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$input->get('task') == 'list.delete' ||
 			in_array('form', explode('.', $input->get('task'))) &&
 			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
-			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin')
+			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
+			($input->get('action') == 'getFilhos') ||
+			isset($_REQUEST['resetfilters'])
 		) {
 			return false;
 		}
@@ -277,8 +282,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		foreach($elements as $key => $element) {
 			$dataEl = new stdClass();
-
 			$fullElementName = $this->processFullElementName($key);
+
+			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
+
 			$link = $this->createLink($element->element->id);
 			$idElement = $element->getId();
 			$enable = $this->isEnabledEdit($element->getElement());
@@ -299,7 +306,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Method that return if the type of plugin is trated by us or not
+	 * Method that return if the type of plugin is treated by us or not
 	 *
 	 * @param   	Object			$element 		Object of the element
 	 *
@@ -318,7 +325,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 *
 	 * @param   	Object			$dataEl 		Element data object
 	 * @param   	Object			$element 		Element object
-	 * @param   	Boolean			$enable 		The element is trated by us or not
+	 * @param   	Boolean			$enable 		The element is treated by us or not
 	 * 
 	 * @return 		Null
 	 */
@@ -335,18 +342,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		preg_match('/(\d+)/', $params["tablecss_cell"], $matches);
 
 		$dataEl->use_filter = $dataElement->filter_type ? true : false;
-		$dataEl->required = !empty($element->getValidations()) ? true : false;
+		$dataEl->required = $this->verifyRequiredValidation($element, 'notempty');
 		$dataEl->show_in_list = $dataElement->show_in_list_summary ? true : false;
 		$dataEl->width_field = $matches[0];
 		$dataEl->name = $dataElement->label;
 		$dataEl->ordering_elements = $dataElement->show_in_list_summary ? $element->getId() : '-2';
 		$dataEl->trash = $dataElement->published == 1 ? false : true;
+		$dataEl->white_space = !str_contains($params["tablecss_cell"], 'nowrap');
 
 		switch ($plugin) {
 			case 'field':
 			case 'textarea':
 				$dataEl->default_value = $dataElement->default;
 				$dataEl->text_format = $params['password'] == '5' ? 'url' : $params['text_format'];
+				$dataEl->format_long_text = $params['use_wysiwyg'];
 				$dataEl->type = $plugin == 'field' ? $params['element_link_easyadmin'] == '1' ? 'link' : 'text' : 'longtext';
 
 				// The element is field, but of type link
@@ -394,7 +403,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'databasejoin':
-				$dataEl->list = $params['join_db_name'];
+				$dataEl->listas = $params['join_db_name'];
 
 				if(!in_array($params['database_join_display_type'], ['checkbox', 'auto-complete'])) {
 					$enable = false;
@@ -405,18 +414,51 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataEl->type = $params['database_join_display_style'] == 'only-autocomplete' ? 'autocomplete' : 'treeview';
 				$dataEl->label =  $params['join_val_column'];
 				$dataEl->father = $params['tree_parent_id'];
+				$dataEl->tags = (bool) $params['moldTags'] ? true : false;
 				break;
-			
+
 			case 'display':
+				preg_match('/related_list_element-(.*?)\}/', $dataElement->get('default'), $matches);
+				preg_match('/related_list-(.*?)\}/', $dataElement->get('default'), $matchesList);
+
 				$dataEl->type = 'related_list';
+				$dataEl->related_list = explode('-', $matchesList[0])[1];
+				$dataEl->related_list_element = explode('-', $matches[0])[1];
 				break;
-			
+
+			case 'thumbs':
+				$dataEl->type = 'thumbs';
+				$dataEl->show_down_thumb = isset($params['show_down']) ? $params['show_down'] ? true : false : true;
+				break;
+
 			default:
 				$dataEl->type = $plugin;
 				break;
 		}
 	}
 
+	/**
+	 * This method iterate by validations element and return if exist some the validation passed
+	 * 
+	 * @param		Object			$element			Element object
+	 * @param		String			$validation			Validation name to search
+	 * 
+	 * @return 		Boolean
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function verifyRequiredValidation($element, $validation)
+	{
+		$validations = $element->getValidations();
+
+		foreach ($validations as $modelValidation) {
+			if(stripos($modelValidation->getName(), $validation)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Method that process the name of elements to edit them
@@ -442,10 +484,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * Method that process the full name of elements to edit them
 	 *
 	 * @param   	String			$key 		The full element name to process
+	 * @param   	Boolean			$func 		If true, return only lastName
 	 * 
 	 * @return 		String		
 	 */
-	protected function processFullElementName($key) 
+	protected function processFullElementName($key, $func=false) 
 	{
 		$pos = strpos($key, '.');
 		$firstName = substr ($key , 1, $pos-2);
@@ -453,7 +496,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$lastName = substr ($lastName , 0, strlen($lastName) - 1);
 		$processedKey = $firstName . "___" . $lastName;
 
-		return $processedKey;
+		return $func ? $lastName : $processedKey;
 	}
 
 	/**
@@ -738,9 +781,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			[
 				'title'       	=> $config['title'],
-				'backdrop'    	=> true,
-				'keyboard'    	=> true,	
-				'focus'			=> true,
+				'backdrop'    	=> 'static',
+				'keyboard'    	=> false,
+				'focus'			=> false,
 				'closeButton' 	=> true,
 				'height'      	=> '400px',
 				'width'       	=> '600px',
@@ -810,7 +853,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @param		Int			$return			Choose to string return (0) or array return (1)
 	 * 
-	 * @return  	String
+	 * @return  	String|Array
 	 * 
 	 * @since 		version 4.0
 	 */
@@ -892,26 +935,31 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
-		$this->setElementDefaultValue($elements, 'default_value');
+		$this->setElementFormatToLongText($elements, 'format_long_text');
+		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
 		//$this->setElementMakeThumbs($elements, 'make_thumbs');
 		$this->setElementFormat($elements, 'format');
 		$this->setElementOptsDropdown($elements, 'options_dropdown');
 		$this->setElementMultiSelect($elements, 'multi_select');
-		$this->setElementList($elements, 'list');
+		$this->setElementList($elements, 'listas');
 		$this->setElementLabel($elements, 'label');
 		$this->setElementFather($elements, 'father');
+		$this->setElementTags($elements, 'tags');
 		$this->setElementMultiRelations($elements, 'multi_relation');
 		$this->setElementAccessRating($elements, 'access_rating');
 		$this->setElementUseFilter($elements, 'use_filter');
 		$this->setElementsAuxLink($elements, 'mainAuxLink', $mainAuxLink);
 		$this->setElementLabelAdvancedLink($elements, 'label_advanced_link');
 		$this->setElementsAuxLink($elements, 'secondaryAuxLink', $secondaryAuxLink);
+		$this->setElementShowDownThumb($elements, 'show_down_thumb');
 		$this->setElementShowInList($elements, 'show_in_list');
 		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementWidthField($elements, 'width_field');
+		$this->setElementWhiteSpace($elements, 'white_space');
 		$this->setElementRequired($elements, 'required');
 		$this->setElementRelatedList($elements, 'related_list');
+		$this->setElementRelatedListElement($elements, 'related_list_element');
 		$this->setElementTrash($elements, 'trash');
 
 		$this->elements = $elements;
@@ -934,13 +982,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		//$this->setElementThumbList($elementsList, 'thumb_list');	// For new version
 		$this->setElementOrderingList($elementsList, 'ordering_list');
 		$this->setElementOrderingTypeList($elementsList, 'ordering_type_list');
-		$this->setElementCollab($elementsList, 'collab_list');
-		$this->setElementWorkflowList($elementsList, 'workflow_list');
 		$this->setElementVisibilityList($elementsList, 'visibility_list');
 		$this->setElementAdminsList($elementsList, 'admins_list');
 		$this->setElementWidthList($elementsList, 'width_list');
 		$this->setElementLayoutMode($elementsList, 'layout_mode');
+		$this->setElementComparisonList($elementsList, 'comparison_list');
 		//$this->setElementDefaultLayout($elementsList, 'default_layout');
+		$this->setElementWorkflowList($elementsList, 'workflow_list');
+		$this->setElementApproveByVotesList($elementsList, 'approve_by_votes_list');
+		$this->setElementVotesToApproveList($elementsList, 'votes_to_approve_list');
+		$this->setElementVotesToDisapproveList($elementsList, 'votes_to_disapprove_list');
+		$this->setElementCollab($elementsList, 'collab_list');
 		$this->setElementTrashList($elementsList, 'trash_list');
 
 		$this->elementsList = $elementsList;
@@ -974,7 +1026,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'name' => $id,
 			'size' => 0,
 			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
+			'class' => 'form-control fabrikinput inputbox text input-list',
 			'value' => $val
 		);
 
@@ -1012,18 +1064,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl = new stdClass;
 
 		// Options to set up the element
-		$dEl->attributes = Array(
-			'type' => 'text',
-			'id' => $id,
-			'name' => $id,
-			'size' => 0,
-			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
-			'value' => $val
-		);
+		$rows = 10;
+		$cols = 60;
+		$editor = Editor::getInstance($this->config->get('editor'));
+		$dEl->editor = $editor->display($nameElement, $val, '100%', 100+$rows * 15, $cols, $rows, true, $id, 'com_fabrik');
 
-		$classField = new PlgFabrik_ElementField($subject);
-		$elements[$id]['objField'] = $classField->getLayout('form');
+		$classField = new PlgFabrik_ElementTextarea($subject);
+		$elements[$id]['objField'] = $classField->getLayout('wysiwyg');
 		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 
 		$elements[$id]['dataLabel'] = $this->getDataLabel(
@@ -1060,7 +1107,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $selected;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1103,7 +1150,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1142,7 +1189,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1172,7 +1219,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 
 		$value = (int) $listModel->getParams()->get('workflow_list', '1');
-		$value = Array($value);
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass();
@@ -1195,9 +1241,147 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'options' => $this->optionsElements($opts),
 			'name' => $id,
 			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
+			'class' => 'fbtn-default fabrikinput input-list',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
+		$elements[$id]['cssElement'] = 'border-top: #ccc solid 2px;';
+	}
+
+	/**
+	 * Setter method to approve by votes element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementApproveByVotesList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_approval_by_vote', '0');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$id]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_APPROVE_BY_VOTES_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_APPROVE_BY_VOTES_LIST_DESC'),
+		);
+		$elements[$id]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput input-list',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+	}
+
+		/**
+	 * Setter method to votes to approve element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementVotesToApproveList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_approve', '2');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass;
+		$showOnTypes = ['list-approve_by_votes_list'];
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text input-list',
+			'value' => $value
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$id]['objField'] = $classField->getLayout('form');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_APPROVE_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_APPROVE_LIST_DESC'),
+			$showOnTypes,
+			false,
+			'list'
+		);
+		$elements[$id]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method to votes to disapprove element of the list
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementVotesToDisapproveList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_disapprove', '2');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass;
+		$showOnTypes = ['list-approve_by_votes_list'];
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text input-list',
+			'value' => $value
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$id]['objField'] = $classField->getLayout('form');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_DISAPPROVE_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_DISAPPROVE_LIST_DESC'),
+			$showOnTypes,
+			false,
+			'list'
+		);
+		$elements[$id]['dataField'] = $dEl;
 	}
 
 	/**
@@ -1227,7 +1411,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'name' => $id,
 			'size' => 0,
 			'maxlength' => '255',
-			'class' => 'form-control fabrikinput inputbox text',
+			'class' => 'form-control fabrikinput inputbox text input-list',
 			'value' => $listWidth == 0 ? 100 : $listWidth
 		);
 
@@ -1257,6 +1441,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
+		$elsList = $listModel->getElements('id');
 
 		$layoutMode = (int) $listModel->getParams()->get('layout_mode');
 		$val = Array($layoutMode);
@@ -1265,15 +1450,29 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl = new stdClass();
 
 		// Options to set up the element
-		$dEl->options = $this->optionsElements(Array(
+		$options = Array(
 			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0"),
 			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1")
-		));
+		);
+
+		foreach ($elsList as $el) {
+			$params = $el->getParams();
+			if(
+				str_contains($el->getName(), 'Databasejoin') &&
+				$params->get('database_join_display_type') == 'auto-complete' && 
+				$params->get('join_db_name') == $listModel->getTable()->get('db_table_name') && 
+				($params->get('database_join_display_style') == 'both-treeview-autocomplete' || $params->get('database_join_display_style') == 'only-treeview')
+			) {
+				$options['2'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_2");
+			}
+		}
+		
+		$dEl->options = $this->optionsElements($options);
 		$dEl->name = $id;
 		$dEl->id = $id;
 		$dEl->selected = $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1284,6 +1483,50 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_LABEL'),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_DESC'),
+		);
+	}
+
+	/**
+	 * Setter method to comparison element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3
+	 */
+	private function setElementComparisonList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$plgComparison = array_search('comparison', $listModel->getParams()->get('plugins'));
+		$value = $plgComparison && (bool) $listModel->getParams()->get('plugin_state')[$plgComparison];
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$id]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COMPARISON_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COMPARISON_DESC'),
+		);
+		$elements[$id]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput input-list',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 	}
 
@@ -1317,7 +1560,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = (array) $val;
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1417,7 +1660,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dEl->id = $id;
 		$dEl->selected = [$val];
 		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium"';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
 		$dEl->multisize = '';
 
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
@@ -1466,7 +1709,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'options' => $this->optionsElements($opts),
 			'name' => $id,
 			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
+			'class' => 'fbtn-default fabrikinput input-list',
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 		$elements[$id]['cssElement'] = 'border-top: #ccc solid 2px;';
@@ -1627,7 +1870,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function optionsElements($opts) 
+	private function optionsElements($opts)
 	{
 		$qtnTypes = count($opts);
 		$x = 0;
@@ -1641,6 +1884,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Setter method to show down thumb element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementShowDownThumb(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
+
+		$dEl = new stdClass();
+		$showOnTypes = ['thumbs'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_DOWN_THUMB_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_DOWN_THUMB_DESC'),
+			$showOnTypes, 
+			false
+		);
+		$elements[$idEasy]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
 	}
 
 	/**
@@ -1807,6 +2098,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to white space element
+	 * 
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 * 
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementWhiteSpace(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
+
+		$dEl = new stdClass();
+		$showOnTypes = ['element-show_in_list'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_WHITE_SPACE_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_WHITE_SPACE_DESC'),
+			$showOnTypes, 
+			false
+		);
+		$elements[$idEasy]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+		);
+		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
+	}
+
+	/**
 	 * Setter method to required element
 	 *
 	 * @param   	Array 		$elements			Reference to all elements
@@ -1899,16 +2238,62 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to related list element of the element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.1.0
+	 */
+	private function setElementRelatedListElement(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy];
+		$showOnTypes = ['related_list'];
+		$dEl = new stdClass();
+
+		// Options to set up the element
+		$dEl->options = $this->optionsElements($this->searchRelatedLists($this->listModel->getTable()->get('db_table_name')));
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = Array($value);
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium"' . ($this->getRequestWorkflow() ? ' disabled' : '');
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$idEasy]['objField'] = $classDropdown->getLayout('form');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_ELEMENT_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_ELEMENT_LIST_DESC'),
+			$showOnTypes,
+			false
+		);
+		$elements[$idEasy]['dataField'] = $dEl;
+	}
+
+	/**
 	 * Method that with cURL call the ajax fields function to return the list elements
 	 * 
-	 * @return		Array
+	 * @return			Array
 	 * 
-	 * @since 		version 4.2.1
+	 * @since 			version 4.2.1
+	 * 
+	 * @deprecated		since v4.3.1 because rules about show options in link elements changed. Will be removed in 5.0
 	 */
 	private function callAjaxFields() 
 	{
 		$optsFormated = Array();
-		$url = COM_FABRIK_LIVESITE . 'index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=0&t=119&published=1';
+		$url = COM_FABRIK_LIVESITE . 'index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=0&t=' . $this->getListId() . '&published=1';
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -1933,7 +2318,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Method that search the related lists in database to render the options to user
 	 *
-	 * @param		String		Optional to get the name of join element
+	 * @param		String			$table			Optional to get the name of join element
 	 * 
 	 * @return		Array
 	 * 
@@ -1947,7 +2332,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$table == '' ?  $table = $this->db_table_name : $findJoin = true;
 
 		$query = $db->getQuery(true);
-		$query->select('DISTINCT l.label AS label, l.id AS id, e.name AS elementJoin')
+		$query->select('DISTINCT l.label AS label, l.id AS id, e.name AS elementJoin, e.label AS labelEl')
 			->from($db->qn('#__fabrik_elements') . ' AS e')
 			->join('LEFT', $db->qn('#__fabrik_groups') . ' AS g ON g.id = e.group_id')
 			->join('LEFT', $db->qn('#__fabrik_formgroup') . ' AS `fg` ON fg.group_id = g.id')
@@ -1960,7 +2345,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$opts = Array();
 		foreach ($results as $list) {
-			$findJoin ? $opts[$list->id] = $list->elementJoin : $opts[$list->id] = $list->label;
+			$findJoin ? $opts[$list->elementJoin] = $list->labelEl : $opts[$list->id] = $list->label;
 		}
 
 		return $opts;
@@ -2015,6 +2400,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
 	}
 	
+	/**
+	 * Setter method to format element to the long text type
+	 *
+	 * @param   	Array 	$elements		Reference to all elements
+	 * @param		String	$nameElement	Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.1.3
+	 */
+	private function setElementFormatToLongText(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy];
+		$dEl = new stdClass();
+		$showOnTypes = ['longtext'];
+
+		// Options to set up the element
+		$opts = Array(
+			'0' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_SIMPLE'),
+			'1' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_RICH'),
+		);
+		$dEl->options = $this->optionsElements($opts);
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = Array($value);
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium"' . ($this->getRequestWorkflow() ? ' disabled' : '');
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$idEasy]['objField'] = $classDropdown->getLayout('form');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FORMAT_LONG_TEXT_DESC'),
+			$showOnTypes,
+			false
+		);
+		$elements[$idEasy]['dataField'] = $dEl;
+	}
+
 	/**
 	 * Setter method to text format element
 	 *
@@ -2074,6 +2507,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @return  	Null
 	 * 
 	 * @since 		version 4.0
+	 * 
+	 * @deprecated  since 4.3.1 	This method was remove by admin option 
+	 *
 	 */
 	private function setElementDefaultValue(&$elements, $nameElement) 
 	{
@@ -2639,6 +3075,54 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * Setter method to tags element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.1
+	 */
+	private function setElementTags(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
+
+		$dEl = new stdClass();
+		$showOnTypes = ['autocomplete'];
+
+		// Options to set up the element
+		$opts = Array(
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+		);
+		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+		
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_DESC'),
+			$showOnTypes,
+			false
+		);
+		$elements[$idEasy]['dataField'] = Array(
+			'value' => $value,
+			'options' => $this->optionsElements($opts),
+			'name' => $id,
+			'id' => $id,
+			'class' => 'fbtn-default fabrikinput',
+			'dataAttribute' => 'style="margin-bottom: 10px; padding: 0px"',
+		);
+		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
+	}
+
+	/**
 	 * Setter method to access rating element
 	 *
 	 * @param		Array 		$elements			Reference to all elements
@@ -2652,6 +3136,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$formData = $this->getFormData();
 		$subject = $this->getSubject();
+		$listModel = $this->getListModel();
 
 		$idEasy = $this->prefixEl . '___' . $nameElement;
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
@@ -2661,6 +3146,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$opts = $this->getViewLevels();
+		$opts = Array(
+			'1' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ACCESS_RATING_PUBLIC'),
+			$listModel->getParams()->get('allow_edit_details') => $listModel->getTable()->get('label')
+		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
 		$dEl->id = $id;
@@ -2698,13 +3187,45 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$subject = $this->getSubject();
 		$classDropdown = new PlgFabrik_ElementDropdown($subject);
-		$opts = $this->optionsElements($this->callAjaxFields());
+		$elementsList = $this->getListModel()->getElements();
 		$showOnTypes = $nameElement == 'mainAuxLink' ? ['link'] : ['element-label_advanced_link' . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '')];
 
 		foreach ($ids as $idEl) {
+			$optsDropdown = Array();
 			$idEasy = $this->prefixEl . '___' . $idEl . '_link';
 			$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 			$value = $formData[$idEasy];
+
+			foreach ($elementsList as $classEl) {
+				$el = $classEl->getElement();
+
+				$hide = ['id', 'created_by', 'indexing_text', 'created_ip'];
+				if(in_array($el->get('name'), $hide) || $classEl->getParams()->get('element_link_easyadmin')) continue;
+
+				switch ($idEl) {
+					case 'thumb':
+						$el->get('plugin') == 'fileupload' ? $optsDropdown[$el->get('id')] = $el->get('label') : null;
+						break;
+
+					case 'title':
+						$el->get('plugin') == 'field' ? $optsDropdown[$el->get('id')] = $el->get('label') : null;
+						break;
+
+					case 'description':
+						$el->get('plugin') == 'textarea' ? $optsDropdown[$el->get('id')] = $el->get('label') : null;
+						break;
+					
+					default:
+						$default = true;
+						if($el->get('plugin') != 'fileupload') {
+							$optsDropdown[$el->get('id')] = $el->get('label');
+						}
+						break;
+				}
+			}
+
+			$default ? array_unshift($optsDropdown, Text::_("COM_FABRIK_PLEASE_SELECT")): null;
+			$opts = $this->optionsElements($optsDropdown);
 
 			// Options to set up the element
 			$dEl = new stdClass();
@@ -2777,7 +3298,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
             ->select($db->qn('title'))
             ->from($db->qn('#__viewlevels'))
             ->order($db->qn('id'))
-			->where($db->qn("id") . " IN ('" . implode("','", [1, $this->getListModel()->getTable()->access]) . "')");
+			->where($db->qn("id") . " IN ('" . implode("','", [1, $this->getListModel()->getParams()->get('allow_edit_details')]) . "')");
 
         $db->setQuery($query);
         $result = $db->loadObjectList();
@@ -2802,7 +3323,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$listModel = new FabrikFEModelList();
 		$model = JModelLegacy::getInstance('Element', 'FabrikAdminModel');
-		
+
 		$listId = $_POST['easyadmin_modal___listid'];
 		$listModel->setId($listId);
 
@@ -2811,11 +3332,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		switch ($mode) {
 			case 'elements':
-				if($data['history_type'] == 'related_list') {
+				if(in_array($data['history_type'], ['related_list', 'longtext'])) {
 					// Changing the element related_list to another type, the group must to be the principal
 
 					$idEl = $data['valIdEl'];
-					$element = $listModel->getElements('id', true, false)[$idEl];
 					$element = $listModel->getElements('id', true, false)[$idEl];
 					preg_match('/{loadmoduleid (\d+)}/', $element->getElement()->get('default'), $match);
 
@@ -2838,6 +3358,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'list':
 				$r = $this->saveModalList($data, $listModel);
+				break;
+			
+			case 'columns':
+				$modelElement = new FabrikAdminModelElement();
+				$r = $this->saveOrder($modelElement, $data, $listModel);
 				break;
 		}
 
@@ -2877,6 +3402,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$nameEl = $this->formatValue($data['name']);
 
+		// If the user change the type we need create a new element and send to trash the old one
+		if($data['valIdEl'] != '0' && $data['history_type'] != $data['type'] && !empty($data['history_type'])) {
+			$oldId = $data['valIdEl'];
+			$data['valIdEl'] = '0';
+
+			$element = $listModel->getElements('id', true, false)[$oldId];
+
+			$optsOld['id'] = $oldId;
+			$optsOld['published'] = '-2';
+			$optsOld['validationrule'] = $element->getValidations();
+			$optsOld['params'] = json_decode($element->getParams(), true);
+			$this->syncParams($optsOld, $listModel);
+			$modelElement->save($optsOld);
+
+			$nameEl = $this->checkNameElementToChangeType($nameEl, $listModel);
+			$elChangedType = true;
+		}
+
 		$opts['easyadmin'] = true;
 		$opts['asset_id'] = '';
 		$opts['id'] = $data['valIdEl'];
@@ -2903,6 +3446,19 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
 					$params['bootstrap_class'] = 'col-sm-12';
+					$params['textarea_field_type'] = 'MEDIUMTEXT';
+					$params['use_wysiwyg'] = $data['format_long_text'];
+					$params['height'] = '6';
+
+					if($data['format_long_text']) {
+						$params['height'] = '20';
+
+						$groupIdRelated = $this->groupToLongtextElement($listModel, $opts, $params);
+						$opts['group_id'] = $groupIdRelated;
+					} else {
+						$opts['group_id_old'] = $data['group_id_old'];
+						$this->groupToLongtextElement($listModel, $opts, $params, true);
+					}
 				}
 
 				if($data['text_format'] == 'url') {
@@ -2933,9 +3489,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
+				$params['fu_show_image'] = '2';
 
 				if($data['make_thumbs']) {
-					$params['fu_show_image'] = '2';
 					$params['fu_show_image_in_table'] = '1';
 					$params['fu_make_pdf_thumb'] = '1';
 					$params['make_thumbnail'] = '1';
@@ -2951,8 +3507,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'dropdown':
 				$opts['plugin'] = 'dropdown';
 				$params['multiple'] = $data['multi_select'] ? '1' : '0';
+				$params['advanced_behavior'] = $params['multiple'];
 
 				$sub_options = explode(',', $data['options_dropdown']);
+				if(empty($sub_options[0])) {
+					unset($sub_options[0]);
+				}
+				$sub_options = array_values($sub_options);
 				$params['sub_options'] = Array(
 					'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $sub_options),
 					'sub_labels' => $sub_options,
@@ -2966,6 +3527,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['plugin'] = 'date';
 				$params['date_table_format'] = $data['format'];
 				$params['date_form_format'] = $data['format'];
+				$params['date_which_time_picker'] = str_contains($data['format'], 'h:i:s') ? 'clock' : 'wicked';
+				$params['date_showtime'] = str_contains($data['format'], 'h:i:s') ? '1' : '0';
 
 				$data['use_filter'] ? $opts['filter_type'] = 'range' : null;
 				break;
@@ -2984,13 +3547,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'autocomplete':
 			case 'treeview':
+				$opts['link_to_detail'] = '0';
 				$opts['plugin'] = 'databasejoin';
+
 				$params['join_conn_id'] = '1';
-				$params['join_db_name'] = $data['list'];
+				$params['join_db_name'] = $data['listas'];
 				$params['join_key_column'] = 'id';
 				$params['join_val_column'] =  $data['label'];
 				$params['database_join_show_please_select'] =  '1';
 				$params['dbjoin_autocomplete_rows'] =  10;
+				$params['databasejoin_readonly_link'] = '1';
+				$params['fabrikdatabasejoin_frontend_add'] =  '0';
 
 				$params['database_join_display_type'] = $data['multi_relation'] ? 'checkbox' : 'auto-complete';
 
@@ -3001,32 +3568,35 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
 					$params['jsSuggest'] =  '1';
-					$params['moldTags'] =  '1';
+					$data['tags'] ? $params['moldTags'] = '1' : $formPopup = true;
 				} else {
-					$params['database_join_display_style'] =  'both-treeview-autocomplete';
+					$params['database_join_display_style'] =  'only-treeview';
 					$params['tree_parent_id'] =  $data['father'];
+					$formPopup = true;
+				}
+
+				if($formPopup) {
 					$params['fabrikdatabasejoin_frontend_add'] =  '1';
 					$params['fabrikdatabasejoin_frontend_blank_page'] =  '0';
 					$params['join_popupwidth'] =  '80%';
-
-					$query = $db->getQuery(true);
-					$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
-						->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
-						->where('f.published = 1 AND l.db_table_name = ' . $db->q($data['list']));
-					$db->setQuery($query);
-					$options = $db->loadObjectList();
-
-					$params['databasejoin_popupform'] =  $options[0]->value;
+					$params['rollover'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ROLLOVER_DATABASEJOIN");
+					$params['databasejoin_popupform'] = $this->getIdPopupForm($data['listas']);
+					$params['moldTags'] = '0';
 				}
+
 				break;
 
 			case 'thumbs':
 				$opts['plugin'] = 'thumbs';
 				$params['rate_in_from'] =  '0';
+				$params['show_down'] =  $data['show_down_thumb'] != '' ? '1' : '0';
 				break;
 
 			case 'related_list':
 				$opts['related_list'] = $data['related_list'];
+				$opts['group_id_old'] = $data['group_id_old'];
+				$opts['module_id_old'] = $data['module_id_old'];
+				$opts['related_list_element'] = $data['related_list_element'];
 
 				$groupIdRelated = $this->groupToElementRelatedList($listModel, $opts, $params);
 				$moduleId = $this->moduleToElementRelatedList($listModel, $opts, $params);
@@ -3034,7 +3604,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$this->configureFormToElementRelatedList($listModel, $opts, $params);
 
 				$opts['plugin'] = 'display';
-				$opts['default'] = "{loadmoduleid $moduleId}";
+				$opts['default'] = "<!-- {related_list_element-" . $opts['related_list_element'] . "-} {related_list-" . $opts['related_list'] . "-}--> {loadmoduleid $moduleId}";
 				$opts['group_id'] = $groupIdRelated;
 				$params['display_showlabel'] = "0";
 				break;
@@ -3054,19 +3624,55 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 				break;
-			
+
 			case 'youtube':
 				$opts['plugin'] = 'youtube';
 				$params['width'] = '30';
 				$params['player_size'] = 'big';
+				$params['display_in_table'] = '2';
+
+				$params['php-message'][0] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_YOUTUBE_LINK");
+				$params['php-code'][0] = '
+					if (filter_var($data, FILTER_VALIDATE_URL)) {
+						$domain = parse_url($data, PHP_URL_HOST);
+						$domain = strtolower($domain);
+
+						if ((strpos($domain, "youtube.com") !== false || strpos($domain, "youtu.be") !== false) && !str_contains($data, "list=")) {
+							return true;
+						}
+					}
+
+					return false;';
+				$pluginValidation[] = 'php';
+				$publishedValidation[] = '1';
+				$validateInValidation[] = 'both';
+				$validateOnValidation[] = 'both';
+				$validateHidenValidation[] = '0';
+				$mustValidateValidation[] = '1';
+				$showIconValidation[] = '1';
+
 				break;
 
 			case 'link':
 				$opts['plugin'] = 'field';
 				$params['element_link_easyadmin'] = '1';
+				$params['maxlength'] = 255;
+				$params['guess_linktype'] = '1';
+				$params['link_target_options'] = '_blank';
+				$params['isuniquevalue_message-0'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_VALIDATION_ISUNIQUE");
+
+				$pluginValidation[] = 'isuniquevalue';
+				$publishedValidation[] = '1';
+				$validateInValidation[] = 'both';
+				$validateOnValidation[] = 'both';
+				$validateHidenValidation[] = '0';
+				$mustValidateValidation[] = '1';
+				$showIconValidation[] = '1';
+
 				break;
 		}
 
+		// Filter rules
 		if($data['use_filter']) {
 			$opts['filter_exact_match'] = '0';
 			$params['filter_access'] = '1';
@@ -3080,30 +3686,58 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$opts['filter_type'] = '';
 		}
 
+		// Required rules
 		if($data['required']) {
-			$validation['plugin'] = ['notempty'];
-			$validation['plugin_published'] = ['1'];
-			$validation['validate_in'] = ['both'];
-			$validation['validate_on'] = ['both'];
-			$validation['validate_hidden'] = ['0'];
-			$validation['must_validate'] = ['1'];
-			$validation['show_icon'] = ['1'];
-			$opts['validationrule'] = $validation;
+			$pluginValidation[] = 'notempty';
+			$publishedValidation[] = '1';
+			$validateInValidation[] = 'both';
+			$validateOnValidation[] = 'both';
+			$validateHidenValidation[] = '0';
+			$mustValidateValidation[] = '1';
+			$showIconValidation[] = '1';
 		}
 
-		if($data['show_in_list'] || $opts['id'] == '0') {
-			$width = $opts['id'] == '0' ? '10' : $data['width_field'];
-			$css = 'max-width: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
-			$cssCel = 'width: ' . $width . '%; ' . $css;
+		// Show in list rules
+		if($data['show_in_list']) {
+			$width = !$data['width_field'] ? '10' : $data['width_field'];
+			$css = 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+			$data['white_space'] == 'true'? $cssCel = '' : $cssCel = $css;
+
+			$cssCel = 'width: ' . $width . '%; max-width: 1px; ' . $cssCel;
+			$cssHeader = 'width: ' . $width . '%; ' . $css;
+
 			$params['tablecss_cell'] = $width ? $cssCel : "";
+			$params['tablecss_header'] = $width ? $cssHeader : "";
+
+			// We need add the width to width of the list
+			$verifyWidth = $this->verifyWidthList($width, $opts['id'], $listModel, $elChangedType);
+			if($verifyWidth['overWidth']) {
+				$this->resizeWidthElements($verifyWidth['resize'], $verifyWidth['weigth'], $opts['id'], $listModel, $elChangedType);
+			}
+		}
+
+		// Validation rules
+			if(isset($pluginValidation)) {
+			$validation['plugin'] = $pluginValidation;
+			$validation['plugin_published'] = $publishedValidation;
+			$validation['validate_in'] = $validateInValidation;
+			$validation['validate_on'] = $validateOnValidation;
+			$validation['validate_hidden'] = $validateHidenValidation;
+			$validation['must_validate'] = $mustValidateValidation;
+			$validation['show_icon'] = $showIconValidation;
+			$opts['validationrule'] = $validation;
 		}
 
 		$params['can_order'] = '1';
 		$opts['params'] = $params;
 
 		if($opts['id'] != '0') {
+			$opts['id'] = $data['history_type'] != $data['type'] ? $oldId : $opts['id'];
+
 			$origName = $this->syncParams($opts, $listModel);
 			$input->set('name_orig', $origName);
+
+			$opts['id'] = $data['history_type'] != $data['type'] ? '0' : $opts['id'];
 		}
 
 		$modelElement->save($opts);
@@ -3155,6 +3789,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$dataForm[$key]['relation'] = $data['relation_link'];
 					$dataForm[$key]['rights'] = $data['rights_link'];
 					$dataForm[$key]['source'] = $data['source_link'];
+
 					$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
 					$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
 					$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];
@@ -3179,6 +3814,158 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		return json_encode($validate);
 	}
+
+	/**
+	 * This method get in database the list id
+	 * 
+	 * @param			String			$tableName			Table name requiered
+	 * 
+	 * @return			Int
+	 * 
+	 * @since			v4.1
+	 */
+	private function getIdPopupForm($tableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select('f.id AS value, f.label AS text, l.id AS listid')->from('#__fabrik_forms AS f')
+			->join('LEFT', '#__fabrik_lists As l ON f.id = l.form_id')
+			->where('l.db_table_name = ' . $db->q($tableName));
+		$db->setQuery($query);
+		$options = $db->loadObjectList();
+
+		return $options[0]->value;
+	}
+	
+	/**
+	 * This method checks if the width of the elements exceeds the width of the list.
+	 * 
+	 * @param		Int				$widthElement			The new width to add
+	 * @param		Int				$elId					The id element
+	 * @param		Object			$listModel				Object of the frontend list model
+	 * @param		Boolean			$elChangedType			Does element changed the type?
+	 * 
+	 * @return		Array
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function verifyWidthList($widthElement, $elId, $listModel, $elChangedType)
+	{
+		$response = Array();
+		$elements = $listModel->getElements();
+		$widthList = (int) $listModel->getParams()->get('width_list');
+		$width = 0;
+
+		foreach ($elements as $el) {
+			if(!$el->getElement()->show_in_list_summary || $el->getId() == (int) $elId || $elChangedType) {
+				continue;
+			}
+
+			$cssCel = $el->getParams()->get('tablecss_cell');
+			preg_match('/\d+(\.\d+)?/', $cssCel, $matches);
+			$width += (float) $matches[0];
+		}
+
+		$response['overWidth'] = ($width + (float) $widthElement) > $widthList + 2;
+		$response['resize'] = ($width + (float) $widthElement) - $widthList;
+		$response['weigth'] = $width;
+
+		return $response;
+	}
+
+	/**
+	 * This method resize all elements of the list to ensure that the sum do not exceed 100%
+	 * 
+	 * @param		Float			$resize					The percent to resize
+	 * @param		Float			$elId					The id element
+	 * @param		Object			$listModel				Object of the frontend list model
+	 * @param		Boolean			$elChangedType			Does element changed the type?
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function resizeWidthElements($resize, $weigth, $elId, $listModel) 
+	{
+		$modelElement = new FabrikAdminModelElement();
+
+		$elements = $listModel->getElements();
+
+		foreach ($elements as $el) {
+			if(!$el->getElement()->show_in_list_summary || $el->getId() == (int) $elId || $elChangedType) {
+				continue;
+			}
+
+			$opts = Array();
+			$params = $el->getParams();
+			$paramsEl = json_decode($params, true);
+
+			$cssCel = $params->get('tablecss_cell');
+			$cssHeader = $params->get('tablecss_header');
+			preg_match('/\d+(\.\d+)?/', $cssCel, $matches);
+
+			$actualWidth = (float) $matches[0];
+			$newWidth = round($actualWidth - ($actualWidth / $weigth * $resize), 2);
+			$cssCellNew = preg_replace('/'.$actualWidth.'/', $newWidth, $cssCel, 1);
+			$cssHeaderNew = preg_replace('/'.$actualWidth.'/', $newWidth, $cssHeader, 1);
+
+			$paramsEl['tablecss_cell'] = $cssCellNew;
+			$paramsEl['tablecss_header'] = $cssHeaderNew;
+
+			$opts['id'] = $el->getId();
+			$opts['published'] = $el->getElement()->published;
+			$opts['validationrule'] = $el->getValidations();
+			$opts['params'] = $paramsEl;
+			$this->syncParams($opts, $listModel);
+			$modelElement->save($opts);
+		}
+	}
+
+	/**
+	 * This method adds a flag on element name to change the type
+	 * 
+	 * @param		String		$name			The name to check
+	 * @param		Object			$listModel			Object of the frontend list model
+	 * 
+	 * @return		String
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function checkNameElementToChangeType($name, $listModel) 
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select('name')->from('#__fabrik_elements')->where('group_id IN (' . implode(',', array_keys($listModel->getFormModel()->getGroups())) . ')');
+		$db->setQuery($query);
+		$elements = $db->loadColumn();
+
+        $continue = false;
+        $flag = 1;
+
+        while ($continue === false) {
+            if($flag == 1) {
+                $result = in_array($name, $elements);
+            } else {
+                $result = in_array($name . '_' . $flag, $elements);
+            }
+
+            if ($result) {
+                $flag++;
+            } else {
+                $continue = true;
+            }
+        }
+
+        if($flag == 1) {
+            $result = $name;
+        } else {
+            $result = $name . "_{$flag}";
+        }
+
+        return $result;
+    }
 
 	/**
 	 * This method verify if the element need to update the structure and update them
@@ -3228,27 +4015,83 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function groupToElementRelatedList($listModel, &$opts, &$params, $trash=false)
 	{
-		$modelGroup = new FabrikAdminModelGroup();
-
 		$idForm = $listModel->getFormModel()->getId();
 
 		if($opts['id'] == '0' || !isset($opts['group_id_old'])) {
 			$new = true;
 			$optsGroup['form'] = (string) $idForm;
 		} else {
+			if($opts['group_id_old'] == $opts['group_id']) {
+				return;
+			}
+
 			$new = false;
-			$optsGroup['id'] = $trash ? (string) $opts['group_id_old'] : (string) $opts['group_id'];
+			$optsGroup['id'] = (string) $opts['group_id_old'];
 		}
 
 		$optsGroup['name'] = $opts['label'];
-		$optsGroup['label'] = '';
 		$optsGroup['published'] = $trash ? '0' : '1';
+		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
+
+		return $this->newGroupToElements($listModel, $optsGroup, $new);
+	}
+
+	/**
+	 * Method that save the longtext element, creating/editing the new group
+	 * 
+	 * @param		Object			$listModel			The listmodel object
+	 * @param		Array			&$opts				The element options
+	 * @param		Array			&params				The element params
+	 * @param		Boolean			$trash				The element will be moved to trash or not
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since		version 4.3.1
+	 */
+	private function groupToLongtextElement($listModel, &$opts, &$params, $trash=false)
+	{
+		$idForm = $listModel->getFormModel()->getId();
+
+		if(!$trash) {
+			$new = true;
+			$optsGroup['form'] = (string) $idForm;
+		} else {
+			if($opts['group_id_old'] == $opts['group_id']) {
+				return;
+			}
+
+			$new = false;
+			$optsGroup['id'] = (string) $opts['group_id_old'];
+		}
+
+		$optsGroup['name'] = $opts['label'];
+		$optsGroup['published'] = $trash ? '0' : '1';
+		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "1";
+
+		return $this->newGroupToElements($listModel, $optsGroup, $new);
+	}
+
+	/**
+	 * Method that create/edit the new group
+	 * 
+	 * @param		Object			$listModel			The listmodel object
+	 * @param		Array			$optsGroup			The group options
+	 * @param		Boolean			$new				Is it a new element?
+	 * 
+	 * @return  	Boolean
+	 * 
+	 * @since		version 4.3.1
+	 */
+	private function newGroupToElements($listModel, $optsGroup, $new)
+	{
+		$modelGroup = new FabrikAdminModelGroup();
+
+		$optsGroup['label'] = '';
 		$optsGroup['is_join'] = "0";
 		$optsGroup['tags'] = Array();
 
 		$optsGroup['params']['repeat_group_button'] = "0";
 		$optsGroup['params']['group_columns'] = "1";
-		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
 		$optsGroup['params']['labels_above'] = "1";
 		$optsGroup['params']['labels_above_details'] = "1";
 
@@ -3282,6 +4125,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$new = true;
 		} else {
 			$new = false;
+			if($opts['group_id_old'] == $opts['group_id']) {
+				return;
+			}
+
 			if($trash) {
 				$optsModule['id'] = $opts['module_id_old'];
 			} else {
@@ -3294,9 +4141,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Data to pre filters
 		$relatedTable = $listModelRelated->getTable()->get('db_table_name');
-		$relatedColumns = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'));
 		$optsPreFilters['filter-join'][] = 'AND';
-		$optsPreFilters['filter-fields'][] =  $relatedTable. '.' . $relatedColumns[$opts['related_list']] . '_raw';
+		$optsPreFilters['filter-fields'][] =  $relatedTable. '.' . $opts['related_list_element'] . '_raw';
 		$optsPreFilters['filter-conditions'][] = 'equals';
 		$optsPreFilters['filter-value'][] = '$app = JFactory::getApplication(); $jinput = $app->getInput(); $id = $jinput->getInt("rowid", 0);  return $id;';
 		$optsPreFilters['filter-eval'][] = '1';
@@ -3312,7 +4158,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsModule['language'] = "*";
 
 		// Data to params
-		$optsModule['params']['list_id'] = "$idRelatedList";
+		$optsModule['params']['list_id'] = $idRelatedList;
 		$optsModule['params']['useajax'] = "0";
 		$optsModule['params']['fabriklayout'] = "jlowcode_admin";
 		$optsModule['params']['show_filters'] = "0";
@@ -3341,7 +4187,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModelRelatedFE->setId($opts['related_list']);
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
 		$tableNameActual = $listModel->getTable()->get('db_table_name');
-		$relatedColumn = $this->searchRelatedLists($tableNameActual)[$opts['related_list']];
+		$relatedColumn = $opts['related_list_element'];
 
 		// Data to configure the module
 		$optsList['id'] = $opts['related_list'];
@@ -3369,6 +4215,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function configureFormToElementRelatedList($listModel, &$opts, &$params) 
 	{
 		$app = Factory::getApplication();
+		$listModel->reset();
 		$input = $app->input;
 
 		$formModelRelated = new FabrikAdminModelForm();
@@ -3382,18 +4229,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$groupsForm = $formModelRelatedFE->getGroups();
 		$propertiesForm = $formModelRelatedFE->getTable()->getProperties();
+		$properties = $listModel->getFormModel()->getTable()->getProperties();
+		$groups = $listModel->getFormModel()->getGroups();
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
 		$tableNameActual = $listModel->getTable()->get('db_table_name');
-		$relatedColumn = $this->searchRelatedLists($listModel->getTable()->get('db_table_name'))[$opts['related_list']];
-	
-		/***
-		 * We dont need update the form if the redirect plugin already exists
-		 * Trash or modify the related list element
-		 */ 
-		if(in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
-			return;
-		}
+		$relatedColumn = $opts['related_list_element'];
 
+		/**
+		 * Configure related form
+		 */
 		// Data to configure the module
 		$optsForm['id'] = $idFormRelated;
 		$optsForm['current_groups'] = array_keys($groupsForm);
@@ -3425,11 +4269,55 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		// Data to configure the new plugin redirect
-		$pluginsForm['plugin'][] = 'redirect';
-		$pluginsForm['plugin_locations'][] = 'both';
-		$pluginsForm['plugin_events'][] = 'both';
-		$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
-		$pluginsForm['plugin_state'][] = '1';
+		if(!in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
+			$pluginsForm['plugin'][] = 'redirect';
+			$pluginsForm['plugin_locations'][] = 'both';
+			$pluginsForm['plugin_events'][] = 'new';
+			$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
+			$pluginsForm['plugin_state'][] = '1';
+		}
+
+		$input->set('jform', $pluginsForm);
+		$formModelRelated->getState(); 	//We need do this to set __state_set before the save
+		$formModelRelated->save($optsForm);
+
+		/**
+		 * Configure main form
+		 */
+		// Data to configure the form
+		$placeholderId = "{{$tableNameActual}___id}";
+		$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{$placeholderId}";
+		$pluginsForm = Array();
+		$optsForm = Array();
+		$optsForm['id'] = $idForm;
+		$optsForm['current_groups'] = array_keys($groups);
+		$optsForm['database_name'] = $properties['db_table_name'];
+
+		foreach ($properties as $key => $val) {
+			if(!array_key_exists($key, $optsForm)) {
+				$optsForm[$key] = $properties[$key];
+			}
+
+			if($key == 'params') {
+				$optsForm[$key] = json_decode($optsForm[$key], true);
+				$optsForm[$key]['jump_page'] = $jumpPage;
+				$optsForm[$key]['redirect_conditon'] = '';
+				$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
+				$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
+				$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
+				$pluginsForm['plugin_description'] = $optsForm[$key]['plugin_description'];
+				$pluginsForm['plugin_state'] = $optsForm[$key]['plugin_state'];
+			}
+		}
+
+		// Data to configure the new plugin redirect
+		if(!in_array('redirect', json_decode($properties['params'], true)['plugins'])) {
+			$pluginsForm['plugin'][] = 'redirect';
+			$pluginsForm['plugin_locations'][] = 'both';
+			$pluginsForm['plugin_events'][] = 'both';
+			$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_MAIN_FORM_DESC");
+			$pluginsForm['plugin_state'][] = '1';
+		}
 
 		$input->set('jform', $pluginsForm);
 		$formModelRelated->getState(); 	//We need do this to set __state_set before the save
@@ -3461,7 +4349,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		//If element does not must show in list or the ordering not changed, nothing is gonna happen
 		if(($data['show_in_list'] == '' && !$idAtual && $data['type'] != 'link') || $idAtual == $idOrder) {
-			return;
+			return true;
 		}
 
 		foreach ($elements as $id => $element) {
@@ -3590,6 +4478,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataList[$key]['width_list'] = $data['width_list'];
 				$dataList[$key]['layout_mode'] = $data['layout_mode'];
 				$dataList[$key]['allow_view_details'] = $viewLevel;
+				$dataList[$key]['workflow_list'] = $data['workflow_list'] == 'true' ? '1' : '0';
+
+				$this->configurePluginComparison($data, $dataList[$key], $listModel);
 			}
 		}
 
@@ -3604,6 +4495,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if($key == 'params') {
 				$dataForm[$key] = json_decode($dataForm[$key], true);
 				$dataForm[$key]['approve_for_own_records'] = $data['collab_list'];
+				$dataForm[$key]['workflow_approval_by_vote'] = $data['approve_by_votes_list'] == 'true' ? '1' : '0';
+				$dataForm[$key]['workflow_votes_to_approve'] = $data['votes_to_approve_list'];
+				$dataForm[$key]['workflow_votes_to_disapprove'] = $data['votes_to_disapprove_list'];
 				$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
 				$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
 				$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];
@@ -3634,8 +4528,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$modelForm->save($dataForm);
 
 			// Configure admins list
-			$oldAdmins = $this->onGetUsersAdmins($viewLevel);
-			$this->configureAdminsList($data['admins_list'], $data['viewLevel_list'], $oldAdmins);
+			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
+			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
 		}
 
 		try {
@@ -3645,6 +4539,66 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return json_encode($validate);
+	}
+
+	/**
+	 * This method verify if plugin comparison was request or not
+	 * 
+	 * @param		Array			$data				The data sent
+	 * @param		Array			$params				Params data of the list
+	 * @param		Object			$listModel			Object of the frontend list model
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.1
+	 */
+	private function configurePluginComparison($data, &$params, $listModel) 
+	{
+		$trash = empty($data['comparison_list']);
+
+		$plgComparison = array_search('comparison', $params['plugins']);
+		if((!$plgComparison && $trash) || ($plgComparison && !$trash)) {
+			return;
+		}
+
+		if($trash) {
+			unset($params['plugins'][$plgComparison]);
+			unset($params['plugin_description'][$plgComparison]);
+			unset($params['plugin_state'][$plgComparison]);
+			return;
+		}
+
+		$params['plugins'][] = 'comparison';
+		$params['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_COMPARISON_DESCRIPTION");
+		$params['plugin_state'][] = "1";
+
+		$elements = $listModel->getElements('id', true, true);
+		foreach ($elements as $classEl) {
+			$el = $classEl->getElement();
+
+			$hide = ['id', 'created_by', 'indexing_text', 'created_ip', 'date_time'];
+			if(in_array($el->get('name'), $hide)) continue;
+
+			switch ($el->get('plugin')) {
+				case 'fileupload':
+					!isset($elFile) ? $elFile = $el->get('id') : $columns['comparison_columns'][] = $el->get('id');
+					break;
+
+				case 'field':
+					$el->get('name') == 'name' && !isset($name) ? $elName = $el->get('id') : null;
+					$columns['comparison_columns'][] = $el->get('id');
+					break;
+
+				default:
+					$columns['comparison_columns'][] = $el->get('id');
+					break;
+			}
+		}
+
+		$params['main_column'] = $elName;
+		$params['thumb_column'] = isset($elFile) ? $elFile : '';
+		$params['comparison_access'] = '1';
+		$params['list_comparison_columns'] = json_encode($columns);
 	}
 
 	/**
@@ -3827,6 +4781,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_LIST_LABEL'));
 		}
 
+		// If the element is related list, the list must be exists
+		if($data['type'] == 'related_list' && empty($data['related_list_element'])) {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_RELATED_ELEMENT_LIST_LABEL'));
+		}
+
+		// If the element is link, thumb, title and description must be exists
+		if($data['type'] == 'link' && (empty($data['thumb_link']) || empty($data['title_link']) || empty($data['description_link']))) {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENTS_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_THUMB_LINK_LABEL'), Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TITLE_LINK_LABEL'), Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DESCRIPTION_LINK_LABEL'));
+		}
+
 		// The new element must be a type
 		if($data['type'] == '') {
 			$validate->error = true;
@@ -3837,6 +4803,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['name'] == '') {
 			$validate->error = true;
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_LABEL'));
+		}
+
+		// Element width cant be zero
+		if($data['show_in_list'] && $data['width_field'] == '0'&& $data['valIdEl'] != '0') {
+			$validate->error = true;
+			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_WIDTH_ELEMENT', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_WIDTH_FIELD_LABEL'));
 		}
 
 		// The new name must be unique
@@ -4244,7 +5216,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$info = new stdClass();
 		$info->id = 0;
-		$info->name = 'list';
+		$info->name = 'listas';
 		$info->group_id = $groupId;
 		$info->plugin = 'databasejoin';
 		$info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL');
@@ -4324,7 +5296,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			return;
 		}
 
-		$formData = $input->get('formData');
+		$formData = $input->getString('formData');
 		$this->setFormData($formData);
 		$this->setRequestWorkflow(true);
 		$this->setElements();
@@ -4383,7 +5355,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		foreach ($newFormData as $key => $value) {
 			$value = $value == 'true' ? true : $value;
 			$keyOrig = $key;
-			$key = $key == $db->getPrefix() . $this->dbTableNameModal . '___list' ? $this->prefixEl . '___list' : $key;
+			$key = $key == $db->getPrefix() . $this->dbTableNameModal . '___listas' ? $this->prefixEl . '___listas' : $key;
 			$oldVal = $oldFormData[$key];
 			if(array_key_exists($key, $oldFormData)) {
 				switch ($key) {
@@ -4419,7 +5391,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param		Int			$listId				Id of the list
 	 * @param		Int			$recordId			Id of the record
 	 * 
-     * @return      
+     * @return      Array
      */
     private function getLastRecordFormData($listId, $recordId)
     {
