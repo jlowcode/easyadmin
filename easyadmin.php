@@ -4620,6 +4620,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'list':
 				$update = new stdClass();
 				$update->name = $data['name_list'];
+				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
 				break;
