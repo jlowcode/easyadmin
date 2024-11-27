@@ -2317,7 +2317,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Method that search the related lists in database to render the options to user
-	 *
+	 * 
 	 * @param		String			$table			Optional to get the name of join element
 	 * 
 	 * @return		Array
@@ -4484,6 +4484,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			}
 		}
 
+		$dataForm['label'] = $dataList['label'];
 		$dataForm['current_groups'] = array_keys($groupsForm);
 		$dataForm['database_name'] = $propertiesForm['db_table_name'];
 		$pluginsForm = Array();
@@ -4515,7 +4516,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$obj->id_lista = $listModel->getId();
 				$obj->status = '0';
 
-				$db->updateObject('adm_cloner_listas', $obj, 'id_lista');	
+				$db->updateObject('adm_cloner_listas', $obj, 'id_lista');
 			} catch (\Throwable $th) {
 				//If the table not exists we do nothing
 			}
