@@ -346,7 +346,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataEl->show_in_list = $dataElement->show_in_list_summary ? true : false;
 		$dataEl->width_field = $matches[0];
 		$dataEl->name = $dataElement->label;
-		$dataEl->ordering_elements = $dataElement->show_in_list_summary ? $element->getId() : '-2';
+		$dataEl->ordering_elements = $element->getId();
 		$dataEl->trash = $dataElement->published == 1 ? false : true;
 		$dataEl->white_space = !str_contains($params["tablecss_cell"], 'nowrap');
 
@@ -935,6 +935,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
+		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementFormatToLongText($elements, 'format_long_text');
 		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
@@ -954,7 +955,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementsAuxLink($elements, 'secondaryAuxLink', $secondaryAuxLink);
 		$this->setElementShowDownThumb($elements, 'show_down_thumb');
 		$this->setElementShowInList($elements, 'show_in_list');
-		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementWidthField($elements, 'width_field');
 		$this->setElementWhiteSpace($elements, 'white_space');
 		$this->setElementRequired($elements, 'required');
@@ -2050,7 +2050,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 		$value = $formData[$idEasy];
 		$dEl = new stdClass();
-		$showOnTypes = ['element-show_in_list'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link'];
 
 		// Options to set up the element
 		$opts = $this->getElementsToOrderingInList();
@@ -2091,7 +2091,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$options = Array();
 		foreach ($listModel->getElements('id') as $id => $element) {
-			$element->getElement()->show_in_list_summary ? $options[$id] = $element->getElement()->label : null;
+			$options[$id] = $element->getElement()->label;
 		}
 
 		return $options;
