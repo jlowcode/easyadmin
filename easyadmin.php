@@ -3695,6 +3695,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$validateHidenValidation[] = '0';
 			$mustValidateValidation[] = '1';
 			$showIconValidation[] = '1';
+			$params['notempty-message'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_REQUIRED_FIELD");
 		}
 
 		// Show in list rules
@@ -4688,7 +4689,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * We need update the params that already exists in elements
-	 *
+	 * 
 	 * @param   	Array 			$opts				Options and params
 	 * @param   	Object 			$listModel			Object of list
 	 * @param		Boolean			$list				False for elements and true for lists
@@ -4742,10 +4743,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * We need update the id saved from input to create the elements correctly
-	 *
+	 * 
 	 * @param   	Array 			$data				Source of options
 	 * @param		Object			$listModel			Object of the frontend list model
-	 *
+	 * 
 	 * @return  	Object
 	 * 
 	 * @since 		version 4.0
