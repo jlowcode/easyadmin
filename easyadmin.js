@@ -621,7 +621,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 			var JBtnGroup = jQuery(btnGroup);
 			JBtnGroup.css('width', '200px');
-			JBtnGroup.css('height', '500px');
+			JBtnGroup.css('height', '300px');
 			JBtnGroup.css('overflow-y', 'auto');
 			JBtnGroup.css('overflow-x', 'auto');
 
@@ -808,7 +808,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			var JBtnGroup = jQuery(btnGroup);
 			JBtnGroup.css('width', '200px');
-			JBtnGroup.css('max-height', '500px');
+			JBtnGroup.css('max-height', '300px');
 			JBtnGroup.css('overflow-y', 'auto');
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
