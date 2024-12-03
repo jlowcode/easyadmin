@@ -496,10 +496,10 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
             mode == 'columns' ? valEls['easyadmin_modal___ordering_elements'] = columns.idOrder : '';
 			tinyMCE.activeEditor.save();
 
-			var url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal";
+			var url = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=SaveModal&id=0";
 			var hasPermission = false;
             if(self.options.workflow && mode == 'elements') {
-				var urlGetPermission = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=hasPermission";
+				var urlGetPermission = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=hasPermission&id=0";
 				jQuery.ajax({
 					url     : urlGetPermission,
 					method	: 'post',
