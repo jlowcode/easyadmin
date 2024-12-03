@@ -2718,15 +2718,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'd/m/Y' => 'DD/MM/AAAA',
 			'm/d/Y' => 'MM/DD/AAAA',
 			'Y/m/d' => 'AAAA/MM/DD',
-			'd/m/Y h:i:s' => 'DD/MM/AAAA hh:mm:ss',
-			'm/d/Y h:i:s' => 'MM/DD/AAAA hh:mm:ss',
-			'Y/m/d h:i:s' => 'AAAA/MM/DD hh:mm:ss',
+			'd/m/Y H:i:s' => 'DD/MM/AAAA hh:mm:ss',
+			'm/d/Y H:i:s' => 'MM/DD/AAAA hh:mm:ss',
+			'Y/m/d H:i:s' => 'AAAA/MM/DD hh:mm:ss',
 			'd-m-Y' => 'DD-MM-AAAA',
 			'm-d-Y' => 'MM-DD-AAAA',
 			'Y-m-d' => 'AAAA-MM-DD',
-			'd-m-Y h:i:s' => 'DD-MM-AAAA hh:mm:ss',
-			'm-d-Y h:i:s' => 'MM-DD-AAAA hh:mm:ss',
-			'Y-m-d h:i:s' => 'AAAA-MM-DD hh:mm:ss',
+			'd-m-Y H:i:s' => 'DD-MM-AAAA hh:mm:ss',
+			'm-d-Y H:i:s' => 'MM-DD-AAAA hh:mm:ss',
+			'Y-m-d H:i:s' => 'AAAA-MM-DD hh:mm:ss',
 		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
