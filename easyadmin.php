@@ -3527,8 +3527,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['plugin'] = 'date';
 				$params['date_table_format'] = $data['format'];
 				$params['date_form_format'] = $data['format'];
-				$params['date_which_time_picker'] = str_contains($data['format'], 'h:i:s') ? 'clock' : 'wicked';
-				$params['date_showtime'] = str_contains($data['format'], 'h:i:s') ? '1' : '0';
+				$params['date_which_time_picker'] = str_contains($data['format'], 'H:i:s') ? 'clock' : 'wicked';
+				$params['date_showtime'] = str_contains($data['format'], 'H:i:s') ? '1' : '0';
 
 				$data['use_filter'] ? $opts['filter_type'] = 'range' : null;
 				break;
