@@ -3411,8 +3411,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$optsOld['id'] = $oldId;
 			$optsOld['published'] = '-2';
-			$optsOld['validationrule'] = $element->getValidations();
 			$optsOld['params'] = json_decode($element->getParams(), true);
+			$optsOld['validationrule'] = $optsOld['params']['validations'];
 			$this->syncParams($optsOld, $listModel);
 			$modelElement->save($optsOld);
 
@@ -3702,7 +3702,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['show_in_list']) {
 			$width = !$data['width_field'] ? '10' : $data['width_field'];
 			$css = 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
-			$data['white_space'] == 'true'? $cssCel = '' : $cssCel = $css;
+			$data['white_space'] == 'true' ? $cssCel = '' : $cssCel = $css;
 
 			$cssCel = 'width: ' . $width . '%; max-width: 1px; ' . $cssCel;
 			$cssHeader = 'width: ' . $width . '%; ' . $css;
@@ -3916,7 +3916,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$opts['id'] = $el->getId();
 			$opts['published'] = $el->getElement()->published;
-			$opts['validationrule'] = $el->getValidations();
+			$opts['validationrule'] = $paramsEl['validations'];
 			$opts['params'] = $paramsEl;
 			$this->syncParams($opts, $listModel);
 			$modelElement->save($opts);

@@ -743,7 +743,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 									break;
 
 								case 'width_field':
-                                case 'white_space':
 								case 'ordering_elements':
 									self.showHideElements('show_in_list', 'element', 'yesno');
 									break;
@@ -770,13 +769,26 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				})
 			}
 
-			jQuery('#easyadmin_modal___type').val() == 'treeview' || jQuery('#easyadmin_modal___type').val() == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', 'disabled') : null;
+			var typeVal = jQuery('#easyadmin_modal___type').val();
+			typeVal == 'treeview' || typeVal == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', 'disabled') : null;
 
 			jQuery('#easyadmin_modal___type').trigger('change');
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
 			jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click');
 			jQuery('#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas-auto-complete').trigger('focusout');
 			jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
+
+			/**
+			 * We must not show white space option when element is link
+			 */
+			var whiteSpace = jQuery('#easyadmin_modal___white_space');
+			if(options['text_format'] == 'url' || options['type'] == link) {
+				whiteSpace.find('#easyadmin_modal___white_space0').prop('checked', true);
+				whiteSpace.closest('.fabrikElementContainer').addClass('fabrikHide');
+			} else {
+				whiteSpace.find('#easyadmin_modal___white_space1').prop('checked', true);
+				whiteSpace.closest('.fabrikElementContainer').removeClass('fabrikHide');
+			}
 		},
 
 		/**
