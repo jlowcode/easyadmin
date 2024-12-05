@@ -98,7 +98,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		parent::__construct($subject, $config);
 
 		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
-			$listModel = new FabrikFEModelList();
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 			$listModel->setId($this->listId);
 

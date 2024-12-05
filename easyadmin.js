@@ -80,14 +80,21 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 * Create a button of an element edit link
 		 * 
 		 */
-		createButton: function(index) {
+		createButton: function(index, element) {
 			var self = this;
-			var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal">' + this.options.images.edit + '</a>');
-			var button = jQuery('<li value="' + index + '" style="font-size: 12px; min-width: 30px;"></li>')
-			.css({
+			var sub = jQuery('<a href="#' + self.options.idModal + '" data-bs-toggle="modal">' + element.text() + '</a>');
+			var button = jQuery('<li value="' + index + '" style="min-width: 30px;"></li>').css({
 				'cursor': 'pointer',
 			});
 			sub.appendTo(button);
+
+			element.contents().filter(function () {
+				return this.classList ? !this.classList.contains('fabrikorder') && !this.classList.contains('fabrikorder-asc') && !this.classList.contains('fabrikorder-desc') : true;
+			}).remove();
+
+			element.contents().filter(function() {
+				return this.classList ? this.classList.contains('fabrikorder') || !this.classList.contains('fabrikorder-asc') || !this.classList.contains('fabrikorder-desc') : false;
+			}).after(button);
 
 			sub.on('click', function() {
 				self.setModalToEditElement(this);
@@ -567,12 +574,11 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 */
 		setButtons: function(links)  {
 			for (var key in links) {
-				if(links.hasOwnProperty(key) && links[key].enabled) {
+				if(links.hasOwnProperty(key) && links[key].enabled && links[key].show_in_list) {
 					var element = jQuery('th.' + links[key].fullname).children();
 					element.css({'display': 'flex'});
 					element.addClass("tooltip2");
-					var button = this.createButton(key);
-					element.append(button);
+					this.createButton(key, element);
 					element.css({
 						"min-width": "120px;"
 					});
