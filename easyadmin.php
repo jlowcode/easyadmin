@@ -3448,6 +3448,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
+					$opts['filter_type'] = 'field';
+
 					$params['bootstrap_class'] = 'col-sm-12';
 					$params['textarea_field_type'] = 'MEDIUMTEXT';
 					$params['use_wysiwyg'] = $data['format_long_text'];
