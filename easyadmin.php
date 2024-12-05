@@ -3436,12 +3436,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'text':
 			case 'longtext':
 				$params['maxlength'] = 255;
+				$params['field_thousand_sep'] = ',';
+				$params['field_decimal_sep'] = '.';
 
 				$opts['hidden'] = '0';
 				$opts['default'] = $data['default_value'];
 				$opts['plugin'] = 'field';
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
+				$params['field_use_number_format'] = $data['text_format'] == 'decimal' ? '1' : '0';
 
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
@@ -3471,6 +3474,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['password'] = in_array($data['text_format'], ['integer', 'decimal']) ? '6' : '0';
 					$params['text_format'] = $data['text_format'];
 				}
+
 				break;
 
 			case 'file':
