@@ -1269,7 +1269,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$opts = Array(
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
 		);
 		$elements[$id]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
@@ -1306,6 +1306,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 
 		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_approve', '2');
+		$value = $value <= 1 ? 2 : $value;
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
@@ -1353,6 +1354,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$subject = $this->getSubject();
 
 		$value = (int) $listModel->getFormModel()->getParams()->get('workflow_votes_to_disapprove', '2');
+		$value = $value <= 1 ? 2 : $value;
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
