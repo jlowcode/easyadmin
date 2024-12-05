@@ -786,7 +786,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				whiteSpace.find('#easyadmin_modal___white_space0').prop('checked', true);
 				whiteSpace.closest('.fabrikElementContainer').addClass('fabrikHide');
 			} else {
-				whiteSpace.find('#easyadmin_modal___white_space1').prop('checked', true);
 				whiteSpace.closest('.fabrikElementContainer').removeClass('fabrikHide');
 			}
 		},
