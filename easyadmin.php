@@ -3481,10 +3481,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'file':
-				$validFileupload = 'if ($_REQUEST["wfl_action"] == "list_requests") {
-					return false;
-				} else {
-					return true;
+				$validFileupload = '
+				if(isset($_REQUEST["wfl_action"])) {
+					if ($_REQUEST["wfl_action"] == "list_requests") {
+						return false;
+					} else {
+						return true;
+					}
 				}';
 
 				$opts['plugin'] = 'fileupload';
