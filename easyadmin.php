@@ -3481,7 +3481,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'file':
-				$validFileupload = 'if ($_REQUEST["wfl_action"] = "list_requests"){
+				$validFileupload = 'if ($_REQUEST["wfl_action"] == "list_requests") {
 					return false;
 				} else {
 					return true;
@@ -3497,6 +3497,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
 				$params['fu_show_image'] = '2';
+				$params['ajax_show_widget'] = '0';
 
 				if($data['make_thumbs']) {
 					$params['fu_show_image_in_table'] = '1';
