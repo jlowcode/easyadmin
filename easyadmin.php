@@ -230,6 +230,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
 			$input->get('format') == 'csv' ||
+			$input->get('format') == 'pdf' ||
 			$input->get('view') == 'article' ||
 			$input->get('task') == 'list.delete' ||
 			in_array('form', explode('.', $input->get('task'))) &&
