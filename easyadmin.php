@@ -194,6 +194,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$listModel = $this->getListModel();
 
+		if($user->authorise('core.admin')) return true;
+
 		$workflowExist = $this->workflowExists();
 		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
 
