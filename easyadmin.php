@@ -981,6 +981,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$this->setElementNameList($elementsList, 'name_list');
 		$this->setElementDescriptionList($elementsList, 'description_list');
+		$this->setElementNameFormList($elementsList, 'name_form');
 		//$this->setElementThumbList($elementsList, 'thumb_list');	// For new version
 		$this->setElementOrderingList($elementsList, 'ordering_list');
 		$this->setElementOrderingTypeList($elementsList, 'ordering_type_list');
@@ -1079,6 +1080,50 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_DESCRIPTION_LABEL'),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_DESCRIPTION_DESC'),
+		);
+		$elements[$id]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method of the form name element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.2
+	 */
+	private function setElementNameFormList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$tableForm = $listModel->getFormModel()->getTable();
+		$val = $tableForm->get('label');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass;
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text input-list',
+			'value' => $val
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$id]['objField'] = $classField->getLayout('form');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_FORM_NAME_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_FORM_NAME_DESC'), 
 		);
 		$elements[$id]['dataField'] = $dEl;
 	}
@@ -4502,7 +4547,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			}
 		}
 
-		$dataForm['label'] = $dataList['label'];
+		$dataForm['label'] = !empty($data['name_form']) ? $data['name_form'] : $dataList['label'];
 		$dataForm['current_groups'] = array_keys($groupsForm);
 		$dataForm['database_name'] = $propertiesForm['db_table_name'];
 		$pluginsForm = Array();
