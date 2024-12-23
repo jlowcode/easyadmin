@@ -3447,6 +3447,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$modelForm = new FabrikAdminModelForm();
 
 		$input = $app->input;
+		$elChangedType = false;
 
 		$labelElement = $data['name'];
 		$validate = $this->validateElements($data, $listModel);
@@ -3967,6 +3968,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @param		Float			$resize					The percent to resize
 	 * @param		Float			$elId					The id element
+	 * @param		Float			$weigth					Weigth
 	 * @param		Object			$listModel				Object of the frontend list model
 	 * @param		Boolean			$elChangedType			Does element changed the type?
 	 * 
@@ -3974,10 +3976,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since		v4.3.1
 	 */
-	private function resizeWidthElements($resize, $weigth, $elId, $listModel) 
+	private function resizeWidthElements($resize, $weigth, $elId, $listModel, $elChangedType) 
 	{
-		$modelElement = new FabrikAdminModelElement();
-
 		$elements = $listModel->getElements();
 
 		foreach ($elements as $el) {
@@ -4006,6 +4006,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$opts['validationrule'] = $paramsEl['validations'];
 			$opts['params'] = $paramsEl;
 			$this->syncParams($opts, $listModel);
+
+			$modelElement = new FabrikAdminModelElement();
 			$modelElement->save($opts);
 		}
 	}
