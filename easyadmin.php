@@ -416,7 +416,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataEl->type = $params['database_join_display_style'] == 'only-autocomplete' ? 'autocomplete' : 'treeview';
 				$dataEl->label =  $params['join_val_column'];
 				$dataEl->father = $params['tree_parent_id'];
-				$dataEl->tags = (bool) $params['moldTags'] ? true : false;
+
+				if($params['moldTags']) {
+					$dataEl->tags = 'tags';
+				} else if($params['fabrikdatabasejoin_frontend_add']) {
+					$dataEl->tags = 'popup_form';
+				} else {
+					$dataEl->tags = 'no';
+				}
+
 				break;
 
 			case 'display':
@@ -3140,43 +3148,44 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$idEasy = $this->prefixEl . '___' . $nameElement;
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
-		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
-
+		$value = $formData[$idEasy];
 		$dEl = new stdClass();
 		$showOnTypes = ['autocomplete'];
 
 		// Options to set up the element
 		$opts = Array(
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_TAGS'),
+			'popup_form' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_POPUP_FORM'),
+			'no' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_NO'),
 		);
-		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+		$dEl->options = $this->optionsElements($opts);
+		$dEl->name = $id;
+		$dEl->id = $id;
+		$dEl->selected = Array($value);
+		$dEl->multiple = '0';
+		$dEl->attribs = 'class="fabrikinput form-select input-medium"' . ($this->getRequestWorkflow() ? ' disabled' : '');
+		$dEl->multisize = '';
+
+		$classDropdown = new PlgFabrik_ElementDropdown($subject);
+		$elements[$idEasy]['objField'] = $classDropdown->getLayout('form');
 		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
-		
+
 		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_DESC'),
+			Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_DESC', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_TAGS'), Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_POPUP_FORM'), Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_NO')),
 			$showOnTypes,
 			false
 		);
-		$elements[$idEasy]['dataField'] = Array(
-			'value' => $value,
-			'options' => $this->optionsElements($opts),
-			'name' => $id,
-			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
-			'dataAttribute' => 'style="margin-bottom: 10px; padding: 0px"',
-		);
-		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
+		$elements[$idEasy]['dataField'] = $dEl;
 	}
 
 	/**
 	 * Setter method to access rating element
-	 *
+	 * 
 	 * @param		Array 		$elements			Reference to all elements
 	 * @param		String		$nameElement		Identity of the element
-	 *
+	 * 
 	 * @return  	Null
 	 * 
 	 * @since 		version 4.0
@@ -3627,7 +3636,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
 					$params['jsSuggest'] =  '1';
-					$data['tags'] ? $params['moldTags'] = '1' : $formPopup = true;
+
+					switch ($data['tags']) {
+						case 'tags':
+							$params['moldTags'] = '1';
+							$formPopup = false;
+							break;
+
+						case 'popup_form':
+							$params['moldTags'] = '0';
+							$formPopup = true;
+							break;
+
+						default:
+							$params['moldTags'] = '0';
+							$formPopup = false;
+							break;
+					}
 				} else {
 					$params['database_join_display_style'] =  'only-treeview';
 					$params['tree_parent_id'] =  $data['father'];
