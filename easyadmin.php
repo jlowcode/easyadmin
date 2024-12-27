@@ -148,6 +148,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->dbPrefix = $db->getPrefix();
 		$opts->workflow = $workflow;
 		$opts->owner_id = $listModel->getFormModel()->getTable()->get('created_by');
+		$opts->isAdmin = $this->user->authorise('core.admin');
 		$opts->user = $this->user;
 
 		echo $this->setUpModalElements();
@@ -585,7 +586,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements = Array(
 			'elements' => ['list', 'options_dropdown'],
-			'elementsList' => ['admins_list']
+			'elementsList' => ['admins_list', 'owner_list']
 		);
 		$srcs = array_merge(
 			array(
@@ -726,6 +727,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ERROR');
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
+		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
     }
 
 	/**
@@ -995,6 +997,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementOrderingTypeList($elementsList, 'ordering_type_list');
 		$this->setElementVisibilityList($elementsList, 'visibility_list');
 		$this->setElementAdminsList($elementsList, 'admins_list');
+		$this->setElementOwnerList($elementsList, 'owner_list');
 		$this->setElementWidthList($elementsList, 'width_list');
 		$this->setElementLayoutMode($elementsList, 'layout_mode');
 		$this->setElementComparisonList($elementsList, 'comparison_list');
@@ -1647,7 +1650,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$objDatabasejoin = new PlgFabrik_ElementDatabasejoin($subject);
 
 		$id = $this->prefixEl . '___' . $nameElement;
-		$showOnTypes = ['list-visibility_list'];
 
 		$elContextModelElement = Array('name' => 'admins_list');
 		$elContextTableElement = Array('label' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_LABEL'));
@@ -1681,11 +1683,59 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id, 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_LABEL'), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_DESC'), 
-			$showOnTypes,
+			Array(),
 			false,
 			'list'
 		);
 		$elements[$id]['dataField'] = Array();
+	}
+
+	/**
+	 * Setter method to owner list element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 *
+	 * @since 		version 4.3.2
+	 */
+	private function setElementOwnerList(&$elements, $nameElement) 
+	{
+		$listModelModal = new FabrikFEModelList();
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+		$listModel = $this->getListModel();
+
+		$modalParams = json_decode($this->getModalParams(), true);
+		$id = $db->getPrefix() . $this->dbTableNameModal . '___' . $nameElement;
+		$value = $listModel->getTable()->get('created_by');
+
+		$listModelModal->setId($modalParams['list']);
+		$formModelModal = $listModelModal->getFormModel();
+		$formModelModal->getData();
+		$formModelModal->getGroupsHiarachy();
+		$elementsModal = $listModelModal->getElements('id');
+		$idEl = $modalParams['elementsId'][$nameElement];
+
+		$objDatabasejoin = $elementsModal[$idEl];
+		$objDatabasejoin->setEditable(true);
+		$objDatabasejoin->reset();
+
+		$elements[$id]['objField'] = $objDatabasejoin;
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OWNER_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OWNER_LIST_DESC'),
+			Array(),
+			false,
+			'list'
+		);
+		$elements[$id]['dataField'] = Array($id => $value, $id.'_raw' => $value);
 	}
 
 	/**
@@ -4536,7 +4586,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$formModel->setId($listModel->getFormModel()->getId());
 		$groupsForm = $formModel->getGroups();
-		
+
 		$visibilityList = $data['visibility_list'];
 		$viewLevelList = $listModel->getParams()->get('allow_edit_details');
 		$viewLevel = $visibilityList == '3' ? $viewLevelList : $visibilityList;
@@ -4556,6 +4606,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
 		$dataList['template'] = $data['default_layout'];
 		$dataList['access'] = $viewLevel;
+		$dataList['created_by'] = $data['owner_list'];
+		$dataList['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
 
 		foreach ($properties as $key => $val) {
 			if(!array_key_exists($key, $dataList)) {
@@ -4577,6 +4629,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataForm['label'] = !empty($data['name_form']) ? $data['name_form'] : $dataList['label'];
 		$dataForm['current_groups'] = array_keys($groupsForm);
 		$dataForm['database_name'] = $propertiesForm['db_table_name'];
+		$dataForm['created_by'] = $data['owner_list'];
+		$dataForm['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
+
 		$pluginsForm = Array();
 		foreach ($propertiesForm as $key => $val) {
 			if(!array_key_exists($key, $dataForm)) {
@@ -4619,14 +4674,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$modelForm->save($dataForm);
 
 			// Configure admins list
+			$data['admins_list'][] = $data['owner_list'];
+			array_unique($data['admins_list']);
 			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
 			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
-		}
 
-		try {
-			$this->extras($data, 'list');
-		} catch (\Throwable $th) {
-			// If error we do nothing
+			try {
+				$this->extras($data, 'list');
+			} catch (\Throwable $th) {
+				// If error we do nothing
+			}
 		}
 
 		return json_encode($validate);
@@ -4712,6 +4769,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
+				$update->user = $data['owner_list'];
 				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
 				break;
 			
@@ -5093,15 +5151,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
-		$response = new stdClass();
 		$paramsToSave = Array();
+		$response = new stdClass();
+
+		$response->msg = Text::_('PLG_FABRIK_LIST_EASYADMIN_REQUEST_INSTALL_SUCCESS');
+		$response->success = true;
 
 		$dbTableName = $db->getPrefix() . $this->dbTableNameModal;
 		$exist = PlgFabrik_ListEasyAdminInstallerScript::verifyTableExist($dbTableName);
 
 		if($exist) {
-			$response->msg = Text::_('PLG_FABRIK_LIST_EASYADMIN_REQUEST_INSTALL_SUCCESS');
-			$response->success = true;
+			try {
+				$this->updateStrutureNewVersion($dbTableName);
+			} catch (\Throwable $th) {
+				$response->msg = $e->getMessage();
+				$response->success = false;
+			}
+
 			echo json_encode($response);
 			return;
 		}
@@ -5114,9 +5180,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$this->createBondFormGroup($formId, $groupId);
 			$this->createTable($dbTableName);
-
-			$response->msg = Text::_('PLG_FABRIK_LIST_EASYADMIN_REQUEST_INSTALL_SUCCESS');
-			$response->success = true;
+			$this->updateStrutureNewVersion();
         }
         catch (RuntimeException $e) {
 			$response->msg = $e->getMessage();
@@ -5130,6 +5194,117 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->saveParams($dbTableName, $paramsToSave);
 
 		echo json_encode($response);
+	}
+
+	/**
+	 * This method redirect to methods that really make the differency in structure of plugin
+	 * Run always when the plugin is updated, but in each method we verify if the update must run or not
+	 * 
+	 * @param		String 		$dbTableName		The name of the reference table
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.2
+	 */
+	private function updateStrutureNewVersion($dbTableName)
+	{
+		$this->updateStructureV432($dbTableName);
+	}
+
+	/**
+	 * This method update the struture to version 4.3.2
+	 * In this case we need add a new column in reference table call owner_list,
+	 * create a new element in #__fabrik_elements and update the params in the reference table
+	 * 
+	 * @param		String 		$dbTableName		The name of the reference table
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.2
+	 */
+	private function updateStructureV432($dbTableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		// CHeck column
+		$query = $db->getQuery(true);
+		$query->select('1')
+			->from($db->qn('information_schema.columns'))
+			->where($db->qn('table_schema') . ' = (SELECT DATABASE())')
+			->where($db->qn('table_name') . ' = ' . $db->q($dbTableName))
+			->where($db->qn('column_name') . ' = ' . $db->q('owner_list'));
+		$db->setQuery($query);
+		$exist = (Boolean) $db->loadResult();
+
+		if($exist) return;
+
+		$query = $db->getQuery(true);
+		$query->select($db->qn('params'))
+			->from($db->qn($dbTableName));
+		$db->setQuery($query);
+		$params = json_decode($db->loadResult(), true);
+		$groupId = $params['groupId'];
+
+		// Create element
+		$idElements = Array();
+		$idElement = $this->createElementOwnerList($groupId);
+
+		// Create column
+		$sql = "ALTER TABLE $dbTableName ADD COLUMN `owner_list` int DEFAULT NULL AFTER listas";
+		$db->setQuery($sql);
+		$db->execute();
+
+		$params['elementsId']['owner_list'] = $idElement;
+		$query = $db->getQuery(true);
+		$query->update($db->qn($dbTableName))
+			->set($db->qn('params') . ' = ' . $db->q(json_encode($params)));
+		$db->setQuery($query);
+		$db->execute();
+	}
+
+	/**
+	 * Method that create the databasejoin owner list element
+	 * 
+	 * @param		Int 		$groupId			The id of the group related
+	 * 
+	 * @return  	Int|Boolean
+	 * 
+	 * @since 		version 4.3.2
+	 */
+	private function createElementOwnerList($groupId)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+		$date = Factory::getDate();
+
+		$params = json_encode(Array(
+			'database_join_display_type' => 'auto-complete', 
+			'database_join_display_style' => 'only-autocomplete',
+			'join_db_name' => '#__users',
+			'join_val_column' => 'name',
+			'join_key_column' => 'id',
+			'database_join_show_please_select' => '1',
+			'dbjoin_autocomplete_rows' => 10,
+			'database_join_where_sql' => ''
+		));
+
+		$info = new stdClass();
+		$info->id = 0;
+		$info->name = 'owner_list';
+		$info->group_id = $groupId;
+		$info->plugin = 'databasejoin';
+		$info->label = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OWNER_LIST_LABEL');
+		$info->created = $date->toSql();
+        $info->created_by = $this->user->id;
+        $info->created_by_alias = $this->user->username;
+        $info->modified = $date->toSql();
+        $info->modified_by = $this->user->id;
+        $info->published = 1;
+        $info->access = 1;
+        $info->params = $params;
+
+		$insert = $db->insertObject('#__fabrik_elements', $info, 'id');
+
+		return $insert ? $db->insertid() : false;
 	}
 
 	/**
@@ -5271,11 +5446,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function createElements($groupId)
 	{
-		$db = Factory::getContainer()->get('DatabaseDriver');
-		$date = Factory::getDate();
-		
 		$idElements = Array();
-
 		$idElements['list'] = $this->createElementList($groupId);
 
 		return $idElements;
@@ -5286,7 +5457,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @param		Int 		$groupId			The id of the group related
 	 * 
-	 * @return  	Boolean
+	 * @return  	Int|Boolean
 	 * 
 	 * @since 		version 4.2
 	 */

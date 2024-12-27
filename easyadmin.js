@@ -533,22 +533,28 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						urlLog = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=createLog";
 
 						if(!r['error']) {
-							self.requestWorkflow(urlLog, valEls, hasPermission);
+							self.request(urlLog, valEls, hasPermission);
 						} else {
 							alert(r['message']);
 						}
 					});
 				});
 			} else {
-				self.requestWorkflow(url, valEls, true);
+				ownerIdNew = valEls['jlow_fabrik_easyadmin_modal___owner_list'];
+
+				if(ownerIdNew != this.options.owner_id) {
+					window.confirm(Joomla.JText._('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER'));
+				}
+
+				self.request(url, valEls, true);
 			}
 		},
 
 		/**
-		 * This function send requests when workflow is enabled
+		 * This function send requests
 		 * 
 		 */
-		requestWorkflow: function(url, data, typeMsg) {
+		request: function(url, data, typeMsg) {
 			jQuery.ajax({
 				url     : url,
 				method	: 'post',
@@ -657,7 +663,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			JBtnGroup.append(button);
 			div.append(addElementButton);
-			if(self.options.owner_id == self.options.user.id) {
+			if(self.options.owner_id == self.options.user.id || self.options.isAdmin) {
 				div.append(editListButton);
 			}
 
@@ -829,7 +835,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
-			if(self.options.owner_id == self.options.user.id) {
+			if(self.options.owner_id == self.options.user.id || self.options.isAdmin) {
 				JBtnGroup.append(editListButton);
 			}
 
