@@ -542,7 +542,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			} else {
 				ownerIdNew = valEls['jlow_fabrik_easyadmin_modal___owner_list'];
 
-				if(ownerIdNew != this.options.owner_id) {
+				if(ownerIdNew != this.options.owner_id && mode == 'list') {
 					window.confirm(Joomla.JText._('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER'));
 				}
 
