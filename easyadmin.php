@@ -4058,6 +4058,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$this->syncParams($opts, $listModel);
 
 			$modelElement = new FabrikAdminModelElement();
+			$modelElement->getState(); 	//We need do this to set __state_set before the save
 			$modelElement->save($opts);
 		}
 	}
