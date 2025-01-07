@@ -1527,6 +1527,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			}
 		}
 		
+		if($listModel->canShowTutorialTemplate()) {
+			$options['3'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_3");
+		}
+
 		$dEl->options = $this->optionsElements($options);
 		$dEl->name = $id;
 		$dEl->id = $id;

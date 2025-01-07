@@ -22,6 +22,7 @@
 					<option value="0">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0</option>
 					<option value="1">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1</option>
 					<option value="2">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_2</option>
+					<option value="3">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_3</option>
 			</field>
 
             <field name="workflow_list"
