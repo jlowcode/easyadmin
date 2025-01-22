@@ -240,7 +240,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
 			($input->get('action') == 'getFilhos') ||
-			isset($_REQUEST['resetfilters'])
+			isset($_REQUEST['resetfilters']) ||
+			JFactory::getApplication()->isClient('administrator')
 		) {
 			return false;
 		}
