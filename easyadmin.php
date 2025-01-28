@@ -3659,7 +3659,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'rating':
 				$opts['plugin'] = 'rating';
-				$opts['hidden'] = '1';
+				$opts['hidden'] = '0';
 				$params['rating_access'] = $data['access_rating'];
 				$params['rating-mode'] = 'user-rating';
 				$params['rating-nonefirst'] = '1';
@@ -3728,7 +3728,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'thumbs':
 				$opts['plugin'] = 'thumbs';
-				$opts['hidden'] = '1';
+				$opts['hidden'] = '0';
 
 				$params['rate_in_from'] =  '0';
 				$params['show_down'] =  $data['show_down_thumb'] != '' ? '1' : '0';
