@@ -793,7 +793,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			 * We must not show white space option when element is link
 			 */
 			var whiteSpace = jQuery('#easyadmin_modal___white_space');
-			if(options['text_format'] == 'url' || options['type'] == 'link') {
+			if(options['text_format'] == 'url' || options['type'] == 'link' || options['type'] == 'related_list') {
 				whiteSpace.find('#easyadmin_modal___white_space0').prop('checked', true);
 				whiteSpace.closest('.fabrikElementContainer').addClass('fabrikHide');
 			} else {
