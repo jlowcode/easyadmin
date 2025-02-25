@@ -948,7 +948,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementName($elements, 'name');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
-		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementFormatToLongText($elements, 'format_long_text');
 		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
@@ -971,6 +970,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementWidthField($elements, 'width_field');
 		$this->setElementWhiteSpace($elements, 'white_space');
 		$this->setElementRequired($elements, 'required');
+		$this->setElementOrderingElements($elements, 'ordering_elements');
 		$this->setElementRelatedList($elements, 'related_list');
 		$this->setElementRelatedListElement($elements, 'related_list_element');
 		$this->setElementTrash($elements, 'trash');
@@ -2203,7 +2203,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$options = Array();
 		foreach ($listModel->getElements('id') as $id => $element) {
-			$options[$id] = $element->getElement()->label;
+			if($element->getName() != 'PlgFabrik_ElementIp' && $element->getElement()->name != 'indexing_text') {
+				$options[$id] = $element->getElement()->label;
+			}
 		}
 
 		return $options;
