@@ -2889,7 +2889,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$values = explode(',', $formData[$idEasy]);
 
 		$dEl = new stdClass;
-		$showOnTypes = ['dropdown'];
+		$showOnTypes = ['dropdown', 'tags'];
 
 		// Options to set up the element
 		$options = Array();
@@ -3635,16 +3635,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['multiple'] = $data['multi_select'] ? '1' : '0';
 				$params['advanced_behavior'] = $params['multiple'];
 
-				$sub_options = explode(',', $data['options_dropdown']);
-				if(empty($sub_options[0])) {
-					unset($sub_options[0]);
-				}
-				$sub_options = array_values($sub_options);
-				$params['sub_options'] = Array(
-					'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $sub_options),
-					'sub_labels' => $sub_options,
-					'sub_initial_selection' => Array($sub_options[0])
-				);
+				$this->configOptsDropdown($data, $params);
 
 				$data['use_filter'] ? $opts['filter_type'] = 'dropdown' : null;
 				break;
@@ -3761,10 +3752,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['allow_frontend_addtodropdown'] = '1';
 				$params['dd-allowadd-onlylabel'] = '1';
 				$params['dd-savenewadditions'] = '1';
+				
 				$params['sub_options'] = Array(
 					'sub_values' => '',
 					'sub_labels' => '',
 				);
+				
+				$this->configOptsDropdown($data, $params);
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 				break;
@@ -3959,6 +3953,32 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		return json_encode($validate);
+	}
+
+	/**
+	 * This method format the options selected to dropdown element
+	 * 
+	 * @param		Array			$data			Request data
+	 * @param		Array			$params			Request params			
+	 */
+	private function configOptsDropdown($data, &$params)
+	{
+		if($data['options_dropdown'] === ',') return;
+
+		$subOptions = explode(',', $data['options_dropdown']);
+
+		foreach ($subOptions as $key => $option) {
+			if(empty($option)) {
+				unset($subOptions[$key]);
+			}
+		}
+
+		$subOptions = array_values($subOptions);
+		$params['sub_options'] = Array(
+			'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $subOptions),
+			'sub_labels' => $subOptions,
+			'sub_initial_selection' => Array($subOptions[0])
+		);
 	}
 
 	/**
