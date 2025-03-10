@@ -4947,8 +4947,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			empty($data['list']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL')) : '';
 		}
 
-		// If the element is dropdown, options must be exists
-		if($data['type'] == 'dropdown' && empty($data['options_dropdown'])) {
+		// If the element is dropdown or tags, options must be exists
+		if(($data['type'] == 'dropdown' || $data['type'] == 'tags') && empty($data['options_dropdown'])) {
 			$validate->error = true;
 			$validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_OPTIONS_DROPDOWN_LABEL'));
 		}
