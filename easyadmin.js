@@ -831,7 +831,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			var editListButton = jQuery('<button id="button_' + self.options.idModalList + '" href="#' + self.options.idModalList + '" data-bs-toggle="modal" type="button">' + self.options.images.pencil + '</button>');
-			var addElementButton = jQuery('<li class="subMenuAdmin" style="border-top: 2px solid #eee; padding: 5px 10px 0px 10px;"><button href="#' + self.options.idModal + '" data-bs-toggle="modal" type="button">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") + '</button></li>');
+			var addElementButton = jQuery('<li class="subMenuAdmin" style="border-top: 2px solid #eee; padding: 5px 10px 0px 10px;"><button href="#' + self.options.idModal + '" class="addbutton" data-bs-toggle="modal" type="button"><span data-isicon="true" class="fa icon-plus"></span>' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT") + '</button></li>');
 
 			if(!btnGroup) {
 				var newBtnGroup = jQuery('<div class="dropdown fabrik_action"><button class="btn-default dropdown-toggle dropdown-toggle-no-caret" style="background-color: rgba(220, 226, 249, 1); border-radius: 50%; width: 40px; height: 40px;" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + self.options.images.plus + '</button><ul class="dropdown-menu dropdown-menu-end" style="width:100%"></ul></div>');
@@ -988,13 +988,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			});
 
 			addElementButton.find('button').css({
-				'min-height': '30px',
-				'font-size': '12px',
 				'width': '100%',
-				'border-radius': '12px',
-				'color': '#fff',
-				'background-color': '#003EA1',
-				'margin-bottom': '5px'
+				'margin-bottom': '8px',
+				'font-size': '14px'
 			});
 		},
 
