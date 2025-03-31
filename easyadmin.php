@@ -5881,8 +5881,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$this->images['edit'] = FabrikHelperHTML::image('edit.png', 'list');
 		$this->images['trash'] = FabrikHelperHTML::image('trash.png', 'list');
-		$this->images['settings'] = FabrikHelperHTML::image('settings.png', 'list');
+		$this->images['plus'] = FabrikHelperHTML::image('plus.png', 'list');
 		$this->images['refresh'] = FabrikHelperHTML::image('refresh.png', 'list');
+		$this->images['pencil'] = FabrikHelperHTML::image('pencil.png', 'list');
 	}
 
 	/**
