@@ -859,6 +859,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
 			if(self.options.owner_id == self.options.user.id || self.options.isAdmin) {
+				jQuery('.header-title button').remove();
 				jQuery('.header-title').append(editListButton).find('button').css({
 					'margin-left': '32px',
 					'background-color': 'rgba(220, 226, 249, 1)',
