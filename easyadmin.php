@@ -197,9 +197,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		!empty($this->getListModel()) ? $listModel = $this->getListModel() : $listModel->setId($this->listId);
 		$params = $listModel->getParams();
+		$showOptions = (int) $params->get('show_options', 0);
 
+		if($showOptions == 2) return false;
 		if($user->authorise('core.admin')) return true;
-		if((int) $params->get('show_options', 0) == 1) return false;
+		if($showOptions == 1) return false;
 
 		$workflowExist = $this->workflowExists();
 		$workflow = $listModel->getParams()->get('workflow_list', '1') && $workflowExist;
