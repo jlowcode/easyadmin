@@ -84,6 +84,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	public function __construct(&$subject, $config) 
 	{
+		parent::__construct($subject, $config);
+
 		$app = Factory::getApplication();
 		$input = $app->input;
 		$requestWorkflow = $input->getInt('requestWorkflow');
@@ -94,8 +96,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if(!$this->mustRun()) {
 			return;
 		}
-
-		parent::__construct($subject, $config);
 
 		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
@@ -241,7 +241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
 			($input->get('action') == 'getFilhos') ||
 			isset($_REQUEST['resetfilters']) ||
-			JFactory::getApplication()->isClient('administrator')
+			Factory::getApplication()->isClient('administrator')
 		) {
 			return false;
 		}
