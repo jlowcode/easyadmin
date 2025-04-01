@@ -189,13 +189,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0.2
 	 */
-	private function authorized() 
+	private function authorized()
 	{
 		$user = Factory::getUser();
 		$db = Factory::getContainer()->get('DatabaseDriver');
 		$listModel = $this->getListModel();
+		$params = $this->getParams();
 
 		if($user->authorise('core.admin')) return true;
+		if((int) $params->get('show_options', 0) == 1) return false;
 
 		$workflowExist = $this->workflowExists();
 		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;

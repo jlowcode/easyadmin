@@ -40,6 +40,15 @@
         <fieldset label="PLG_FABRIK_LIST_EASY_ADMIN_ADVANCED" name="plg-list-easyadmin-advanced">
             <field type="helplink"
 				url="PLG_FABRIK_LIST_EASY_ADMIN_HELP_SERVER" />
+
+			<field name="show_options"
+				type="list"
+				default="0"
+				description="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_OPTIONS_DESC"
+				label="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_OPTIONS_LABEL">
+					<option value="0">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_OPTIONS_OPTION_0</option>
+					<option value="1">PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_OPTIONS_OPTION_1</option>
+			</field>
         </fieldset>
     </fields>
 </form>
