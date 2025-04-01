@@ -93,7 +93,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setListId($input->get('listid'));
 
 		//We don't have run
-		if(!$this->mustRun()) {
+		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
 
@@ -191,16 +191,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function authorized()
 	{
+		$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 		$user = Factory::getUser();
 		$db = Factory::getContainer()->get('DatabaseDriver');
-		$listModel = $this->getListModel();
-		$params = $this->getParams();
+
+		!empty($this->getListModel()) ? $listModel = $this->getListModel() : $listModel->setId($this->listId);
+		$params = $listModel->getParams();
 
 		if($user->authorise('core.admin')) return true;
 		if((int) $params->get('show_options', 0) == 1) return false;
 
 		$workflowExist = $this->workflowExists();
-		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
+		$workflow = $listModel->getParams()->get('workflow_list', '1') && $workflowExist;
 
 		$groupsLevels = $user->groups;
 		$viewLevels = $user->getAuthorisedViewLevels();
@@ -549,7 +551,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	public function onPreLoadData(&$args) 
 	{
 		//We don't have run
-		if(!$this->mustRun()) {
+		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
 
