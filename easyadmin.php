@@ -62,7 +62,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	
 	private $subject;
 
-	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube', 'link'];
+	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube', 'link', 'user', 'internalid'];
 
 	private $idModal = 'modal-elements';
 
@@ -84,8 +84,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	public function __construct(&$subject, $config) 
 	{
-		parent::__construct($subject, $config);
-
 		$app = Factory::getApplication();
 		$input = $app->input;
 		$requestWorkflow = $input->getInt('requestWorkflow');
@@ -93,9 +91,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setListId($input->get('listid'));
 
 		//We don't have run
-		if(!$this->mustRun() || !$this->authorized()) {
+		if(!$this->mustRun()) {
 			return;
 		}
+
+		parent::__construct($subject, $config);
 
 		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
@@ -189,22 +189,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0.2
 	 */
-	private function authorized()
+	private function authorized() 
 	{
-		$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 		$user = Factory::getUser();
 		$db = Factory::getContainer()->get('DatabaseDriver');
+		$listModel = $this->getListModel();
 
-		!empty($this->getListModel()) ? $listModel = $this->getListModel() : $listModel->setId($this->listId);
-		$params = $listModel->getParams();
-		$showOptions = (int) $params->get('show_options', 0);
-
-		if($showOptions == 2) return false;
 		if($user->authorise('core.admin')) return true;
-		if($showOptions == 1) return false;
 
 		$workflowExist = $this->workflowExists();
-		$workflow = $listModel->getParams()->get('workflow_list', '1') && $workflowExist;
+		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
 
 		$groupsLevels = $user->groups;
 		$viewLevels = $user->getAuthorisedViewLevels();
@@ -247,7 +241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
 			($input->get('action') == 'getFilhos') ||
 			isset($_REQUEST['resetfilters']) ||
-			Factory::getApplication()->isClient('administrator')
+			JFactory::getApplication()->isClient('administrator')
 		) {
 			return false;
 		}
@@ -285,35 +279,35 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @return 		Object
 	 */
 	protected function processElements($elements, $div=false) 
-	{
-		$processedElements = new stdClass;
-		$processedElements->published = new stdClass;
-		$processedElements->trash = new stdClass;
+{
+    $processedElements = new stdClass;
+    $processedElements->published = new stdClass;
+    $processedElements->trash = new stdClass;
 
-		foreach($elements as $key => $element) {
-			$dataEl = new stdClass();
-			$fullElementName = $this->processFullElementName($key);
+    foreach($elements as $key => $element) {
+        $dataEl = new stdClass();
+        $fullElementName = $this->processFullElementName($key);
 
-			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
+        if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
 
-			$link = $this->createLink($element->element->id);
-			$idElement = $element->getId();
-			$enable = $this->isEnabledEdit($element->getElement());
+        $link = $this->createLink($element->element->id);
+        $idElement = $element->getId();
+        $enable = $this->isEnabledEdit($element->getElement());
 
-			$dataEl->fullname = $fullElementName;
-			$dataEl->enabled = $enable;
+        $dataEl->fullname = $fullElementName;
+        $dataEl->enabled = $enable;
 
-			$this->setDataElementToEditModal($dataEl, $element, $enable);
+        $this->setDataElementToEditModal($dataEl, $element, $enable);
 
-			if($div) {
-				$dataEl->trash ? $processedElements->trash->$idElement = $dataEl : $processedElements->published->$idElement = $dataEl;
-			} else {
-				$processedElements->$idElement = $dataEl;
-			}
-		}
+        if($div) {
+            $dataEl->trash ? $processedElements->trash->$idElement = $dataEl : $processedElements->published->$idElement = $dataEl;
+        } else {
+            $processedElements->$idElement = $dataEl;
+        }
+    }
 
-		return $processedElements;
-	}
+    return $processedElements;
+}
 
 	/**
 	 * Method that return if the type of plugin is treated by us or not
@@ -326,7 +320,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$type = $element->plugin;
 		$name = $element->name;
-
+		
 		return in_array($type, $this->plugins) && !str_contains($name, 'indexing_text');
 	}
 	
@@ -553,7 +547,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	public function onPreLoadData(&$args) 
 	{
 		//We don't have run
-		if(!$this->mustRun() || !$this->authorized()) {
+		if(!$this->mustRun()) {
 			return;
 		}
 
@@ -1942,6 +1936,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 		$value = $formData[$idEasy];
 		$dEl = new stdClass();
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'related_list', 'rating', 'youtube', 'link', 'thumbs', 'tags'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1957,7 +1952,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'youtube' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_YOUTUBE'),
 			'link' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LINK'),
 			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS'),
-			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS')
+			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS'),
+			'internalid' => 'internalid',
+			'user' => 'user'
 		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
@@ -1975,6 +1972,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DESC'),
+			$showOnTypes,
+			false
 		);
 		$elements[$idEasy]['dataField'] = $dEl;
 	}
@@ -2072,7 +2071,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
 
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link', 'user', 'internalid'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -2168,7 +2167,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 		$value = $formData[$idEasy];
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link', 'user', 'internalid'];
 
 		// Options to set up the element
 		$opts = $this->getElementsToOrderingInList();
@@ -2688,7 +2687,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
 
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'date', 'dropdown', 'autocomplete', 'treeview', 'date', 'rating', 'tags'];
+		$showOnTypes = ['text', 'longtext', 'date', 'dropdown', 'autocomplete', 'treeview', 'date', 'rating', 'tags', 'user', 'internalid'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -3553,6 +3552,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
 
+		// Filter rules
+		if($data['use_filter']) {
+			$opts['filter_exact_match'] = '0';
+			$params['filter_access'] = '1';
+			$params['filter_length'] = '20';
+			$params['filter_required'] = '0';
+			$params['filter_build_method'] = '2';
+			$params['filter_groupby'] = 'text';
+			$params['filter_class'] = 'input-xxlarge';
+			$params['filter_responsive_class'] = '';
+		} else {
+			$opts['filter_type'] = '';
+		}
+
 		$type = $data["type"];
 		switch ($type) {
 			case 'text':
@@ -3813,22 +3826,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$validateHidenValidation[] = '0';
 				$mustValidateValidation[] = '1';
 				$showIconValidation[] = '1';
-
 				break;
-		}
 
-		// Filter rules
-		if($data['use_filter']) {
-			$opts['filter_exact_match'] = '0';
-			$params['filter_access'] = '1';
-			$params['filter_length'] = '20';
-			$params['filter_required'] = '0';
-			$params['filter_build_method'] = '2';
-			$params['filter_groupby'] = 'text';
-			$params['filter_class'] = 'input-xxlarge';
-			$params['filter_responsive_class'] = '';
-		} else {
-			$opts['filter_type'] = '';
+			case 'user':
+				$data['use_filter'] ? $opts['filter_type'] = 'dropdown' : null;
+				$params['filter_build_method'] = '1';
+				break;
+
+			case 'internalid':
+				$data['use_filter'] ? $opts['filter_type'] = 'field' : null;
+				break;
 		}
 
 		// Required rules
@@ -5887,9 +5894,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$this->images['edit'] = FabrikHelperHTML::image('edit.png', 'list');
 		$this->images['trash'] = FabrikHelperHTML::image('trash.png', 'list');
-		$this->images['plus'] = FabrikHelperHTML::image('plus.png', 'list');
+		$this->images['settings'] = FabrikHelperHTML::image('settings.png', 'list');
 		$this->images['refresh'] = FabrikHelperHTML::image('refresh.png', 'list');
-		$this->images['pencil'] = FabrikHelperHTML::image('pencil.png', 'list');
 	}
 
 	/**
