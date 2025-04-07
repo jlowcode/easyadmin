@@ -508,7 +508,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var hasPermission = false;
             if(self.options.workflow && mode == 'elements') {
 				var urlGetPermission = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=hasPermission&id=0";
-				console.log("Valores antes do envio:", valEls);
 				jQuery.ajax({
 					url     : urlGetPermission,
 					method	: 'post',

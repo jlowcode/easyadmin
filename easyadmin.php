@@ -278,8 +278,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @return 		Object
 	 */
-	protected function processElements($elements, $div=false) 
-{
+	protected function processElements($elements, $div=false)
+	{
     $processedElements = new stdClass;
     $processedElements->published = new stdClass;
     $processedElements->trash = new stdClass;
