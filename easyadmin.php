@@ -3568,6 +3568,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 				$params['field_use_number_format'] = $data['text_format'] == 'decimal' ? '1' : '0';
 
+				if($type == 'text') {
+					if(in_array($data['text_format'], ['integer', 'decimal'])) {
+						$pluginValidation[] = 'isgreaterorlessthan';
+						$publishedValidation[] = '1';
+						$validateInValidation[] = 'both';
+						$validateOnValidation[] = 'both';
+						$validateHidenValidation[] = '0';
+						$mustValidateValidation[] = '1';
+						$showIconValidation[] = '1';
+
+						$params['isgreaterorlessthan-message'][0] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_VALIDATION_IS_GRATER_THAN_OR_LESS_THAN");
+						$params['isgreaterorlessthan_greaterthan'][0] = '0';
+						$params['compare_value'][0] = 2000000000;
+						$params['isgreaterorlessthan_allow_empty'][0] = '1';
+						
+					}
+				}
+
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
 					$opts['filter_type'] = 'field';
