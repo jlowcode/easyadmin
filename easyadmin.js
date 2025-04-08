@@ -277,6 +277,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var elType = jQuery('#easyadmin_modal___type' + sufix);
 			var modal = sufix == '' ? '#modal-elements' : '.modalContent';
 
+			elType.find('option[value="user"], option[value="internalid"]').css('display', 'none');
+
 			elType.on('change', function() {
 				type = jQuery(this).val();
 

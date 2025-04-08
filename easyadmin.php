@@ -62,7 +62,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	
 	private $subject;
 
-	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube', 'link'];
+	private $plugins = ['databasejoin', 'date', 'field', 'textarea', 'fileupload', 'dropdown', 'rating', 'thumbs', 'display', 'youtube', 'link', 'user', 'internalid'];
 
 	private $idModal = 'modal-elements';
 
@@ -284,7 +284,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @return 		Object
 	 */
-	protected function processElements($elements, $div=false) 
+	protected function processElements($elements, $div=false)
 	{
 		$processedElements = new stdClass;
 		$processedElements->published = new stdClass;
@@ -326,7 +326,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$type = $element->plugin;
 		$name = $element->name;
-
+		
 		return in_array($type, $this->plugins) && !str_contains($name, 'indexing_text');
 	}
 	
@@ -1942,6 +1942,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 		$value = $formData[$idEasy];
 		$dEl = new stdClass();
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'related_list', 'rating', 'youtube', 'link', 'thumbs', 'tags'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -1957,7 +1958,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'youtube' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_YOUTUBE'),
 			'link' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LINK'),
 			'thumbs' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_THUMBS'),
-			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS')
+			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_TAGS'),
+			'internalid' => 'internalid',
+			'user' => 'user'
 		);
 		$dEl->options = $this->optionsElements($opts);
 		$dEl->name = $id;
@@ -1975,6 +1978,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id,
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TYPE_DESC'),
+			$showOnTypes,
+			false
 		);
 		$elements[$idEasy]['dataField'] = $dEl;
 	}
@@ -2072,7 +2077,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
 
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link', 'user', 'internalid'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -2168,7 +2173,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
 		$value = $formData[$idEasy];
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link'];
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link', 'user', 'internalid'];
 
 		// Options to set up the element
 		$opts = $this->getElementsToOrderingInList();
@@ -2688,7 +2693,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
 
 		$dEl = new stdClass();
-		$showOnTypes = ['text', 'longtext', 'date', 'dropdown', 'autocomplete', 'treeview', 'date', 'rating', 'tags'];
+		$showOnTypes = ['text', 'longtext', 'date', 'dropdown', 'autocomplete', 'treeview', 'date', 'rating', 'tags', 'user', 'internalid'];
 
 		// Options to set up the element
 		$opts = Array(
@@ -3553,6 +3558,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
 
+		// Filter rules
+		if($data['use_filter']) {
+			$opts['filter_exact_match'] = '0';
+			$params['filter_access'] = '1';
+			$params['filter_length'] = '20';
+			$params['filter_required'] = '0';
+			$params['filter_build_method'] = '2';
+			$params['filter_groupby'] = 'text';
+			$params['filter_class'] = 'input-xxlarge';
+			$params['filter_responsive_class'] = '';
+		} else {
+			$opts['filter_type'] = '';
+		}
+
 		$type = $data["type"];
 		switch ($type) {
 			case 'text':
@@ -3813,22 +3832,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$validateHidenValidation[] = '0';
 				$mustValidateValidation[] = '1';
 				$showIconValidation[] = '1';
-
 				break;
-		}
 
-		// Filter rules
-		if($data['use_filter']) {
-			$opts['filter_exact_match'] = '0';
-			$params['filter_access'] = '1';
-			$params['filter_length'] = '20';
-			$params['filter_required'] = '0';
-			$params['filter_build_method'] = '2';
-			$params['filter_groupby'] = 'text';
-			$params['filter_class'] = 'input-xxlarge';
-			$params['filter_responsive_class'] = '';
-		} else {
-			$opts['filter_type'] = '';
+			case 'user':
+				$data['use_filter'] ? $opts['filter_type'] = 'dropdown' : null;
+				$params['filter_build_method'] = '1';
+				break;
+
+			case 'internalid':
+				$data['use_filter'] ? $opts['filter_type'] = 'field' : null;
+				break;
 		}
 
 		// Required rules
