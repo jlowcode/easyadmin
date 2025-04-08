@@ -84,6 +84,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	public function __construct(&$subject, $config) 
 	{
+		parent::__construct($subject, $config);
+
 		$app = Factory::getApplication();
 		$input = $app->input;
 		$requestWorkflow = $input->getInt('requestWorkflow');
@@ -91,11 +93,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setListId($input->get('listid'));
 
 		//We don't have run
-		if(!$this->mustRun()) {
+		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
-
-		parent::__construct($subject, $config);
 
 		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
@@ -189,16 +189,22 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since 		version 4.0.2
 	 */
-	private function authorized() 
+	private function authorized()
 	{
+		$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 		$user = Factory::getUser();
 		$db = Factory::getContainer()->get('DatabaseDriver');
-		$listModel = $this->getListModel();
 
+		!empty($this->getListModel()) ? $listModel = $this->getListModel() : $listModel->setId($this->listId);
+		$params = $listModel->getParams();
+		$showOptions = (int) $params->get('show_options', 0);
+
+		if($showOptions == 2) return false;
 		if($user->authorise('core.admin')) return true;
+		if($showOptions == 1) return false;
 
 		$workflowExist = $this->workflowExists();
-		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
+		$workflow = $listModel->getParams()->get('workflow_list', '1') && $workflowExist;
 
 		$groupsLevels = $user->groups;
 		$viewLevels = $user->getAuthorisedViewLevels();
@@ -241,7 +247,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
 			($input->get('action') == 'getFilhos') ||
 			isset($_REQUEST['resetfilters']) ||
-			JFactory::getApplication()->isClient('administrator')
+			Factory::getApplication()->isClient('administrator')
 		) {
 			return false;
 		}
@@ -280,34 +286,34 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	protected function processElements($elements, $div=false)
 	{
-    $processedElements = new stdClass;
-    $processedElements->published = new stdClass;
-    $processedElements->trash = new stdClass;
+		$processedElements = new stdClass;
+		$processedElements->published = new stdClass;
+		$processedElements->trash = new stdClass;
 
-    foreach($elements as $key => $element) {
-        $dataEl = new stdClass();
-        $fullElementName = $this->processFullElementName($key);
+		foreach($elements as $key => $element) {
+			$dataEl = new stdClass();
+			$fullElementName = $this->processFullElementName($key);
 
-        if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
+			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
 
-        $link = $this->createLink($element->element->id);
-        $idElement = $element->getId();
-        $enable = $this->isEnabledEdit($element->getElement());
+			$link = $this->createLink($element->element->id);
+			$idElement = $element->getId();
+			$enable = $this->isEnabledEdit($element->getElement());
 
-        $dataEl->fullname = $fullElementName;
-        $dataEl->enabled = $enable;
+			$dataEl->fullname = $fullElementName;
+			$dataEl->enabled = $enable;
 
-        $this->setDataElementToEditModal($dataEl, $element, $enable);
+			$this->setDataElementToEditModal($dataEl, $element, $enable);
 
-        if($div) {
-            $dataEl->trash ? $processedElements->trash->$idElement = $dataEl : $processedElements->published->$idElement = $dataEl;
-        } else {
-            $processedElements->$idElement = $dataEl;
-        }
-    }
+			if($div) {
+				$dataEl->trash ? $processedElements->trash->$idElement = $dataEl : $processedElements->published->$idElement = $dataEl;
+			} else {
+				$processedElements->$idElement = $dataEl;
+			}
+		}
 
-    return $processedElements;
-}
+		return $processedElements;
+	}
 
 	/**
 	 * Method that return if the type of plugin is treated by us or not
@@ -547,7 +553,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	public function onPreLoadData(&$args) 
 	{
 		//We don't have run
-		if(!$this->mustRun()) {
+		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
 
@@ -5894,8 +5900,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$this->images['edit'] = FabrikHelperHTML::image('edit.png', 'list');
 		$this->images['trash'] = FabrikHelperHTML::image('trash.png', 'list');
-		$this->images['settings'] = FabrikHelperHTML::image('settings.png', 'list');
+		$this->images['plus'] = FabrikHelperHTML::image('plus.png', 'list');
 		$this->images['refresh'] = FabrikHelperHTML::image('refresh.png', 'list');
+		$this->images['pencil'] = FabrikHelperHTML::image('pencil.png', 'list');
 	}
 
 	/**
