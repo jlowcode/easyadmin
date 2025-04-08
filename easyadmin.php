@@ -3627,7 +3627,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					} else {
 						return true;
 					}
-				}';
+				}
+					
+				return true;';
 
 				$opts['plugin'] = 'fileupload';
 				$params['ajax_upload'] = $data['ajax_upload'] ? '1' : '0';
