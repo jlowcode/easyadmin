@@ -3611,11 +3611,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ajax_show_widget'] = '0';
 				$params['random_filename'] = '1';
 				$params['length_random_filename'] = '12';
-				$params['fu_make_pdf_thumb'] = '1';
-				$params['make_thumbnail'] = '1';
-				$params['thumb_dir'] = 'images/stories/thumbs';
-				$params['thumb_max_width'] = '300';
-				$params['thumb_max_height'] = '200';
+				$params['fu_make_pdf_thumb'] = '0';
+				$params['make_thumbnail'] = '0';
 
 				if($data['ajax_upload']) {
 					$params['ajax_upload'] = '1';
