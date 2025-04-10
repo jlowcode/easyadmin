@@ -392,7 +392,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'fileupload':
 				$dataEl->ajax_upload = $params['ajax_upload'] == '1' ? true : false;
-				$dataEl->make_thumbs = $params['make_thumbnail'] == '1' ? true : false;
 				$dataEl->type = 'file';
 				break;
 
@@ -957,7 +956,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementFormatToLongText($elements, 'format_long_text');
 		//$this->setElementDefaultValue($elements, 'default_value');
 		$this->setElementAjaxUpload($elements, 'ajax_upload');
-		//$this->setElementMakeThumbs($elements, 'make_thumbs');
 		$this->setElementFormat($elements, 'format');
 		$this->setElementOptsDropdown($elements, 'options_dropdown');
 		$this->setElementMultiSelect($elements, 'multi_select');
@@ -2770,54 +2768,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * Setter method to make thumbs element
-	 *
-	 * @param   	Array 		$elements			Reference to all elements
-	 * @param		String		$nameElement		Identity of the element
-	 *
-	 * @return  	Null
-	 * 
-	 * @since		version 4.0
-	 */
-	private function setElementMakeThumbs(&$elements, $nameElement) 
-	{
-		$formData = $this->getFormData();
-		$subject = $this->getSubject();
-
-		$idEasy = $this->prefixEl . '___' . $nameElement;
-		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
-		$value = $formData[$idEasy] == 'true' || $formData[$idEasy] ? 1 : 0;
-
-		$dEl = new stdClass();
-		$showOnTypes = ['file'];
-
-		// Options to set up the element
-		$opts = Array(
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'),
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
-		);
-		$elements[$idEasy]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
-		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
-
-		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
-			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MAKE_THUMBS_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MAKE_THUMBS_DESC'), 
-			$showOnTypes, 
-			false
-		);
-		$elements[$idEasy]['dataField'] = Array(
-			'value' => $value,
-			'options' => $this->optionsElements($opts),
-			'name' => $id,
-			'id' => $id,
-			'class' => 'fbtn-default fabrikinput',
-			'dataAttribute' => 'style="margin-bottom: 10px; padding: 0px"',
-		);
-		$this->getRequestWorkflow() ? $elements[$idEasy]['dataField']['disabled'] = 'disabled' : '';
-	}
-
-	/**
 	 * Setter method to format element
 	 *
 	 * @param   	Array 		$elements			Reference to all elements
@@ -3651,24 +3601,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				return true;';
 
 				$opts['plugin'] = 'fileupload';
-				$params['ajax_upload'] = $data['ajax_upload'] ? '1' : '0';
 				$params['ul_max_file_size'] = '1048576';
-				$params['ul_directory'] = "images/stories/";
+				$params['ul_directory'] = 'images/stories/';
 				$params['image_library'] = 'gd2';
-				$params['fileupload_crop_dir'] = "images/stories/crop";
+				$params['fileupload_crop_dir'] = 'images/stories/crop';
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
-				$params['fu_show_image'] = '2';
 				$params['ajax_show_widget'] = '0';
+				$params['random_filename'] = '1';
+				$params['length_random_filename'] = '12';
+				$params['fu_make_pdf_thumb'] = '1';
+				$params['make_thumbnail'] = '1';
+				$params['thumb_dir'] = 'images/stories/thumbs';
+				$params['thumb_max_width'] = '300';
+				$params['thumb_max_height'] = '200';
 
-				if($data['make_thumbs']) {
+				if($data['ajax_upload']) {
+					$params['ajax_upload'] = '1';
+					$params['fu_show_image_in_table'] = '3';
+					$params['fu_show_image'] = '3';
+				} else {
+					$params['ajax_upload'] = '0';
 					$params['fu_show_image_in_table'] = '1';
-					$params['fu_make_pdf_thumb'] = '1';
-					$params['make_thumbnail'] = '1';
-					$params['thumb_dir'] = 'images/stories/thumbs';
-					$params['thumb_max_width'] = '400';
-					$params['thumb_max_height'] = '300';
+					$params['fu_show_image'] = '2';
 				}
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;

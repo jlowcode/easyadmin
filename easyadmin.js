@@ -471,7 +471,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___show_in_list1':
 					case 'easyadmin_modal___show_down_thumb1':
 					case 'easyadmin_modal___ajax_upload1':
-					case 'easyadmin_modal___make_thumbs1':
 					case 'easyadmin_modal___multi_select1':
 					case 'easyadmin_modal___multi_relation1':
 					case 'easyadmin_modal___trash_list1':
@@ -944,7 +943,6 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___show_in_list0':
 						case 'easyadmin_modal___show_down_thumb0':
 						case 'easyadmin_modal___ajax_upload0':
-						case 'easyadmin_modal___make_thumbs0':
 						case 'easyadmin_modal___multi_select0':
 						case 'easyadmin_modal___multi_relation0':
 							jQuery(this).prop('checked', true);
