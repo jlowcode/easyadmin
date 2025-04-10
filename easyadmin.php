@@ -3613,6 +3613,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['length_random_filename'] = '12';
 				$params['fu_make_pdf_thumb'] = '0';
 				$params['make_thumbnail'] = '0';
+				$params['ajax_max'] = '50';
+				$params['ajax_dropbox_width'] = '0';
 
 				if($data['ajax_upload']) {
 					$params['ajax_upload'] = '1';
