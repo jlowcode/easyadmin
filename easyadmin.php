@@ -368,6 +368,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataEl->format_long_text = $params['use_wysiwyg'];
 				$dataEl->type = $plugin == 'field' ? $params['element_link_easyadmin'] == '1' ? 'link' : 'text' : 'longtext';
 
+				// Removed type integer and decimal because we have too many problems and not too much benefits
+				if(in_array($params['text_format'], ['integer', 'decimal'])) {
+					$dataEl->text_format = 'text';
+				}
+
 				// The element is field, but of type link
 				if((bool) $params['element_link_easyadmin']) {
 					$paramsForm = $this->getListModel()->getFormModel()->getParams();
@@ -2595,8 +2600,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Options to set up the element
 		$opts = Array(
 			'text' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_TEXT'),
-			'integer' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_INTEGER'),
-			'decimal' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_DECIMAL'),
+			// Removed type integer and decimal because we have too many problems and not too much benefits
+			//'integer' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_INTEGER'),
+			//'decimal' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_DECIMAL'),
 			'url' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_FORMAT_URL')
 		);
 		$dEl->options = $this->optionsElements($opts);
