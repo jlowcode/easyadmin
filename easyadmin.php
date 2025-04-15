@@ -1011,7 +1011,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementWidthList($elementsList, 'width_list');
 		$this->setElementLayoutMode($elementsList, 'layout_mode');
 		$this->setElementComparisonList($elementsList, 'comparison_list');
-		//$this->setElementDefaultLayout($elementsList, 'default_layout');
 		$this->setElementWorkflowList($elementsList, 'workflow_list');
 		$this->setElementApproveByVotesList($elementsList, 'approve_by_votes_list');
 		$this->setElementVotesToApproveList($elementsList, 'votes_to_approve_list');
@@ -1750,50 +1749,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'list'
 		);
 		$elements[$id]['dataField'] = Array($id => $value, $id.'_raw' => $value);
-	}
-
-	/**
-	 * Setter method to default layout element
-	 *
-	 * @param   	Array 			$elements			Reference to all elements
-	 * @param		String			$nameElement		Identity of the element
-	 *
-	 * @return  	Null
-	 * 
-	 * @since 		version 4.0
-	 * 
-	 * @deprecated  since 4.0.3 	This method was remove because this plugin is working only for jlowcode_admin template by now
-	 */
-	private function setElementDefaultLayout(&$elements, $nameElement) 
-	{
-		$listModel = $this->getListModel();
-		$subject = $this->getSubject();
-
-		$tableList = $listModel->getTable();
-		$val = $tableList->get('template');
-
-		$id = $this->prefixEl . '___' . $nameElement;
-		$dEl = new stdClass();
-
-		// Options to set up the element
-		$dEl->options = $this->getLayoutsOptions();
-		$dEl->name = $id;
-		$dEl->id = $id;
-		$dEl->selected = [$val];
-		$dEl->multiple = '0';
-		$dEl->attribs = 'class="fabrikinput form-select input-medium input-list"';
-		$dEl->multisize = '';
-
-		$classDropdown = new PlgFabrik_ElementDropdown($subject);
-		$elements[$id]['objField'] = $classDropdown->getLayout('form');
-		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
-
-		$elements[$id]['dataLabel'] = $this->getDataLabel(
-			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DEFAULT_LAYOUT_LABEL'),
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_DEFAULT_LAYOUT_DESC'),
-		);
-		$elements[$id]['dataField'] = $dEl;
 	}
 
 	/**
@@ -4632,7 +4587,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataList['introduction'] = $data['description_list'];
 		//$dataList['order_by'] = array($data['ordering_list']);			//Updated by input data order_by (js)
 		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
-		$dataList['template'] = $data['default_layout'];
 		$dataList['access'] = $viewLevel;
 		$dataList['created_by'] = $data['owner_list'];
 		$dataList['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
@@ -4644,7 +4598,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			if($key == 'params') {
 				$dataList[$key] = json_decode($dataList[$key], true);
-				$dataList[$key]['admin_template'] = $data['default_layout'];
 				$dataList[$key]['width_list'] = $data['width_list'];
 				$dataList[$key]['layout_mode'] = $data['layout_mode'];
 				$dataList[$key]['allow_view_details'] = $viewLevel;
