@@ -60,7 +60,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			}
 
 			//When 'manage' variable present we need remove
-			jQuery('#modal-list .btn-close').off('click').on('click', function() {
+			jQuery('#modal-list .btn-close').on('click', function() {
 				if(window.location.search.indexOf('manage') > 0) {
 					window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
 				}
@@ -82,9 +82,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			this.setButtons(this.options.elements.published);
 			this.setActionPanel(this.options.elements);
 			jQuery(document).ready(function () {
-				jQuery(document).off('mouseenter').on('mouseenter', '.heading.fabrik_ordercell', function () {
+				jQuery(document).on('mouseenter', '.heading.fabrik_ordercell', function () {
 					jQuery(this).find(":button.elementAdminButton").show();
-				}).off('mouseleave').on('mouseleave', '.heading.fabrik_ordercell', function () {
+				}).on('mouseleave', '.heading.fabrik_ordercell', function () {
 					jQuery(this).find(":button.elementAdminButton").hide();
 				});
 			});
@@ -110,7 +110,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				return this.classList ? this.classList.contains('fabrikorder') || !this.classList.contains('fabrikorder-asc') || !this.classList.contains('fabrikorder-desc') : false;
 			}).after(button);
 
-			sub.off('click').on('click', function() {
+			sub.on('click', function() {
 				self.setModalToEditElement(this);
 			});
 
@@ -126,13 +126,13 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var self = this;
 
 			var multiSelectElement = jQuery('#modal-elements .select2-search__field');
-			multiSelectElement.off('change').on('change', function() {
+			multiSelectElement.on('change', function() {
 				jQuery(this).remove();
 				self.options.inputSearch = jQuery(this);
 			});
 
-			jQuery(document).off('click').on('click', '#modal-elements .select2-selection__choice__remove', function() {
-				self.options.inputSearch.off('change').on('change', function() {
+			jQuery(document).on('click', '#modal-elements .select2-selection__choice__remove', function() {
+				self.options.inputSearch.on('change', function() {
 					jQuery(this).remove();
 					self.options.inputSearch = jQuery(this);
 				});
@@ -141,7 +141,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				self.setUpElementList();
 			});
 
-			jQuery('#modal-elements .select2-selection').off('click').on('click', function() {
+			jQuery('#modal-elements .select2-selection').on('click', function() {
 				var spanSelect2 = jQuery(this);
 				if(spanSelect2.find('#modal-elements .select2-search__field').length == 0 && spanSelect2.find('#modal-elements .select2-selection__rendered li').length == 0) {
 					spanSelect2.find('#modal-elements .select2-search').append(self.options.inputSearch);
@@ -163,7 +163,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var searchElementList = jQuery(idEl + '-auto-complete');
 			var elLabel = jQuery(idEl);
 
-			searchElementList.off('focusout').on('focusout', function() {
+			searchElementList.on('focusout', function() {
 				setTimeout(function() {
 					self.searchElementList();
 				}, 500);
@@ -173,7 +173,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				elRefresh = jQuery(self.options.images.refresh);
 				elRefresh.addClass('refresh_label');
 				elRefresh.css('margin-left', '5px');
-				elRefresh.off('click').on('click', function(){self.searchElementList()});
+				elRefresh.on('click', function(){self.searchElementList()});
 				elLabel.closest('.fabrikElementContainer').find('.form-label').after(elRefresh);
 			}
 		},
@@ -279,7 +279,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			elType.find('option[value="user"], option[value="internalid"]').css('display', 'none');
 
-			elType.off('change').on('change', function() {
+			elType.on('change', function() {
 				type = jQuery(this).val();
 
 				jQuery(modal + ' .modal-element').each(function(index, element) {
@@ -318,7 +318,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var self = this;
 			var elVisibilityList = jQuery('#easyadmin_modal___visibility_list');
 
-			elVisibilityList.off('change').on('change', function(e, params) {
+			elVisibilityList.on('change', function(e, params) {
 				self.showHideElements('visibility_list', 'list', 'dropdown');
 			});
 
@@ -333,7 +333,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var self = this;
 			var elApproveByVotes = jQuery('input[name="easyadmin_modal___approve_by_votes_list"]');
 
-			elApproveByVotes.off('change').on('change', function(e, params) {
+			elApproveByVotes.on('change', function(e, params) {
 				self.showHideElements('approve_by_votes_list', 'list', 'yesno');
 			});
 
@@ -348,7 +348,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var self = this;
 			var elShowInList = jQuery('input[name="easyadmin_modal___show_in_list"]');
 
-			elShowInList.off('change').on('change', function(e, params) {
+			elShowInList.on('change', function(e, params) {
 				if(self.options.valIdEl == 0 && params === undefined) {
 					return;
 				}
@@ -365,7 +365,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var self = this;
 			var elLabelAdvancedLink = jQuery('label[for="easyadmin_modal___label_advanced_link' + sufix +'"]');
 
-			elLabelAdvancedLink.off('click').on('click', function(e, params) {
+			elLabelAdvancedLink.on('click', function(e, params) {
 				id = jQuery(this).attr('for').split('___')[1];
 				sufix = params != null ? params.sufix : '';
 				sufix = id.indexOf('_wfl') > 0 ? '_wfl' : '';
@@ -439,8 +439,8 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			elSaveElements = jQuery('#easyadmin_modal___submit_elements');
 			elSaveList = jQuery("#easyadmin_modal___submit_list");
 
-			elSaveElements.off('click').on('click', () => this.saveEvent('elements'));
-			elSaveList.off('click').on('click', () => this.saveEvent('list'));
+			elSaveElements.on('click', () => this.saveEvent('elements'));
+			elSaveList.on('click', () => this.saveEvent('list'));
 		},
 
 		/**
@@ -471,6 +471,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					case 'easyadmin_modal___show_in_list1':
 					case 'easyadmin_modal___show_down_thumb1':
 					case 'easyadmin_modal___ajax_upload1':
+					case 'easyadmin_modal___make_thumbs1':
 					case 'easyadmin_modal___multi_select1':
 					case 'easyadmin_modal___multi_relation1':
 					case 'easyadmin_modal___trash_list1':
@@ -581,7 +582,12 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					msg = typeMsg ? Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS") : r['message'];
 					alert(msg);
 
-					window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
+					if(r['updateUrl']){
+						window.location.href = self.options.baseUri + '/' + r['newUrl'];
+					} else{
+						window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
+					}
+
 				} else {
 					alert(r['message']);
 				}
@@ -631,9 +637,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var button = jQuery('<a class="btn fabrik__rowlink btn-default"><span>' + this.options.images.plus + '</span><span class="hidden">' + Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ADMIN") + '</span></a>');
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			var btnGroup = jQuery(heading).find('.btn-group')[0];
-			var divTrash = jQuery('<div></div>').off('mouseover').on('mouseover', function() {
+			var divTrash = jQuery('<div></div>').on('mouseover', function() {
 				jQuery('.trashEl').css('display', 'block');
-			}).off('mouseout').on('mouseout', function() {
+			}).on('mouseout', function() {
 				jQuery('.trashEl').css('display', 'none');
 			});
 
@@ -668,7 +674,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				'width': '150px',
 			});
 			
-			button.off('click').on('click', function () {
+			button.on('click', function () {
 				if(jQuery(div).css('display') == 'none') {
 					jQuery(div).css({'display': 'block' });
 				} else {
@@ -720,7 +726,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						.appendTo(li);
 					}
 
-					sub.off('click').on('click', function() {
+					sub.on('click', function() {
 						self.setModalToEditElement(this);
 					});
 				});
@@ -825,9 +831,9 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 
 			var heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
 			var btnGroup = jQuery(heading).find('.dropdown-menu').css('width', '100%')[0];
-			var divTrash = jQuery('<div></div>').off('mouseover').on('mouseover', function() {
+			var divTrash = jQuery('<div></div>').on('mouseover', function() {
 				jQuery('.trashEl').css('display', 'block');
-			}).off('mouseout').on('mouseout', function() {
+			}).on('mouseout', function() {
 				jQuery('.trashEl').css('display', 'none');
 			});
 
@@ -913,7 +919,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						.appendTo(li);
 					}
 
-					sub.off('click').on('click', function() {
+					sub.on('click', function() {
 						self.setModalToEditElement(this);
 					});
 				});
@@ -929,7 +935,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		setCssAndEventsButtons: function(editListButton, addElementButton) {
 			var self = this;
 
-			addElementButton.off('click').on('click', function() {
+			addElementButton.on('click', function() {
 				self.options.valIdEl = 0;
 				jQuery('[name=history_type]').val('')
 
@@ -943,6 +949,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						case 'easyadmin_modal___show_in_list0':
 						case 'easyadmin_modal___show_down_thumb0':
 						case 'easyadmin_modal___ajax_upload0':
+						case 'easyadmin_modal___make_thumbs0':
 						case 'easyadmin_modal___multi_select0':
 						case 'easyadmin_modal___multi_relation0':
 							jQuery(this).prop('checked', true);
