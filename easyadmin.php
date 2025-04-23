@@ -4749,17 +4749,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$db->updateObject('adm_cloner_listas', $obj, 'id_lista');
 			} catch (\Throwable $th) {
-				//If the table not exists we do nothing
 			}
 		}
 
 		if(!$validate->error) {
 			$modelList->save($dataList);
 			$input->set('jform', $pluginsForm);
-			$modelForm->getState(); 	//We need do this to set __state_set before the save
+			$modelForm->getState(); 	
 			$modelForm->save($dataForm);
 
-			// Configure admins list
 			$data['admins_list'][] = $data['owner_list'];
 			array_unique($data['admins_list']);
 			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
