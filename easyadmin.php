@@ -4664,6 +4664,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$propertiesForm = $listModel->getFormModel()->getTable()->getProperties();
 
 		$validate = $this->validateList($data);
+	if (!empty($data['url_new'])) {
+		$menu = Factory::getApplication()->getMenu();
+		$urlNew = $data['url_new'];
+
+		$menuItems = $menu->getItems('alias', $urlNew);
+
+		foreach ($menuItems as $item) {
+			$currentMenu = $menu->getItems('link', "index.php?option=com_fabrik&view=list&listid=" . $listModel->getId(), true);
+			if ($item->id != $currentMenu->id) {
+				$validate->error = true;
+				$validate->message = 'Essa URL já está em uso.';
+				echo json_encode($validate);
+				return;
+			}
+		}
+	}
+
 		if($validate->error) {
 			echo json_encode($validate);
 			return;
@@ -4749,10 +4766,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
 
 			try {
+				if (!empty($data['url_new'])) {
+					$this->updateUrlMenu($data['url_new'], $listModel->getId());
+				}
+			
 				$responseExtras = $this->extras($data, 'list');
-			} catch (\Throwable $th) {
-				// If error we do nothing
-			}
+			} catch (\RuntimeException $e) {
+				$validate->error = true;
+				$validate->message = $e->getMessage();
+				echo json_encode($validate);
+				return;
+			}				
 		}
 
 		$validate = (object) array_merge((array)$responseExtras, (array)$validate);
@@ -6071,26 +6095,37 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function updateUrlMenu($urlNew, $listId)
 	{
-
 		$app = Factory::getApplication();
 		$menu = $app->getMenu();
 
 		$url = "index.php?option=com_fabrik&view=list&listid={$listId}";
-		$menuLinked = $menu->getItems('link', $url, true);
+		$currentMenu = $menu->getItems('link', $url, true);
+
+		if (!$currentMenu) {
+			throw new RuntimeException('Item de menu da lista não encontrado.');
+		}
+
+		$existingItems = $menu->getItems('alias', $urlNew);
+
+		foreach ($existingItems as $item) {
+			if ($item->id != $currentMenu->id) {
+				throw new RuntimeException('Essa URL já está sendo usada.');
+			}
+		}
 
 		$dataMenu = new stdClass();
-        $dataMenu->id = $menuLinked->id;
+		$dataMenu->id = $currentMenu->id;
 		$dataMenu->alias = $urlNew;
-		$dataMenu->menutype = $menuLinked->menutype;
+		$dataMenu->menutype = $currentMenu->menutype;
 
-		try {
-			$menu = new ItemModel();
-			$menu->save((array) $dataMenu);
-		} catch (RuntimeException $e) {
-			return false;
+		$menuModel = new ItemModel();
+
+		if (!$menuModel->save((array) $dataMenu)) {
+			throw new RuntimeException('Erro ao atualizar a URL do menu.');
 		}
 
 		return true;
 	}
+
 
 }
