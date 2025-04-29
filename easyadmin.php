@@ -92,12 +92,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$this->setListId($input->get('listid'));
 
+		if(!$this->getListId()) return;
+
 		//We don't have run
 		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
 
-		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
+		if(!$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 			$listModel->setId($this->listId);
 
