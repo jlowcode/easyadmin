@@ -4492,7 +4492,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Before to save the ordering we need to change the permissions and later change again
 		$originalRules = $this->changeRulesPermissons("change");
 
-		$modelElement->saveorder($pks, $order);
+		try {
+			$modelElement->saveorder($pks, $order);
+		} catch (\Throwable $th) {
+			$this->changeRulesPermissons("recover", $originalRules);
+		}
 		
 		return $this->changeRulesPermissons("recover", $originalRules);
 	}
