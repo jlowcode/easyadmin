@@ -4,7 +4,7 @@
  * @copyright: Copyright (C) 2024 Jlowcode Org - All rights reserved.
  * @license  : GNU/GPL http://www.gnu.org/copyleft/gpl.html
  */
-define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
+define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce'], function (jQuery, FbListPlugin, debounce) {
 	var FbListEasyadmin = new Class({
 		Extends: FbListPlugin,
 
@@ -227,6 +227,15 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						}
 					});
 				});
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
 			});
 		},
 
@@ -266,6 +275,16 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						jQuery(select2).val(values).trigger('change');
 					}	
 				}
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					data: data,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
 			});
 		},
 
@@ -439,18 +458,30 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			elSaveElements = jQuery('#easyadmin_modal___submit_elements');
 			elSaveList = jQuery("#easyadmin_modal___submit_list");
 
-			elSaveElements.off('click').on('click', () => this.saveEvent('elements'));
-			elSaveList.off('click').on('click', () => this.saveEvent('list'));
+			elSaveElements.off('click').on('click', debounce(2500, true, function(e) {
+				var btn = jQuery(this);
+				btn.prop('disabled', true);
+				self.saveEvent('elements', '', btn);
+			}));
+
+			elSaveList.off('click').on('click', debounce(2500, true ,function(e) {
+				var btn = jQuery(this);
+				btn.prop('disabled', true);
+				self.saveEvent('list', '', btn);
+			}));
 		},
 
 		/**
 		 * Function that call the save method by ajax
 		 * 
 		 */
-		saveEvent: function(mode, columns = '') {
+		saveEvent: function(mode, columns = '', btn = '') {
 			self = this;
 			valEls = {};
 			inputs = jQuery('.fabrikinput');
+
+			var modal = mode == 'list' ? 'list' : 'elements';
+			Fabrik.loader.start(jQuery('#modal-' + modal + ' .modal-content'), Joomla.JText._('COM_FABRIK_LOADING'));
 
 			listId = jQuery('[name=listid]').val();
 			db_table_name = jQuery('[name=db_table_name]').val();
@@ -548,11 +579,31 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 						urlLog = self.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=form&plugin=workflow&method=createLog";
 
 						if(!r['error']) {
-							self.request(urlLog, valEls, hasPermission);
+							self.request(urlLog, valEls, hasPermission, btn);
 						} else {
 							alert(r['message']);
 						}
+					}).fail(function (jq, status, error) {
+						var message = {
+							url: url,
+							data: dataSend,
+							error: error,
+							status: status,
+							jq: jq
+						};
+		
+						self.saveLogs(message);
 					});
+				}).fail(function (jq, status, error) {
+					var message = {
+						url: urlGetPermission,
+						data: valEls,
+						error: error,
+						status: status,
+						jq: jq
+					};
+	
+					self.saveLogs(message);
 				});
 			} else {
 				ownerIdNew = valEls['jlow_fabrik_easyadmin_modal___owner_list'];
@@ -561,7 +612,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					window.confirm(Joomla.JText._('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER'));
 				}
 
-				self.request(url, valEls, true);
+				self.request(url, valEls, true, btn);
 			}
 		},
 
@@ -569,7 +620,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 		 * This function send requests
 		 * 
 		 */
-		request: function(url, data, typeMsg) {
+		request: function(url, data, typeMsg, btn) {
 			jQuery.ajax({
 				url     : url,
 				method	: 'post',
@@ -585,6 +636,44 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				} else {
 					alert(r['message']);
 				}
+
+				btn.prop('disabled', true);
+				Fabrik.loader.stop(jQuery('#modal-list .modal-content'));
+				Fabrik.loader.stop(jQuery('#modal-elements .modal-content'));
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					data: data,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
+			});
+		},
+
+		/**
+		 * This function send a request to save the log in log table
+		 * 
+		 */
+		saveLogs: function (message) {
+			alert(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ERROR"));
+
+			jQuery.ajax({
+				url     : '',
+				method	: 'post',
+				data	: {
+					message: JSON.stringify(message),
+					option: 'com_fabrik',
+					format: 'raw',
+					task: 'plugin.pluginAjax',
+					g: 'list',
+					plugin: 'easyadmin',
+					method: 'saveLogs'
+				}
+			}).done(function (r) {
+				location.reload();
 			});
 		},
 

@@ -27,6 +27,7 @@ use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
+use Joomla\CMS\Date\Date;
 
 // Requires 
 // Change to namespaces on F5
@@ -741,6 +742,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
 		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
+		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
     }
 
 	/**
@@ -5673,6 +5675,33 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$r = $this->validateElements($data, $listModel);
 		echo json_encode($r);
+	}
+
+	/**
+	 * This method in case of bad request will save the data in #__action_logs table
+	 * 
+	 */
+	public function onSaveLogs()
+	{
+        $db = Factory::getContainer()->get('DatabaseDriver');
+		$app = Factory::getApplication();
+
+		$input = $app->input;
+
+		$query = $db->getQuery(true);
+		$query->insert($db->qn("#__action_logs"))
+			->columns(implode(",", $db->qn(["message_language_key", "message", "log_date", "extension", "user_id", "item_id"])))
+			->values(implode(",", $db->q([
+				Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR"),
+				$input->getString('message'),
+				Date::getInstance()->toSql(),
+				Text::_("PLG_FABRIK_LIST_EASY_ADMIN"),
+				$this->user->id,
+				$input->getInt('Itemid')
+			]))
+		);
+        $db->setQuery($query);
+		$db->execute($query);
 	}
 
 	/**
