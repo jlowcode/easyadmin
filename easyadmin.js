@@ -582,6 +582,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 							self.request(urlLog, valEls, hasPermission, btn);
 						} else {
 							alert(r['message']);
+							btn.prop('disabled', false);
+							Fabrik.loader.stop(jQuery('#modal-list .modal-content'));
+							Fabrik.loader.stop(jQuery('#modal-elements .modal-content'));
 						}
 					}).fail(function (jq, status, error) {
 						var message = {
@@ -637,7 +640,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 					alert(r['message']);
 				}
 
-				btn.prop('disabled', true);
+				btn.prop('disabled', false);
 				Fabrik.loader.stop(jQuery('#modal-list .modal-content'));
 				Fabrik.loader.stop(jQuery('#modal-elements .modal-content'));
 			}).fail(function (jq, status, error) {
