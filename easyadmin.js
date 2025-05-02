@@ -583,7 +583,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 					alert(msg);
 
 					if(r['updateUrl']){
-						window.location.href = self.options.baseUri + '/' + r['newUrl'];
+						window.location.href = self.options.baseUri + r['newUrl'];
 					} else{
 						window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
 					}

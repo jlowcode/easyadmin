@@ -4664,9 +4664,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$propertiesForm = $listModel->getFormModel()->getTable()->getProperties();
 
 		$validate = $this->validateList($data);
-	if (!empty($data['url_new'])) {
+	if (!empty($data['url_list'])) {
 		$menu = Factory::getApplication()->getMenu();
-		$urlNew = $data['url_new'];
+		$urlNew = $data['url_list'];
 
 		$menuItems = $menu->getItems('alias', $urlNew);
 
@@ -4675,21 +4675,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if ($item->id != $currentMenu->id) {
 				$validate->error = true;
 				$validate->message = 'Essa URL já está em uso.';
-				echo json_encode($validate);
-				return;
+				return json_encode($validate);
 			}
 		}
 	}
 
 		if($validate->error) {
-			echo json_encode($validate);
-			return;
+			return json_encode($validate);
 		}
 
 		$dataList['label'] = $data['name_list'];
 		$dataList['introduction'] = $data['description_list'];
-		//$dataList['order_by'] = array($data['ordering_list']);			//Updated by input data order_by (js)
-		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
 		$dataList['template'] = $data['default_layout'];
 		$dataList['access'] = $viewLevel;
 		$dataList['created_by'] = $data['owner_list'];
@@ -4764,16 +4760,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
 
 			try {
-				if (!empty($data['url_new'])) {
-					$this->updateUrlMenu($data['url_new'], $listModel->getId());
+				if (!empty($data['url_list'])) {
+					$this->updateUrlMenu($data['url_list'], $listModel->getId());
 				}
 			
 				$responseExtras = $this->extras($data, 'list');
 			} catch (\RuntimeException $e) {
 				$validate->error = true;
 				$validate->message = $e->getMessage();
-				echo json_encode($validate);
-				return;
+				return json_encode($validate);
 			}				
 		}
 
@@ -4859,25 +4854,23 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		switch ($mode) {
 			case 'list':
 				$url = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
-
+				$updateLink = ($url != ltrim(Uri::getInstance()->getPath(), '/'));
+			
+				if ($updateLink) {
+					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
+					$response->newUrl = $url;
+				}
+			
 				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$update->user = $data['owner_list'];
-				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
-
-				if ($url != ltrim(Uri::getInstance()->getPath(), '/')) {
-					$updateLink = new stdClass();
-					$updateLink->link = $url;
-					$updateLink->id_lista = $data['listid'];
-					$db->updateObject('adm_cloner_listas', $updateLink, 'id_lista');
-	
-					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
-					$response->newUrl = $url;
+				if ($updateLink) {
+					$update->link = $url;
 				}
-
-				break;
+				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
+				break;			
 			
 			case 'element':
 				break;
@@ -6057,7 +6050,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
 
-		// Options to set up the element
 		$dEl->attributes = Array(
 			'type' => 'text',
 			'id' => $id,
@@ -6100,14 +6092,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$currentMenu = $menu->getItems('link', $url, true);
 
 		if (!$currentMenu) {
-			throw new RuntimeException('Item de menu da lista não encontrado.');
+			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_MENU_ITEM_NOT_FOUND'));
 		}
 
 		$existingItems = $menu->getItems('alias', $urlNew);
 
 		foreach ($existingItems as $item) {
 			if ($item->id != $currentMenu->id) {
-				throw new RuntimeException('Essa URL já está sendo usada.');
+				throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_URL_ALREADY_USED'));
 			}
 		}
 
@@ -6119,11 +6111,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$menuModel = new ItemModel();
 
 		if (!$menuModel->save((array) $dataMenu)) {
-			throw new RuntimeException('Erro ao atualizar a URL do menu.');
+			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_UPDATING_MENU_URL'));
 		}
 
 		return true;
 	}
-
 
 }
