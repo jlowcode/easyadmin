@@ -4660,25 +4660,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$viewLevelList = $listModel->getParams()->get('allow_edit_details');
 		$viewLevel = $visibilityList == '3' ? $viewLevelList : $visibilityList;
 
-		$properties = $listModel->getTable()->getProperties();
 		$propertiesForm = $listModel->getFormModel()->getTable()->getProperties();
 
 		$validate = $this->validateList($data);
-	if (!empty($data['url_list'])) {
-		$menu = Factory::getApplication()->getMenu();
-		$urlNew = $data['url_list'];
 
-		$menuItems = $menu->getItems('alias', $urlNew);
-
-		foreach ($menuItems as $item) {
-			$currentMenu = $menu->getItems('link', "index.php?option=com_fabrik&view=list&listid=" . $listModel->getId(), true);
-			if ($item->id != $currentMenu->id) {
+		if (!empty($data['url_list'])) {
+			try {
+				$this->updateUrlMenu($data['url_list'], $listModel->getId());
+			} catch (RuntimeException $e) {
+				$validate = new stdClass();
 				$validate->error = true;
-				$validate->message = 'Essa URL já está em uso.';
+				$validate->message = $e->getMessage();
 				return json_encode($validate);
 			}
-		}
-	}
+		}		
 
 		if($validate->error) {
 			return json_encode($validate);
