@@ -4850,23 +4850,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			case 'list':
 				$url = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
 				$updateLink = ($url != ltrim(Uri::getInstance()->getPath(), '/'));
-			
-				if ($updateLink) {
-					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
-					$response->newUrl = $url;
-				}
-			
+
+				$response->updateUrl = $updateLink ? $this->updateUrlMenu($url, $data['listid']) : null;
+				$response->newUrl = $updateLink ? $url : null;
+
 				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$update->user = $data['owner_list'];
-				if ($updateLink) {
-					$update->link = $url;
-				}
+				$update->link = $updateLink ? $url : null;
+
 				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
 				break;			
-			
+				
 			case 'element':
 				break;
 		}
