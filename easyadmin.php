@@ -6085,7 +6085,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$currentMenu = $menu->getItems('link', $url, true);
 
 		if (!$currentMenu) {
-			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_MENU_ITEM_NOT_FOUND'));
+			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_MENU_ITEM_NOT_FOUND'));
 		}
 
 		$existingItems = $menu->getItems('alias', $urlNew);
