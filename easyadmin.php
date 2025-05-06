@@ -6104,7 +6104,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$menuModel = new ItemModel();
 
 		if (!$menuModel->save((array) $dataMenu)) {
-			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_UPDATING_MENU_URL'));
+			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_URL'));
 		}
 
 		return true;
