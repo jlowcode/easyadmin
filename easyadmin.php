@@ -4871,6 +4871,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return $response;
 	}
 
+
 	/**
 	 * We verify the admin users
 	 * New admin users will be added or removed
@@ -6091,7 +6092,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		foreach ($existingItems as $item) {
 			if ($item->id != $currentMenu->id) {
-				throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_ERROR_URL_ALREADY_USED'));
+				throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_URL_ALREADY_USED'));
 			}
 		}
 
