@@ -27,6 +27,7 @@ use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
+use Joomla\Component\Menus\Administrator\Model\ItemModel;
 use Joomla\CMS\Date\Date;
 
 // Requires 
@@ -1006,6 +1007,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementNameList($elementsList, 'name_list');
 		$this->setElementDescriptionList($elementsList, 'description_list');
 		$this->setElementNameFormList($elementsList, 'name_form');
+		$this->setElementUrlList($elementsList, 'url_list');
 		//$this->setElementThumbList($elementsList, 'thumb_list');	// For new version
 		$this->setElementOrderingList($elementsList, 'ordering_list');
 		$this->setElementOrderingTypeList($elementsList, 'ordering_type_list');
@@ -4591,8 +4593,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$validate = $this->validateList($data);
 		if($validate->error) {
-			echo json_encode($validate);
-			return;
+			return json_encode($validate);
 		}
 
 		$dataList['label'] = $data['name_list'];
@@ -4656,11 +4657,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				$db->updateObject('adm_cloner_listas', $obj, 'id_lista');
 			} catch (\Throwable $th) {
-				//If the table not exists we do nothing
 			}
 		}
 
 		if(!$validate->error) {
+			try {
+				$responseExtras = $this->extras($data, 'list');
+			} catch (\RuntimeException $e) {
+				$validate->error = true;
+				$validate->message = $e->getMessage();
+				return json_encode($validate);
+			}	
+
 			$modelList->getState();
 			$modelList->save($dataList);
 			$input->set('jform', $pluginsForm);
@@ -4672,14 +4680,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			array_unique($data['admins_list']);
 			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
 			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
-
-			try {
-				$this->extras($data, 'list');
-			} catch (\Throwable $th) {
-				// If error we do nothing
-			}
 		}
 
+		$validate = (object) array_merge((array)$responseExtras, (array)$validate);
 		return json_encode($validate);
 	}
 
@@ -4749,7 +4752,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param		Array			$data				The data sent
 	 * @param		String			$mode				List modal or element modal?
 	 * 
-	 * @return 		Null
+	 * @return 		Object
 	 * 
 	 * @since 		version 4.0
 	 */
@@ -4757,19 +4760,33 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
+		$response = new stdClass;
 		switch ($mode) {
 			case 'list':
+				$oldUrl = ltrim(Uri::getInstance()->getPath(), '/');
+				$url = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
+				$updateLink = ($url != $oldUrl);
+
+				if ($updateLink) {
+					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
+					$response->newUrl = $url;
+				}
+
 				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$update->user = $data['owner_list'];
+				$update->link = $updateLink ? $url : $oldUrl;
+
 				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
 				break;
 			
 			case 'element':
 				break;
 		}
+
+		return $response;
 	}
 
 	/**
@@ -5951,4 +5968,91 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		return $this->modalParams;
 	}
+
+	/**
+	 * Setter method to define the URL element for the list
+	 *
+	 * @param		Array		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element to generate the URL input
+	 *
+	 * @return		Null
+	 *
+	 * @since		version 4.3.4
+	 */
+	private function setElementUrlList(&$elements, $nameElement) 
+	{
+		$listModel = $this->getListModel();
+		$subject = $this->getSubject();
+
+		$val = ltrim(Uri::getInstance()->getPath(), '/');
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$dEl = new stdClass;
+
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text input-list',
+			'value' => $val
+		);
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$id]['objField'] = $classField->getLayout('form');
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id, 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_URL_LABEL'), 
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_URL_DESC'), 
+		);
+		$elements[$id]['dataField'] = $dEl;
+	}
+
+	/**
+	 * This method updates the URL alias of the menu item related to a list
+	 * It finds the menu item linked to the list and sets a new alias based on the given URL
+	 * 
+	 * @param		String 		$urlNew				The new URL alias to apply
+	 * @param		Int			$listId				The ID of the list associated with the menu item
+	 * 
+	 * @return		Boolean								True if the update was successful, false otherwise
+	 * 
+	 * @since		v4.3.4
+	 */
+	private function updateUrlMenu($urlNew, $listId)
+	{
+		$app = Factory::getApplication();
+		$menu = $app->getMenu();
+
+		$url = "index.php?option=com_fabrik&view=list&listid={$listId}";
+		$currentMenu = $menu->getItems('link', $url, true);
+
+		if (!$currentMenu) {
+			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_MENU_ITEM_NOT_FOUND'));
+		}
+
+		$existingItems = $menu->getItems('alias', $urlNew);
+
+		foreach ($existingItems as $item) {
+			if ($item->id != $currentMenu->id) {
+				throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_URL_ALREADY_USED'));
+			}
+		}
+
+		$dataMenu = new stdClass();
+		$dataMenu->id = $currentMenu->id;
+		$dataMenu->alias = $urlNew;
+		$dataMenu->menutype = $currentMenu->menutype;
+
+		$menuModel = new ItemModel();
+		if (!$menuModel->save((array) $dataMenu)) {
+			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_URL'));
+		}
+
+		return true;
+	}
+
 }

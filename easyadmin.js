@@ -635,7 +635,12 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 					msg = typeMsg ? Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS") : r['message'];
 					alert(msg);
 
-					window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
+					if(r['updateUrl']){
+						window.location.href = self.options.baseUri + r['newUrl'];
+					} else{
+						window.location.replace(self.options.baseUri + window.location.pathname.replace('/', ''));
+					}
+
 				} else {
 					alert(r['message']);
 				}
