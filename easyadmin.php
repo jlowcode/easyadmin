@@ -28,6 +28,7 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
 use Joomla\Component\Menus\Administrator\Model\ItemModel;
+use Joomla\CMS\Date\Date;
 
 // Requires 
 // Change to namespaces on F5
@@ -93,12 +94,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$this->setListId($input->get('listid'));
 
+		if(!$this->getListId()) return;
+
 		//We don't have run
 		if(!$this->mustRun() || !$this->authorized()) {
 			return;
 		}
 
-		if($this->getListId() && !$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
+		if(!$input->get('formid') && $input->get('view') == 'list' || $requestWorkflow) {
 			$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 			$listModel->setId($this->listId);
 
@@ -740,6 +743,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
 		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
+		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
     }
 
 	/**
@@ -3454,6 +3458,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$optsOld['params'] = json_decode($element->getParams(), true);
 			$optsOld['validationrule'] = $optsOld['params']['validations'];
 			$this->syncParams($optsOld, $listModel);
+			$modelElement->getState(); 	//We need do this to set __state_set before the save
 			$modelElement->save($optsOld);
 
 			$nameEl = $this->checkNameElementToChangeType($nameEl, $listModel);
@@ -3837,6 +3842,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$opts['id'] = $data['history_type'] != $data['type'] ? '0' : $opts['id'];
 		}
 
+		$modelElement->getState(); 	//We need do this to set __state_set before the save
 		$modelElement->save($opts);
 		$data["valIdEl"] = $modelElement->getState('element.id');
 
@@ -4289,6 +4295,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsModule['params']['show_filters'] = "0";
 		$optsModule['params']['prefilters'] = json_encode($optsPreFilters);
 
+		$modelModule->getState();
 		$modelModule->save($optsModule);
 		return $new ? $modelModule->getState('module.id') : $optsModule['id'];
 	}
@@ -4321,6 +4328,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsList['params']['addurl'] = "?{$tableName}___{$relatedColumn}_raw={{$tableNameActual}___id}";
 
 		$this->syncParams($optsList, $listModelRelatedFE, true);
+		$listModelRelated->getState();
 		$listModelRelated->save($optsList);
 
 		return true;
@@ -4494,7 +4502,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Before to save the ordering we need to change the permissions and later change again
 		$originalRules = $this->changeRulesPermissons("change");
 
-		$modelElement->saveorder($pks, $order);
+		try {
+			$modelElement->saveorder($pks, $order);
+		} catch (\Throwable $th) {
+			$this->changeRulesPermissons("recover", $originalRules);
+		}
 		
 		return $this->changeRulesPermissons("recover", $originalRules);
 	}
@@ -4657,6 +4669,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				return json_encode($validate);
 			}	
 
+			$modelList->getState();
 			$modelList->save($dataList);
 			$input->set('jform', $pluginsForm);
 			$modelForm->getState(); 	//We need do this to set __state_set before the save
@@ -4811,6 +4824,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$data['id'] = $idUser;
 				$data['groups'] = $groups;
 
+				$userModel->getState();
 				$userModel->save($data);
 			}
 		}
@@ -4825,6 +4839,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$data['id'] = $idUser;
 				$data['groups'] = $groups;
 
+				$userModel->getState();
 				$userModel->save($data);
 			}
 		}
@@ -4906,7 +4921,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if($data['type'] == 'autocomplete' && empty($data['label'])) {
 			$validate->error = true;
 			empty($data['label']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_LABEL')) : '';
-			empty($data['list']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL')) : '';
+			empty($data['listas']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL')) : '';
 		}
 
 		// If the element is treeview, label and father must be exists
@@ -4914,7 +4929,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$validate->error = true;
 			empty($data['father']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_FATHER_LABEL')) : '';
 			empty($data['label']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LABEL_LABEL')) : '';
-			empty($data['list']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL')) : '';
+			empty($data['listas']) ? $validate->message = Text::sprintf('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_ELEMENT_EMPTY', Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LIST_LABEL')) : '';
 		}
 
 		// If the element is dropdown or tags, options must be exists
@@ -5684,6 +5699,33 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$r = $this->validateElements($data, $listModel);
 		echo json_encode($r);
+	}
+
+	/**
+	 * This method in case of bad request will save the data in #__action_logs table
+	 * 
+	 */
+	public function onSaveLogs()
+	{
+        $db = Factory::getContainer()->get('DatabaseDriver');
+		$app = Factory::getApplication();
+
+		$input = $app->input;
+
+		$query = $db->getQuery(true);
+		$query->insert($db->qn("#__action_logs"))
+			->columns(implode(",", $db->qn(["message_language_key", "message", "log_date", "extension", "user_id", "item_id"])))
+			->values(implode(",", $db->q([
+				Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR"),
+				$input->getString('message'),
+				Date::getInstance()->toSql(),
+				Text::_("PLG_FABRIK_LIST_EASY_ADMIN"),
+				$this->user->id,
+				$input->getInt('Itemid')
+			]))
+		);
+        $db->setQuery($query);
+		$db->execute($query);
 	}
 
 	/**
