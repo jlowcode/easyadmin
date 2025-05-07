@@ -4735,12 +4735,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if(!$validate->error) {
 			try {
 				$responseExtras = $this->extras($data, 'list');
-
-				} catch (\RuntimeException $e) {
-					$validate->error = true;
-					$validate->message = $e->getMessage();
-					return json_encode($validate);
-				}	
+			} catch (\RuntimeException $e) {
+				$validate->error = true;
+				$validate->message = $e->getMessage();
+				return json_encode($validate);
+			}	
 
 			$modelList->save($dataList);
 			$input->set('jform', $pluginsForm);
@@ -4751,9 +4750,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			array_unique($data['admins_list']);
 			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
 			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
-
-						
-			}
+		}
 
 		$validate = (object) array_merge((array)$responseExtras, (array)$validate);
 		return json_encode($validate);
@@ -4836,31 +4833,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$response = new stdClass;
 		switch ($mode) {
 			case 'list':
+				$oldUrl = ltrim(Uri::getInstance()->getPath(), '/');
 				$url = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
-				$updateLink = ($url != ltrim(Uri::getInstance()->getPath(), '/'));
+				$updateLink = ($url != $oldUrl);
 
 				if ($updateLink) {
 					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
 					$response->newUrl = $url;
 				}
 
-
-				$response->updateUrl = $updateLink ? $this->updateUrlMenu($url, $data['listid']) : null;
-				$response->newUrl = $updateLink ? $url : null;
-
 				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$update->user = $data['owner_list'];
-				if ($updateLink) {
-					$update->link = $url;
-				}
-				$update->link = $updateLink ? $url : null;
+				$update->link = $updateLink ? $url : $oldUrl;
 
 				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
 				break;			
-
 				
 			case 'element':
 				break;
