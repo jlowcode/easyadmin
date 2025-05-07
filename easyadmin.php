@@ -4660,6 +4660,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$viewLevelList = $listModel->getParams()->get('allow_edit_details');
 		$viewLevel = $visibilityList == '3' ? $viewLevelList : $visibilityList;
 
+		$properties = $listModel->getTable()->getProperties();
 		$propertiesForm = $listModel->getFormModel()->getTable()->getProperties();
 
 		$validate = $this->validateList($data);	
