@@ -4662,18 +4662,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$propertiesForm = $listModel->getFormModel()->getTable()->getProperties();
 
-		$validate = $this->validateList($data);
-
-		if (!empty($data['url_list'])) {
-			try {
-				$this->updateUrlMenu($data['url_list'], $listModel->getId());
-			} catch (RuntimeException $e) {
-				$validate = new stdClass();
-				$validate->error = true;
-				$validate->message = $e->getMessage();
-				return json_encode($validate);
-			}
-		}		
+		$validate = $this->validateList($data);	
 
 		if($validate->error) {
 			return json_encode($validate);
@@ -4744,6 +4733,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		if(!$validate->error) {
+			try {
+				$responseExtras = $this->extras($data, 'list');
+
+				} catch (\RuntimeException $e) {
+					$validate->error = true;
+					$validate->message = $e->getMessage();
+					return json_encode($validate);
+				}	
+
 			$modelList->save($dataList);
 			$input->set('jform', $pluginsForm);
 			$modelForm->getState(); 	
@@ -4754,14 +4752,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$oldAdmins = $this->onGetUsersAdmins($viewLevelList);
 			$this->configureAdminsList($data['admins_list'], $viewLevelList, $oldAdmins);
 
-			try {
-				$responseExtras = $this->extras($data, 'list');
-
-				} catch (\RuntimeException $e) {
-					$validate->error = true;
-					$validate->message = $e->getMessage();
-					return json_encode($validate);
-				}				
+						
 			}
 
 		$validate = (object) array_merge((array)$responseExtras, (array)$validate);
