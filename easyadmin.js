@@ -521,11 +521,15 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						valEls[id] = tinyMCE.activeEditor.getContent();
 						break;
 
+					
 					default:
 						valEls[id] = jQuery(this).val();
 						break;
 				}
 			});
+
+			// Fileupload values
+			valEls['jlow_fabrik_easyadmin_modal___thumb_list'] = JSON.parse(jQuery('#jlow_fabrik_easyadmin_modal___thumb_list').attr('value'))[0];
 
 			// Databasejoins values
 			valEls['easyadmin_modal___admins_list'] = jQuery('[name="easyadmin_modal___admins_list[]"]').val();
@@ -627,7 +631,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			jQuery.ajax({
 				url     : url,
 				method	: 'post',
-				data	: data,
+				data	: data
 			}).done(function (r) {
 				r = JSON.parse(r);
 
