@@ -3649,7 +3649,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['fu_show_image'] = '3';
 				} else {
 					$params['ajax_upload'] = '0';
-					$params['fu_show_image_in_table'] = '1';
+					$params['fu_show_image_in_table'] = '2';
 					$params['fu_show_image'] = '2';
 				}
 
