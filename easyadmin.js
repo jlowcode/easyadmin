@@ -529,7 +529,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			});
 
 			// Fileupload values
-			valEls['jlow_fabrik_easyadmin_modal___thumb_list'] = JSON.parse(jQuery('#jlow_fabrik_easyadmin_modal___thumb_list').attr('value'))[0];
+			var fileThumb = jQuery('#jlow_fabrik_easyadmin_modal___thumb_list').attr('value');
+			if(fileThumb !== undefined) {
+				valEls['jlow_fabrik_easyadmin_modal___thumb_list'] = JSON.parse(fileThumb)[0];
+			}
 
 			// Databasejoins values
 			valEls['easyadmin_modal___admins_list'] = jQuery('[name="easyadmin_modal___admins_list[]"]').val();
