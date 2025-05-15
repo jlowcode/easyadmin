@@ -746,6 +746,7 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 			var li = jQuery(el).parent();
 			var idEl = li.prop('value');
 			var options = self.options.allElements[idEl];
+			self.setRelationshipLockedMessage();
 
 			self.options.valIdEl = idEl;
 
@@ -1057,8 +1058,23 @@ define(['jquery', 'fab/list-plugin'], function (jQuery, FbListPlugin) {
 				name: column.classList[2],
 				order: column.classList[3]
 			}));
+		},
+
+		/**
+		 * This function displays a message below the list input when it is of the relationship type
+		 * 
+		 */
+		setRelationshipLockedMessage: function(){
+			var self = this;
+			var message = jQuery("<p></p>").text((Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED")));
+			jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').after(message);
+
+			message.css({
+				'font-size': '12px',
+				'margin-top': '-1px',
+				'line-height': '15px',
+			});
 		}
 	});
-
 	return FbListEasyadmin;
 });
