@@ -1168,7 +1168,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			message.css({
 				'font-size': '12px',
-				'margin-top': '-1px',
+				'margin-top': '2px',
 				'line-height': '15px',
 			});
 		}
