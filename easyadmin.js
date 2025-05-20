@@ -250,6 +250,12 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			data['viewLevel'] = viewLevel;
 
+			// We dont need to run the ajax if the select2 already has the options
+			var select2 = document.querySelectorAll('[name="easyadmin_modal___admins_list[]"]');
+			if(select2[0].options.length > 0) {
+				return;
+			}
+
 			jQuery.ajax({
 				url     : url,
 				method	: 'post',
