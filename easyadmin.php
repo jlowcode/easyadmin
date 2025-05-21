@@ -3406,7 +3406,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
         $db->setQuery($query);
         $result = $db->loadObjectList();
-		
+
 		$levels = Array();
 		foreach ($result as $val) 
 		{
@@ -4836,7 +4836,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$update->user = $data['owner_list'];
-				$update->link = $updateLink ? $url : $oldUrl;
+				$update->link = "/" . ($updateLink ? $url : $oldUrl);
 				$update->status = $data['trash_list'] ? '0' : '1';
 				$update->miniatura = !empty($data['thumb_list']) ? $path . str_replace(' ', '_', $data['thumb_list']) : '';
 
@@ -5945,7 +5945,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Getter method to original request workflow variable
-	 *
+	 * 
 	 * @return  	Boolean
 	 * 
 	 * @since 		version 4.3
