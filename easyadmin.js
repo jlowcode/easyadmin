@@ -1107,56 +1107,77 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 		sortColumns: function () {
 			var self = this;
+			var data = {};
+			var viewLevel = jQuery('#easyadmin_modal___viewLevel_list').val();
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=getUsersAdmins";
 
-			// Certifique-se de que o Sortable está disponível
-			if (typeof Sortable !== 'undefined') {
+			data['viewLevel'] = viewLevel;
+
+			jQuery.ajax({
+				url     : url,
+				method  : 'post',
+				data	: data,
+			}).done(function (r) {
+				r = JSON.parse(r);
 				const table = document.getElementById('list_' + jQuery('[name=listid]').val() + '_com_fabrik_' + jQuery('[name=listid]').val());
+				const idsAdmins = r.map(user => user.id);
+				idsAdmins.push(self.options.owner_id);	// Owner list always have access
+
+				// Check if SortableJS is loaded, if table exists, if user is not an admin list 
+				if((typeof Sortable === 'undefined' || table == null || idsAdmins.indexOf(self.options.user.id) < 0) && !self.options.isAdmin) return;
+
 				const initialOrder = self.getColumnOrder(table);
-				if (table) {
-					// Seleciona o thead para tornar as colunas ordenáveis
-					const thead = table.querySelector('thead tr');
-					// Aplica o SortableJS ao cabeçalho
-					Sortable.create(thead, {
-						animation: 150,
-						onEnd: function (evt) {
+				const thead = table.querySelector('thead tr');
+				Sortable.create(thead, {
+					animation: 150,
+					onEnd: function (evt) {
+						var result = [];
+						const oldIndex = evt.oldIndex;
+						const newIndex = evt.newIndex;
 
-							var result = [];
-							const oldIndex = evt.oldIndex;
-							const newIndex = evt.newIndex;
-							// Reordena as células no tbody
-							table.querySelectorAll('tbody tr').forEach(function (row) {
-								const cells = Array.from(row.children);
-								const movedCell = cells.splice(oldIndex, 1)[0];
-								cells.splice(newIndex, 0, movedCell);
-								// Atualiza a ordem das células
-								row.innerHTML = '';
-								cells.forEach(function (cell) {
-									row.appendChild(cell);
-								});
-
+						// Reorder the cells in tbody
+						table.querySelectorAll('tbody tr').forEach(function (row) {
+							const cells = Array.from(row.children);
+							const movedCell = cells.splice(oldIndex, 1)[0];
+							cells.splice(newIndex, 0, movedCell);
+							// Update the order of cells
+							row.innerHTML = '';
+							cells.forEach(function (cell) {
+								row.appendChild(cell);
 							});
 
-							const currentOrder = self.getColumnOrder(table);
-							if (oldIndex != newIndex && newIndex != 0) {
-								showSpinner();
-								result.push({
-									idOrder: currentOrder[newIndex-1].order.replace('_order', ''),
-									idAtual: initialOrder[oldIndex].order.replace('_order', '')
-								});
-								self.saveEvent('columns', result[0]);
-							}
+						});
+
+						const currentOrder = self.getColumnOrder(table);
+						if (oldIndex != newIndex && newIndex != 0) {
+							showSpinner();
+							result.push({
+								idOrder: currentOrder[newIndex-1].order.replace('_order', ''),
+								idAtual: initialOrder[oldIndex].order.replace('_order', '')
+							});
+							self.saveEvent('columns', result[0]);
 						}
-					});
-				}
-			}
+					}
+				});
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					data: data,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
+			});
 		},
 
 		getColumnOrder: function (table) {
-			// Seleciona a primeira linha de cabeçalho da tabela
+			// Select the first row of the table header
 			const headerRow = table.querySelector("thead tr");
 			const columns = headerRow.querySelectorAll("th");
 
-			// Cria um array com os nomes das colunas
+			// Create an array with name of columns
 			return Array.from(columns).map((column) => ({
 				name: column.classList[2],
 				order: column.classList[3]
@@ -1179,5 +1200,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			});
 		}
 	});
+
 	return FbListEasyadmin;
 });
