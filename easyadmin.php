@@ -299,7 +299,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$dataEl = new stdClass();
 			$fullElementName = $this->processFullElementName($key);
 
-			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip'])) continue;
+			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip', 'hits'])) continue;
 
 			$link = $this->createLink($element->element->id);
 			$idElement = $element->getId();

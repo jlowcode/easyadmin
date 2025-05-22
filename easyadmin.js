@@ -1163,7 +1163,8 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 */
 		setRelationshipLockedMessage: function(){
 			var self = this;
-			var message = jQuery("<p></p>").text((Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED")));
+            jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').siblings('p.delete-paragraph').remove();
+			var message = jQuery('<p class="delete-paragraph"></p>').text((Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED")));
 			jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').after(message);
 
 			message.css({
