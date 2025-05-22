@@ -1130,10 +1130,17 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				const thead = table.querySelector('thead tr');
 				Sortable.create(thead, {
 					animation: 150,
-					onEnd: function (evt) {
+					filter: 'th:nth-last-child(-n+2)',
+					preventOnFilter: false,
+					onEnd: function (evt) {	
 						var result = [];
 						const oldIndex = evt.oldIndex;
 						const newIndex = evt.newIndex;
+
+						// If user dont move the column or move the actions column, do nothing
+						if (oldIndex == newIndex) return;
+
+						Fabrik.loader.start(jQuery('.fabrik-list'), Joomla.JText._('COM_FABRIK_LOADING'));
 
 						// Reorder the cells in tbody
 						table.querySelectorAll('tbody tr').forEach(function (row) {
@@ -1149,14 +1156,26 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						});
 
 						const currentOrder = self.getColumnOrder(table);
-						if (oldIndex != newIndex && newIndex != 0) {
-							showSpinner();
-							result.push({
-								idOrder: currentOrder[newIndex-1].order.replace('_order', ''),
-								idAtual: initialOrder[oldIndex].order.replace('_order', '')
-							});
-							self.saveEvent('columns', result[0]);
+						const qtnColumns = currentOrder.length-2;
+						switch (true) {
+							case newIndex == 0:
+								idOrder = -1;
+								break;
+							
+							case newIndex >= qtnColumns:
+								idOrder = -2;
+								break;
+						
+							default:
+								idOrder = currentOrder[newIndex-1].order.replace('_order', '')
+								break;
 						}
+
+						result.push({
+							idOrder: idOrder,
+							idAtual: initialOrder[oldIndex].order.replace('_order', '')
+						});
+						self.saveEvent('columns', result[0]);
 					}
 				});
 			}).fail(function (jq, status, error) {

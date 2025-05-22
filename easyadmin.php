@@ -2238,11 +2238,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel->setId($this->getListId());
 
 		$options = Array();
+		$options['-1'] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_OPTION_FIRST');
 		foreach ($listModel->getElements('id') as $id => $element) {
 			if($element->getName() != 'PlgFabrik_ElementIp' && $element->getElement()->name != 'indexing_text') {
 				$options[$id] = $element->getElement()->label;
 			}
 		}
+		$options['-2'] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_OPTION_LAST');
 
 		return $options;
 	}
@@ -4558,6 +4560,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$x++;
 			}
 		}
+
+		array_push($order, $x+1);
+		if($idOrder == -1) {
+			array_unshift($pks, $idAtual);
+		}
+
+		if($idOrder == -2) {
+			array_push($pks, $idAtual);
+		}
+		
 
 		// Before to save the ordering we need to change the permissions and later change again
 		$originalRules = $this->changeRulesPermissons("change");
