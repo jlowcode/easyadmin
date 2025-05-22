@@ -3537,6 +3537,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
+		$opts['link_to_detail'] = '1';
 
 		// Filter rules
 		if($data['use_filter']) {
@@ -3824,6 +3825,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'link':
 				$opts['plugin'] = 'field';
+				$opts['link_to_detail'] = '0';
 				$params['element_link_easyadmin'] = '1';
 				$params['maxlength'] = 255;
 				$params['guess_linktype'] = '1';
