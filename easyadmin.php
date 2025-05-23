@@ -4004,7 +4004,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$params['sub_options'] = Array(
 			'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $subOptions),
 			'sub_labels' => $subOptions,
-			'sub_initial_selection' => Array($subOptions[0])
+			'sub_initial_selection' => ''
 		);
 	}
 
