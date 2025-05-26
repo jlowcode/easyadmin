@@ -184,7 +184,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 */
 		searchElementList: function() {
 			var self = this;
-			var baseUri = this.options.baseUri;
 			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas';
 
 			var tid = jQuery(idEl).val();
@@ -192,8 +191,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				return;
 			}
 
+			self.checkRestrictList(tid);
+
 			var db_table_name = tid;
-			var url = baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
 			jQuery.ajax({
 				url     : url,
 				method	: 'get',
@@ -227,6 +228,46 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						}
 					});
 				});
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
+			});
+		},
+
+		/**
+		 * Function that check if the list is restricted
+		 * If 'yes' we need to hide the tag element
+		 * 
+		 */
+		checkRestrictList: function(tid) {
+			var self = this;
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=checkRestrictList";
+
+			jQuery.ajax({
+				url     : url,
+				method	: 'get',
+				data: {
+					'tableName': tid,
+				},
+			}).done(function (r) {
+				var r = JSON.parse(r);
+
+				if(r['error']) {
+					alert(r['message']);
+					location.reload();
+				}
+
+				if(r['restrict']) {
+					jQuery('#easyadmin_modal___tags').closest('.fabrikElementContainer').css('display', 'none');
+				} else {
+					jQuery('#easyadmin_modal___tags').closest('.fabrikElementContainer').css('display', 'block');
+				}
 			}).fail(function (jq, status, error) {
 				var message = {
 					url: url,
@@ -1000,7 +1041,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						})
 						.appendTo(liSubTitle);
 				}
-				
+
 				jQuery.each(elements, function(index, value) {
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
@@ -1042,7 +1083,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			addElementButton.off('click').on('click', function() {
 				self.options.valIdEl = 0;
-				
+
 				jQuery('[name=history_type]').val('');
             	jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').siblings('p.delete-paragraph').remove();
 
@@ -1065,10 +1106,14 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						case 'easyadmin_modal___text_format':
 							jQuery(this).val('text');
 							break;
-                        
+
 						case 'easyadmin_modal___format_long_text':
                             jQuery(this).val('0');
                             break;
+
+						case 'easyadmin_modal___tags':
+                            jQuery(this).val('tags');
+							break;
 
 						default:
 							if(!jQuery(this).hasClass('input-list')) {

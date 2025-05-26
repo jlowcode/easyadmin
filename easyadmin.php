@@ -3716,6 +3716,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
 					$params['jsSuggest'] =  '1';
+					$data['tags'] = $this->checkRestrictList($data['listas']) ? 'no' : $data['tags'];
 
 					switch ($data['tags']) {
 						case 'tags':
@@ -6232,4 +6233,64 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return true;
 	}
 
+	/**
+	 * This method check if the list id from the request is restrict
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.4
+	 */
+	public function onCheckRestrictList()
+	{
+		$app = Factory::getApplication();
+
+		$input = $app->input;
+		$tableName = $input->getString('tableName', 0);
+
+		$response = new stdClass();
+		$response->success = true;
+		$response->message = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_SUCESS_RESTRICT_LIST');
+
+		try {
+			$response->restrict = $this->checkRestrictList($tableName);
+		} catch (\Throwable $th) {
+			$response->success = false;
+			$response->message = $th->getMessage();
+		}
+
+		echo json_encode($response);
+	}
+
+	/**
+	 * This method checks if the list is restrict
+	 * 
+	 * @param		String			$tableName				Name of the list to check
+	 * 
+	 * @return		Boolean
+	 * 
+	 * @since		v4.3.4
+	 */
+	private function checkRestrictList($tableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select('id')->from('#__fabrik_lists')->where('db_table_name = ' . $db->q($tableName));
+		$db->setQuery($query);
+		$listId = (int) $db->loadResult();
+
+		if ($listId <= 0) {
+			throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_LIST_ID_NOT_FOUND'));
+		}
+
+		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
+		$listModel->setId($listId);
+
+		if($listId != $listModel->getId()) {
+			throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_LIST_ID_NOT_FOUND'));
+		}
+
+		$restrict = !(bool) $listModel->getFormModel()->getParams()->get('approve_for_own_records');
+		return $restrict;
+	}
 }
