@@ -856,7 +856,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 		
 		$footer .=  '<input type="hidden" id="easyadmin_modal___history_type" name="history_type" value="">';
-		$footer .=  '<input type="hidden" class="fabrikinput" id="easyadmin_modal___viewLevel_list" name="viewLevel_list" value="' . $viewLevelList . '">';
+		$footer .=  '<input type="hidden" id="easyadmin_modal___viewLevel_list" name="viewLevel_list" value="' . $viewLevelList . '">';
 
 		$footer .= '</div>';
 

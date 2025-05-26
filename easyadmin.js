@@ -1042,9 +1042,11 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			addElementButton.off('click').on('click', function() {
 				self.options.valIdEl = 0;
-				jQuery('[name=history_type]').val('')
+				
+				jQuery('[name=history_type]').val('');
+            	jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').siblings('p.delete-paragraph').remove();
 
-				Els = jQuery('.fabrikinput');
+				Els = jQuery('#modal-elements .fabrikinput');
 				Els.each(function() {
 					id = this.id;
 					switch (id) {
@@ -1207,8 +1209,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 * This function displays a message below the list input when it is of the relationship type
 		 * 
 		 */
-		setRelationshipLockedMessage: function(){
-			var self = this;
+		setRelationshipLockedMessage: function() {
             jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').siblings('p.delete-paragraph').remove();
 			var message = jQuery('<p class="delete-paragraph"></p>').text((Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED")));
 			jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').after(message);
