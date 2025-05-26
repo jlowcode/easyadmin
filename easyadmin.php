@@ -29,7 +29,7 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
 use Joomla\Component\Menus\Administrator\Model\ItemModel;
 use Joomla\CMS\Date\Date;
-use \Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Plugin\PluginHelper;
 
 // Requires 
 // Change to namespaces on F5
