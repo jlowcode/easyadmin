@@ -19,4 +19,15 @@
 		<folder>layouts</folder>
 	</files>
 	 <scriptfile>easyadmin_script.php</scriptfile>
+	 <config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="easyadmin_ignore_elements"
+				       type="text"
+				       description="PLG_FABRIK_EASY_ADMIN_IGNORE_ELEMENTS_DESC"
+				       label="PLG_FABRIK_EASY_ADMIN_IGNORE_ELEMENTS_LABEL"
+				    />
+			</fieldset>
+		</fields>
+	</config>
 </extension>
