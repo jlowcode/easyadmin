@@ -184,7 +184,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 */
 		searchElementList: function() {
 			var self = this;
-			var baseUri = this.options.baseUri;
 			var idEl = '#' + self.options.dbPrefix + 'fabrik_easyadmin_modal___listas';
 
 			var tid = jQuery(idEl).val();
@@ -192,8 +191,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				return;
 			}
 
+			self.checkRestrictList(tid);
+
 			var db_table_name = tid;
-			var url = baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=element&plugin=field&method=ajax_fields&showall=1&cid=1&t='" + db_table_name + "'";
 			jQuery.ajax({
 				url     : url,
 				method	: 'get',
@@ -240,6 +241,46 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		},
 
 		/**
+		 * Function that check if the list is restricted
+		 * If 'yes' we need to hide the tag element
+		 * 
+		 */
+		checkRestrictList: function(tid) {
+			var self = this;
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=checkRestrictList";
+
+			jQuery.ajax({
+				url     : url,
+				method	: 'get',
+				data: {
+					'tableName': tid,
+				},
+			}).done(function (r) {
+				var r = JSON.parse(r);
+
+				if(r['error']) {
+					alert(r['message']);
+					location.reload();
+				}
+
+				if(r['restrict']) {
+					jQuery('#easyadmin_modal___tags').closest('.fabrikElementContainer').css('display', 'none');
+				} else {
+					jQuery('#easyadmin_modal___tags').closest('.fabrikElementContainer').css('display', 'block');
+				}
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
+			});
+		},
+
+		/**
 		 * Function that set the list admins element to take the admin users
 		 * 
 		 */
@@ -249,6 +290,12 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=getUsersAdmins";
 
 			data['viewLevel'] = viewLevel;
+
+			// We dont need to run the ajax if the select2 already has the options
+			var select2 = document.querySelectorAll('[name="easyadmin_modal___admins_list[]"]');
+			if(select2[0].options.length > 0) {
+				return;
+			}
 
 			jQuery.ajax({
 				url     : url,
@@ -994,7 +1041,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						})
 						.appendTo(liSubTitle);
 				}
-				
+
 				jQuery.each(elements, function(index, value) {
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
@@ -1036,9 +1083,11 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			addElementButton.off('click').on('click', function() {
 				self.options.valIdEl = 0;
-				jQuery('[name=history_type]').val('')
 
-				Els = jQuery('.fabrikinput');
+				jQuery('[name=history_type]').val('');
+            	jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').siblings('p.delete-paragraph').remove();
+
+				Els = jQuery('#modal-elements .fabrikinput');
 				Els.each(function() {
 					id = this.id;
 					switch (id) {
@@ -1057,10 +1106,14 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						case 'easyadmin_modal___text_format':
 							jQuery(this).val('text');
 							break;
-                        
+
 						case 'easyadmin_modal___format_long_text':
                             jQuery(this).val('0');
                             break;
+
+						case 'easyadmin_modal___tags':
+                            jQuery(this).val('tags');
+							break;
 
 						default:
 							if(!jQuery(this).hasClass('input-list')) {
@@ -1101,56 +1154,96 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 		sortColumns: function () {
 			var self = this;
+			var data = {};
+			var viewLevel = jQuery('#easyadmin_modal___viewLevel_list').val();
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=getUsersAdmins";
 
-			// Certifique-se de que o Sortable está disponível
-			if (typeof Sortable !== 'undefined') {
+			data['viewLevel'] = viewLevel;
+
+			jQuery.ajax({
+				url     : url,
+				method  : 'post',
+				data	: data,
+			}).done(function (r) {
+				r = JSON.parse(r);
 				const table = document.getElementById('list_' + jQuery('[name=listid]').val() + '_com_fabrik_' + jQuery('[name=listid]').val());
+				const idsAdmins = r.map(user => user.id);
+				idsAdmins.push(self.options.owner_id);	// Owner list always have access
+
+				// Check if SortableJS is loaded, if table exists, if user is not an admin list 
+				if((typeof Sortable === 'undefined' || table == null || idsAdmins.indexOf(self.options.user.id) < 0) && !self.options.isAdmin) return;
+
 				const initialOrder = self.getColumnOrder(table);
-				if (table) {
-					// Seleciona o thead para tornar as colunas ordenáveis
-					const thead = table.querySelector('thead tr');
-					// Aplica o SortableJS ao cabeçalho
-					Sortable.create(thead, {
-						animation: 150,
-						onEnd: function (evt) {
+				const thead = table.querySelector('thead tr');
+				Sortable.create(thead, {
+					animation: 150,
+					filter: 'th:nth-last-child(-n+2)',
+					preventOnFilter: false,
+					onEnd: function (evt) {	
+						var result = [];
+						const oldIndex = evt.oldIndex;
+						const newIndex = evt.newIndex;
 
-							var result = [];
-							const oldIndex = evt.oldIndex;
-							const newIndex = evt.newIndex;
-							// Reordena as células no tbody
-							table.querySelectorAll('tbody tr').forEach(function (row) {
-								const cells = Array.from(row.children);
-								const movedCell = cells.splice(oldIndex, 1)[0];
-								cells.splice(newIndex, 0, movedCell);
-								// Atualiza a ordem das células
-								row.innerHTML = '';
-								cells.forEach(function (cell) {
-									row.appendChild(cell);
-								});
+						// If user dont move the column or move the actions column, do nothing
+						if (oldIndex == newIndex) return;
 
+						Fabrik.loader.start(jQuery('.fabrik-list'), Joomla.JText._('COM_FABRIK_LOADING'));
+
+						// Reorder the cells in tbody
+						table.querySelectorAll('tbody tr').forEach(function (row) {
+							const cells = Array.from(row.children);
+							const movedCell = cells.splice(oldIndex, 1)[0];
+							cells.splice(newIndex, 0, movedCell);
+							// Update the order of cells
+							row.innerHTML = '';
+							cells.forEach(function (cell) {
+								row.appendChild(cell);
 							});
 
-							const currentOrder = self.getColumnOrder(table);
-							if (oldIndex != newIndex && newIndex != 0) {
-								showSpinner();
-								result.push({
-									idOrder: currentOrder[newIndex-1].order.replace('_order', ''),
-									idAtual: initialOrder[oldIndex].order.replace('_order', '')
-								});
-								self.saveEvent('columns', result[0]);
-							}
+						});
+
+						const currentOrder = self.getColumnOrder(table);
+						const qtnColumns = currentOrder.length-2;
+						switch (true) {
+							case newIndex == 0:
+								idOrder = -1;
+								break;
+							
+							case newIndex >= qtnColumns:
+								idOrder = -2;
+								break;
+						
+							default:
+								idOrder = currentOrder[newIndex-1].order.replace('_order', '')
+								break;
 						}
-					});
-				}
-			}
+
+						result.push({
+							idOrder: idOrder,
+							idAtual: initialOrder[oldIndex].order.replace('_order', '')
+						});
+						self.saveEvent('columns', result[0]);
+					}
+				});
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					data: data,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
+			});
 		},
 
 		getColumnOrder: function (table) {
-			// Seleciona a primeira linha de cabeçalho da tabela
+			// Select the first row of the table header
 			const headerRow = table.querySelector("thead tr");
 			const columns = headerRow.querySelectorAll("th");
 
-			// Cria um array com os nomes das colunas
+			// Create an array with name of columns
 			return Array.from(columns).map((column) => ({
 				name: column.classList[2],
 				order: column.classList[3]
@@ -1161,8 +1254,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 * This function displays a message below the list input when it is of the relationship type
 		 * 
 		 */
-		setRelationshipLockedMessage: function(){
-			var self = this;
+		setRelationshipLockedMessage: function() {
             jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').siblings('p.delete-paragraph').remove();
 			var message = jQuery('<p class="delete-paragraph"></p>').text((Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED")));
 			jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').after(message);
@@ -1174,5 +1266,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			});
 		}
 	});
+
 	return FbListEasyadmin;
 });
