@@ -866,7 +866,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 		
 		$footer .=  '<input type="hidden" id="easyadmin_modal___history_type" name="history_type" value="">';
-		$footer .=  '<input type="hidden" class="fabrikinput" id="easyadmin_modal___viewLevel_list" name="viewLevel_list" value="' . $viewLevelList . '">';
+		$footer .=  '<input type="hidden" id="easyadmin_modal___viewLevel_list" name="viewLevel_list" value="' . $viewLevelList . '">';
 
 		$footer .= '</div>';
 
@@ -2248,11 +2248,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel->setId($this->getListId());
 
 		$options = Array();
+		$options['-1'] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_OPTION_FIRST');
 		foreach ($listModel->getElements('id') as $id => $element) {
 			if($element->getName() != 'PlgFabrik_ElementIp' && $element->getElement()->name != 'indexing_text') {
 				$options[$id] = $element->getElement()->label;
 			}
 		}
+		$options['-2'] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_OPTION_LAST');
 
 		return $options;
 	}
@@ -3416,7 +3418,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
         $db->setQuery($query);
         $result = $db->loadObjectList();
-		
+
 		$levels = Array();
 		foreach ($result as $val) 
 		{
@@ -3545,6 +3547,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['show_in_list_summary'] = $data['show_in_list'] != '' ? '1' : '0';
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
+		$opts['link_to_detail'] = '1';
 
 		// Filter rules
 		if($data['use_filter']) {
@@ -3723,6 +3726,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				if($type == 'autocomplete') {
 					$params['database_join_display_style'] =  'only-autocomplete';
 					$params['jsSuggest'] =  '1';
+					$data['tags'] = $this->checkRestrictList($data['listas']) ? 'no' : $data['tags'];
 
 					switch ($data['tags']) {
 						case 'tags':
@@ -3832,6 +3836,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			case 'link':
 				$opts['plugin'] = 'field';
+				$opts['link_to_detail'] = '0';
 				$params['element_link_easyadmin'] = '1';
 				$params['maxlength'] = 255;
 				$params['guess_linktype'] = '1';
@@ -4010,7 +4015,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$params['sub_options'] = Array(
 			'sub_values' => array_map(function($opt) {return $this->formatValue($opt);}, $subOptions),
 			'sub_labels' => $subOptions,
-			'sub_initial_selection' => Array($subOptions[0])
+			'sub_initial_selection' => ''
 		);
 	}
 
@@ -4569,6 +4574,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			}
 		}
 
+		array_push($order, $x+1);
+		if($idOrder == -1) {
+			array_unshift($pks, $idAtual);
+		}
+
+		if($idOrder == -2) {
+			array_push($pks, $idAtual);
+		}
+		
+
 		// Before to save the ordering we need to change the permissions and later change again
 		$originalRules = $this->changeRulesPermissons("change");
 
@@ -4846,7 +4861,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$update->description = $data['description_list'];
 				$update->id_lista = $data['listid'];
 				$update->user = $data['owner_list'];
-				$update->link = $updateLink ? $url : $oldUrl;
+				$update->link = "/" . ($updateLink ? $url : $oldUrl);
 				$update->status = $data['trash_list'] ? '0' : '1';
 				$update->miniatura = !empty($data['thumb_list']) ? $path . str_replace(' ', '_', $data['thumb_list']) : '';
 
@@ -5955,7 +5970,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Getter method to original request workflow variable
-	 *
+	 * 
 	 * @return  	Boolean
 	 * 
 	 * @since 		version 4.3
@@ -6228,4 +6243,64 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return true;
 	}
 
+	/**
+	 * This method check if the list id from the request is restrict
+	 * 
+	 * @return		Null
+	 * 
+	 * @since		v4.3.4
+	 */
+	public function onCheckRestrictList()
+	{
+		$app = Factory::getApplication();
+
+		$input = $app->input;
+		$tableName = $input->getString('tableName', 0);
+
+		$response = new stdClass();
+		$response->success = true;
+		$response->message = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_SUCESS_RESTRICT_LIST');
+
+		try {
+			$response->restrict = $this->checkRestrictList($tableName);
+		} catch (\Throwable $th) {
+			$response->success = false;
+			$response->message = $th->getMessage();
+		}
+
+		echo json_encode($response);
+	}
+
+	/**
+	 * This method checks if the list is restrict
+	 * 
+	 * @param		String			$tableName				Name of the list to check
+	 * 
+	 * @return		Boolean
+	 * 
+	 * @since		v4.3.4
+	 */
+	private function checkRestrictList($tableName)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$query = $db->getQuery(true);
+		$query->select('id')->from('#__fabrik_lists')->where('db_table_name = ' . $db->q($tableName));
+		$db->setQuery($query);
+		$listId = (int) $db->loadResult();
+
+		if ($listId <= 0) {
+			throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_LIST_ID_NOT_FOUND'));
+		}
+
+		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
+		$listModel->setId($listId);
+
+		if($listId != $listModel->getId()) {
+			throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_LIST_ID_NOT_FOUND'));
+		}
+
+		$restrict = !(bool) $listModel->getFormModel()->getParams()->get('approve_for_own_records');
+		return $restrict;
+	}
 }
