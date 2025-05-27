@@ -305,7 +305,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$fullElementName = $this->processFullElementName($key);
 
 			$params = $this->params;
-			$ignoreElementsArray = explode(',', $ignoreElements);
+			$ignoreElementsArray = array_map('trim', explode(',', $ignoreElements));
 
 			if (in_array($this->processFullElementName($key, true), $ignoreElementsArray)) {
     			continue;

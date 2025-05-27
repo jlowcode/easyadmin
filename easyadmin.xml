@@ -24,8 +24,8 @@
 			<fieldset name="basic">
 				<field name="easyadmin_ignore_elements"
 				       type="text"
-				       description="PLG_FABRIK_EASY_ADMIN_IGNORE_ELEMENTS_DESC"
-				       label="PLG_FABRIK_EASY_ADMIN_IGNORE_ELEMENTS_LABEL"
+				       description="PLG_FABRIK_LIST_EASY_ADMIN_IGNORE_ELEMENTS_DESC"
+				       label="PLG_FABRIK_LIST_EASY_ADMIN_IGNORE_ELEMENTS_LABEL"
 				    />
 			</fieldset>
 		</fields>
