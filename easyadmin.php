@@ -29,6 +29,7 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
 use Joomla\Component\Menus\Administrator\Model\ItemModel;
 use Joomla\CMS\Date\Date;
+use Joomla\CMS\Plugin\PluginHelper;
 
 // Requires 
 // Change to namespaces on F5
@@ -295,11 +296,20 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$processedElements->published = new stdClass;
 		$processedElements->trash = new stdClass;
 
+		$plugin = PluginHelper::getPlugin('fabrik_list', 'easyadmin');
+		$params = new JRegistry($plugin->params);
+		$ignoreElements = $params->get('easyadmin_ignore_elements', '');
+
 		foreach($elements as $key => $element) {
 			$dataEl = new stdClass();
 			$fullElementName = $this->processFullElementName($key);
 
-			if(in_array($this->processFullElementName($key, true), ['indexing_text', 'created_ip', 'hits'])) continue;
+			$params = $this->params;
+			$ignoreElementsArray = array_map('trim', explode(',', $ignoreElements));
+
+			if (in_array($this->processFullElementName($key, true), $ignoreElementsArray)) {
+    			continue;
+			}
 
 			$link = $this->createLink($element->element->id);
 			$idElement = $element->getId();
