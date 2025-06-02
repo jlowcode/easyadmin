@@ -2495,13 +2495,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$query = $db->getQuery(true);
 		$query->select('DISTINCT l.label AS label, l.id AS id, e.name AS elementJoin, e.label AS labelEl')
-			->from($db->qn('#__fabrik_elements') . ' AS e')
-			->join('LEFT', $db->qn('#__fabrik_groups') . ' AS g ON g.id = e.group_id')
-			->join('LEFT', $db->qn('#__fabrik_formgroup') . ' AS `fg` ON fg.group_id = g.id')
-			->join('LEFT', $db->qn('#__fabrik_forms') . ' AS `f` ON f.id = fg.form_id')
-			->join('LEFT', $db->qn('#__fabrik_lists') . ' AS `l` ON l.form_id = f.id')
-			->where('e.plugin = ' . $db->q('databasejoin'))
-			->where('JSON_EXTRACT(e.`params`,"$.join_db_name") = ' . $db->q($table));
+			->from($db->qn('#__fabrik_elements', 'e'))
+			->join('LEFT', $db->qn('#__fabrik_groups', 'g') . ' ON g.id = e.group_id')
+			->join('LEFT', $db->qn('#__fabrik_formgroup', 'fg') . ' ON fg.group_id = g.id')
+			->join('LEFT', $db->qn('#__fabrik_forms', 'f') . ' ON f.id = fg.form_id')
+			->join('LEFT', $db->qn('#__fabrik_lists', 'l') . ' ON l.form_id = f.id')
+			->where($db->qn('e.plugin') . ' = ' . $db->q('databasejoin'))
+			->where('JSON_EXTRACT(' . $db->qn('e.params') . ',"$.join_db_name") = ' . $db->q($table))
+			->where($db->qn('l.id') . ' != ' . $db->q($this->getListId()));
 		$db->setQuery($query);
 		$results = $db->loadObjectList();
 
