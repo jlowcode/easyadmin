@@ -264,9 +264,11 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				}
 
 				if(r['restrict']) {
-					jQuery('#easyadmin_modal___tags').closest('.fabrikElementContainer').css('display', 'none');
+					jQuery('#easyadmin_modal___tags').find('option[value="tags"]').css('display', 'none');
+					jQuery('#easyadmin_modal___tags').val('popup_form');
 				} else {
-					jQuery('#easyadmin_modal___tags').closest('.fabrikElementContainer').css('display', 'block');
+					jQuery('#easyadmin_modal___tags').find('option[value="tags"]').css('display', 'block');
+					jQuery('#easyadmin_modal___tags').val('popup_form');
 				}
 			}).fail(function (jq, status, error) {
 				var message = {
@@ -1112,7 +1114,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
                             break;
 
 						case 'easyadmin_modal___tags':
-                            jQuery(this).val('tags');
+                            jQuery(this).val('popup_form');
 							break;
 
 						default:

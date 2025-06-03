@@ -551,10 +551,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Method that create the link to modal view to list
-	 *
+	 * 
 	 * @param   	Int			$listId 		The id of the list
-	 *
-	 * @return 		String		
+	 * 
+	 * @return 		String
 	 */
 	protected function createListLink($listId) 
 	{
@@ -564,12 +564,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Method run on when list is being loaded. Used to trigger the init function
-	 *
+	 * 
 	 * @param   	Array		&$args		Arguments
 	 * 
 	 * @return 		Null
 	 */
-	public function onPreLoadData(&$args) 
+	public function onPreLoadData(&$args)
 	{
 		//We don't have run
 		if(!$this->mustRun() || !$this->authorized()) {
@@ -3213,8 +3213,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$opts = Array(
-			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_TAGS'),
 			'popup_form' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_POPUP_FORM'),
+			'tags' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_TAGS'),
 			'no' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TAGS_OPTION_NO'),
 		);
 		$dEl->options = $this->optionsElements($opts);
