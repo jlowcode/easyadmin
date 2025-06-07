@@ -578,9 +578,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$this->setImages();
 		$this->init();
-
-		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.js', 'plupload');
-		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.html5.js', 'plupload.html5');
 	}
 
 	/**
@@ -629,6 +626,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$srcs['Placeholder'] = 'media/com_fabrik/js/lib/form_placeholder/Form.Placeholder.js';
 		$srcs['FormSubmit'] = $mediaFolder . '/form-submit.js';
 		$srcs['Element'] = $mediaFolder . '/element.js';
+
+		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.js', 'plupload');
+		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.html5.js', 'plupload.html5');
 
 		foreach ($elements as $key => $els) {
 			foreach ($els as $nameElement) {
@@ -753,17 +753,21 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
      */
     function jsScriptTranslation()
     {
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADMIN');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ACTION_METHOD_ERROR');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ERROR');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
-        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
-		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
-		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED');
-		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
+		try {
+		    Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADMIN');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ACTION_METHOD_ERROR');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ERROR');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
+        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
+			Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
+			Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED');
+			Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
+		} catch (Throwable $th) {
+
+		}
     }
 
 	/**
