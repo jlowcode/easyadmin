@@ -342,6 +342,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 * 
 		 */
 		setElementType: function(sufix='') {
+			var self = this;
 			var elType = jQuery('#easyadmin_modal___type' + sufix);
 			var modal = sufix == '' ? '#modal-elements' : '.modalContent';
 
@@ -363,6 +364,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				});
 
 				jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click', {button: 'edit-element', sufix: ''});
+				
+				if(self.options.addNewElement) {
+					jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').addClass('fabrikHide');
+				}
 			});
 
 			type = elType.val();
@@ -900,6 +905,8 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			self.options.valIdEl = idEl;
 
 			if(options.enabled) {
+				self.options.addNewElement = false;
+
 				jQuery('#easyadmin_modal___history_type').val(options.type);
 
 				jQuery.each(options, function(index, value) {
@@ -1088,6 +1095,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			var self = this;
 
 			addElementButton.off('click').on('click', function() {
+				self.options.addNewElement = true;
 				self.options.valIdEl = 0;
 
 				jQuery('[name=history_type]').val('');
@@ -1138,8 +1146,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
                 jQuery('#easyadmin_modal___label').empty();
 				jQuery('#easyadmin_modal___father').empty();
-				
+
                 jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
+				
 				jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').addClass('fabrikHide');
 			});
 
