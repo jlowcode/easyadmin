@@ -1105,7 +1105,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				Els.each(function() {
 					id = this.id;
 					switch (id) {
-						case 'easyadmin_modal___use_filter0':
+						case 'easyadmin_modal___use_filter1':
 						case 'easyadmin_modal___required0':
 						case 'easyadmin_modal___trash0':
 						case 'easyadmin_modal___show_in_list0':
