@@ -1129,6 +1129,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
                             jQuery(this).val('popup_form');
 							break;
 
+						case 'easyadmin_modal___access_rating':
+							jQuery(this).val('1');
+							break;
+
 						default:
 							if(!jQuery(this).hasClass('input-list')) {
 								jQuery(this).val('');

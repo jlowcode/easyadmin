@@ -3257,7 +3257,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$idEasy = $this->prefixEl . '___' . $nameElement;
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
-		$value = $formData[$idEasy];
+		$value = $formData[$idEasy] ?? '1';
 		$dEl = new stdClass();
 		$showOnTypes = ['rating'];
 
