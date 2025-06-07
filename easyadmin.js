@@ -948,7 +948,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 							elSw.prop('checked', true);
 						}
 					}
-				})
+				});
+
+				jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').removeClass('fabrikHide');
 			}
 
 			var typeVal = jQuery('#easyadmin_modal___type').val();
@@ -1138,6 +1140,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				jQuery('#easyadmin_modal___father').empty();
 				
                 jQuery('#easyadmin_modal___options_dropdown').parent().find('#easyadmin_modal___options_dropdown_chosen').css('width', '95%');
+				jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').addClass('fabrikHide');
 			});
 
 			editListButton.find('button').css({
