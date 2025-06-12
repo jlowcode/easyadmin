@@ -753,21 +753,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
      */
     function jsScriptTranslation()
     {
-		try {
-		    Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADMIN');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ACTION_METHOD_ERROR');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ERROR');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
-        	Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
-			Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
-			Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED');
-			Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
-		} catch (Throwable $th) {
-
-		}
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADMIN');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ACTION_METHOD_ERROR');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ADD_ELEMENT');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_EDIT_LIST');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_SUCCESS');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ERROR');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
+        Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
+		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
+		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED');
+		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
     }
 
 	/**
@@ -3261,7 +3257,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$idEasy = $this->prefixEl . '___' . $nameElement;
 		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
-		$value = $formData[$idEasy] ?? '1';
+		$value = $formData[$idEasy];
 		$dEl = new stdClass();
 		$showOnTypes = ['rating'];
 
@@ -4209,7 +4205,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function formatValue($val)
 	{
-		return preg_replace('/[^A-Za-z0-9]/', '_', trim(strtolower((new Transliterate)->utf8_latin_to_ascii($val))));
+		$val = (new Transliterate)->utf8_latin_to_ascii($val);
+		$val = strtolower(trim($val));
+		$val = preg_replace('/[^a-z0-9]/', '_', $val);
+		$val = preg_replace('/_+/', '_', $val);
+		$val = trim($val, '_');
+
+		return $val;
 	}
 
 	/**
