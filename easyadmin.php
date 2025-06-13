@@ -3653,10 +3653,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ajax_show_widget'] = '0';
 				$params['random_filename'] = '1';
 				$params['length_random_filename'] = '12';
-				$params['fu_make_pdf_thumb'] = '0';
-				$params['make_thumbnail'] = '0';
+				$params['fu_make_pdf_thumb'] = '1';
+				$params['make_thumbnail'] = '1';
 				$params['ajax_max'] = '50';
 				$params['ajax_dropbox_width'] = '0';
+				$params['thumb_max_width'] = '244';
+				$params['thumb_max_height'] = '144';
+				$params['upload_rotate_image'] = '1';
+				$params['upload_caption'] = '1';
 
 				if($data['ajax_upload']) {
 					$params['ajax_upload'] = '1';
@@ -3666,6 +3670,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['ajax_upload'] = '0';
 					$params['fu_show_image_in_table'] = '2';
 					$params['fu_show_image'] = '2';
+					$params['upload_ordenacao'] = '1';
 				}
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
