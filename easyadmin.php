@@ -162,6 +162,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Load the JS code and pass the opts
 		$this->loadJS($opts);
+		HTMLHelper::stylesheet('plugins/fabrik_list/easyadmin/dist/css/easyadmin.css');
 	}
 
 	/**
@@ -3911,6 +3912,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$opts['validationrule'] = $validation;
 		}
 
+		$params['tablecss_header_class'] = 'head-ellipsis';
 		$params['can_order'] = '1';
 		$opts['params'] = $params;
 
