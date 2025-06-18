@@ -372,6 +372,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataEl->show_in_list = $dataElement->show_in_list_summary ? true : false;
 		$dataEl->width_field = $matches[0];
 		$dataEl->name = $dataElement->label;
+		$dataEl->name_on_list = !empty($params["alt_list_heading"]) ? $params["alt_list_heading"] : $dataElement->label;
 		$dataEl->ordering_elements = $element->getId();
 		$dataEl->trash = $dataElement->published == 1 ? false : true;
 		$dataEl->white_space = !str_contains($params["tablecss_cell"], 'nowrap');
@@ -982,6 +983,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$secondaryAuxLink = ['subject', 'creator', 'date', 'format', 'coverage', 'publisher', 'identifier', 'language', 'type', 'contributor', 'relation', 'rights', 'source'];
 
 		$this->setElementName($elements, 'name');
+		$this->setElementNameOnList($elements, 'name_on_list');
 		$this->setElementType($elements, 'type');
 		$this->setElementTextFormat($elements, 'text_format');
 		$this->setElementFormatToLongText($elements, 'format_long_text');
@@ -1955,6 +1957,53 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$id, 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''), 
 			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_DESC'), 
+		);
+		$elements[$idEasy]['dataField'] = $dEl;
+	}
+
+	/**
+	 * Setter method to name element
+	 *
+	 * @param   	Array 		$elements			Reference to all elements
+	 * @param		String		$nameElement		Identity of the element
+	 *
+	 * @return  	Null
+	 * 
+	 * @since 		version 4.3.4
+	 */
+	private function setElementNameOnList(&$elements, $nameElement) 
+	{
+		$formData = $this->getFormData();
+		$subject = $this->getSubject();
+
+		$idEasy = $this->prefixEl . '___' . $nameElement;
+		$id = $idEasy . ($this->getRequestWorkflow() ? '_wfl' : '') . ($this->getRequestWorkflowOrig() ? '_orig' : '');
+		$value = $formData[$idEasy];
+		$dEl = new stdClass;
+		$showOnTypes = ['text', 'longtext', 'file', 'date', 'dropdown', 'autocomplete', 'treeview', 'rating', 'thumbs', 'tags', 'youtube', 'link', 'user', 'internalid'];
+
+		// Options to set up the element
+		$dEl->attributes = Array(
+			'type' => 'text',
+			'id' => $id,
+			'name' => $id,
+			'size' => 0,
+			'maxlength' => '255',
+			'class' => 'form-control fabrikinput inputbox text',
+			'value' => $value
+		);
+		$this->getRequestWorkflow() ? $dEl->attributes['disabled'] = 'disabled' : '';
+
+		$classField = new PlgFabrik_ElementField($subject);
+		$elements[$idEasy]['objField'] = $classField->getLayout('form');
+		$elements[$idEasy]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$idEasy]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_ON_LIST_LABEL') . ($this->getRequestWorkflowOrig() ? ' - Original' : ''),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_NAME_ON_LIST_DESC'),
+			$showOnTypes,
+			false
 		);
 		$elements[$idEasy]['dataField'] = $dEl;
 	}
@@ -3550,6 +3599,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['access'] = '1';
 		$opts['modelElement'] = $modelElement;
 		$opts['link_to_detail'] = '1';
+		$params['alt_list_heading'] = $data['name_on_list'];
 
 		// Filter rules
 		if($data['use_filter']) {

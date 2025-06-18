@@ -476,7 +476,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				if(elementClass.indexOf(modal + '-' + name) > 0) {
 					switch (type) {
 						case 'yesno':
-							show = jQuery('#easyadmin_modal___' + name + '1').prop('checked') ? true : '';							
+							show = jQuery('#easyadmin_modal___' + name + '1').prop('checked') ? true : '';
 							break;
 
 						case 'dropdown':
@@ -948,6 +948,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 										);
 									});
 									break;
+
+								case 'name_on_list':
+									el.closest('.fabrikElementContainer').removeClass('fabrikHide');
+									break;
 							}
 						} else {
 							value ? p = 1 : p = 0;
@@ -1131,6 +1135,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 						case 'easyadmin_modal___access_rating':
 							jQuery(this).val('1');
+							break;
+
+						case 'easyadmin_modal___name_on_list':
+							jQuery(this).closest('.fabrikElementContainer').addClass('fabrikHide');
 							break;
 
 						default:
