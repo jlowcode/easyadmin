@@ -3671,7 +3671,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['ajax_upload'] = '0';
 					$params['fu_show_image_in_table'] = '2';
 					$params['fu_show_image'] = '2';
-					$params['upload_ordenacao'] = '1';
 				}
 
 				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
