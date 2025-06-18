@@ -1058,7 +1058,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				jQuery.each(elements, function(index, value) {
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
-					var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="subMenuAdmin ' + classTrash + '"></li>')
+					var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="subMenuAdmin ' + classTrash + ' ' + value.fullname + '"></li>')
 						.appendTo(state == 'trash' ? divTrash : JBtnGroup);
 					if(value.enabled) {
 						var sub = jQuery('<a style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;" href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
