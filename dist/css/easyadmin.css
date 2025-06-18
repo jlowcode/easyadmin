@@ -1,0 +1,12 @@
+/* Easyadmin CSS for Fabrik */
+
+.head-ellipsis li a {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.head-ellipsis span > a img {
+    max-width: inherit;
+}
