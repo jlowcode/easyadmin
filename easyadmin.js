@@ -13,7 +13,8 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			labelList: '',
 			fatherList: '',
 			valIdEl: 0,
-			emptyNameOnList: true
+			emptyNameOnList: true,
+			addNewElement: false
 		},
 
 		/**
@@ -362,8 +363,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			elType.find('option[value="user"], option[value="internalid"]').css('display', 'none');
 
-			elType.off('change').on('change', function() {
-				type = jQuery(this).val();
+			elType.off('change').on('change', function(e, params) {
+				let type = jQuery(this).val();
+				let sufix = params != null ? params.sufix : false;
 
 				jQuery(modal + ' .modal-element').each(function(index, element) {
 					elementClass = jQuery(this).prop('class');
@@ -378,9 +380,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				});
 
 				jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click', {button: 'edit-element', sufix: ''});
-				
-				if(self.options.addNewElement) {
+
+				if(sufix === '_wfl' || self.options.addNewElement) {
 					jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').addClass('fabrikHide');
+					jQuery('#easyadmin_modal___trash' + sufix).closest('.fabrikElementContainer').addClass('fabrikHide');
 				}
 			});
 
