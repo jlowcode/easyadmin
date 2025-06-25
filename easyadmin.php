@@ -505,7 +505,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param   	Object			$elements 		Object of each element of the list
 	 * @param   	Boolean			$mod 			Must be return label or name of the element
 	 * 
-	 * @return 		Object		
+	 * @return 		Object
 	 */
 	protected function processElementsNames($elements, $mod=true) 
 	{
@@ -3659,6 +3659,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 					if($data['format_long_text']) {
 						$params['height'] = '20';
+						$params['editor'] = 'tinymce';
 
 						$groupIdRelated = $this->groupToLongtextElement($listModel, $opts, $params);
 						$opts['group_id'] = $groupIdRelated;
