@@ -241,7 +241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
-
+		
 		if(
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
@@ -3659,7 +3659,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 					if($data['format_long_text']) {
 						$params['height'] = '20';
-						$params['editor'] = 'tinymce';
+						$params['editor'] = $this->config->get('editor');
 
 						$groupIdRelated = $this->groupToLongtextElement($listModel, $opts, $params);
 						$opts['group_id'] = $groupIdRelated;
