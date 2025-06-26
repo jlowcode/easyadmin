@@ -3660,10 +3660,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					if($data['format_long_text']) {
 						$params['height'] = '20';
 						$params['editor'] = $this->config->get('editor');
+						$params['textarea_showlabel'] = '0';
 
 						$groupIdRelated = $this->groupToLongtextElement($listModel, $opts, $params);
 						$opts['group_id'] = $groupIdRelated;
 					} else {
+						$params['textarea_showlabel'] = '1';
 						$opts['group_id_old'] = $data['group_id_old'];
 						$this->groupToLongtextElement($listModel, $opts, $params, true);
 					}
