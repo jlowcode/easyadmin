@@ -3659,7 +3659,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 					if($data['format_long_text']) {
 						$params['height'] = '20';
-						$params['editor'] = $this->config->get('editor');
 
 						$groupIdRelated = $this->groupToLongtextElement($listModel, $opts, $params);
 						$opts['group_id'] = $groupIdRelated;
