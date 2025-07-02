@@ -3702,7 +3702,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
 				$params['ajax_show_widget'] = '0';
-				$params['random_filename'] = '1';
+				$params['random_filename'] = '0';
 				$params['length_random_filename'] = '12';
 				$params['fu_make_pdf_thumb'] = '1';
 				$params['make_thumbnail'] = '1';
