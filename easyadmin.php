@@ -3712,6 +3712,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['thumb_max_height'] = '144';
 				$params['upload_rotate_image'] = '1';
 				$params['upload_caption'] = '1';
+				$params['default_image'] = 'default-card';
 
 				if($data['ajax_upload']) {
 					$params['ajax_upload'] = '1';
