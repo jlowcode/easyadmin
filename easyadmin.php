@@ -1600,8 +1600,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$options = Array(
-			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0"),
-			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1")
+			'0' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_0"),
+			'1' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_1"),
+			'4' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_4")
 		);
 
 		foreach ($elsList as $el) {
@@ -1612,12 +1613,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params->get('join_db_name') == $listModel->getTable()->get('db_table_name') && 
 				($params->get('database_join_display_style') == 'both-treeview-autocomplete' || $params->get('database_join_display_style') == 'only-treeview')
 			) {
-				$options['2'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_2");
+				$options['2'] = Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_2");
 			}
 		}
 		
 		if($listModel->canShowTutorialTemplate()) {
-			$options['3'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_3");
+			$options['3'] = Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_3");
 		}
 
 		$dEl->options = $this->optionsElements($options);
@@ -1634,8 +1635,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$id]['dataField'] = $dEl;
 		$elements[$id]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_LABEL'),
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_DESC'),
+			Text::_('COM_FABRIK_LAYOUT_MODE_LABEL'),
+			Text::_('COM_FABRIK_LAYOUT_MODE_DESC'),
 		);
 	}
 
