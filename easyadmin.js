@@ -236,7 +236,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 							if (opt.value === val) {
 								o.selected = 'selected';
 								x = 1;
-							} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
+							} else if(opt.value == "name" && el.id.indexOf("label") > 0 && x == 0) {
+								o.selected = "selected";
+							} else if((opt.value == "parent" || opt.value == "parent_id") && el.id.indexOf("father") > 0 && x == 0) {
 								o.selected = "selected";
 							}
 							new Element('option', o).set('text', opt.label).inject(el);
