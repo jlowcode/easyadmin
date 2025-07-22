@@ -1330,7 +1330,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Options to set up the element
 		$dEl->options = $this->optionsElements(Array(
 			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_0"),
-			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1")
+			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1"),
+			'2' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_2"),
 		));
 		$dEl->name = $id;
 		$dEl->id = $id;
