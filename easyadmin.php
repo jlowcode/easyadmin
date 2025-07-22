@@ -241,7 +241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
-		
+
 		if(
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
@@ -505,7 +505,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param   	Object			$elements 		Object of each element of the list
 	 * @param   	Boolean			$mod 			Must be return label or name of the element
 	 * 
-	 * @return 		Object
+	 * @return 		Object		
 	 */
 	protected function processElementsNames($elements, $mod=true) 
 	{
@@ -1330,7 +1330,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Options to set up the element
 		$dEl->options = $this->optionsElements(Array(
 			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_0"),
-			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1")
+			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1"),
+			'2' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_2"),
 		));
 		$dEl->name = $id;
 		$dEl->id = $id;
@@ -1618,7 +1619,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 		
 		if($listModel->canShowTutorialTemplate()) {
-			$options['3'] = Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_3");
+						$options['3'] = Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_3");
 		}
 
 		$dEl->options = $this->optionsElements($options);
@@ -2008,6 +2009,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		);
 		$elements[$idEasy]['dataField'] = $dEl;
 	}
+
 
 	/**
 	 * Setter method to type element
