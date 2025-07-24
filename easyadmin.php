@@ -241,7 +241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
-		
+
 		if(
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
@@ -374,6 +374,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataEl->name = $dataElement->label;
 		$dataEl->name_on_list = !empty($params["alt_list_heading"]) ? $params["alt_list_heading"] : $dataElement->label;
 		$dataEl->ordering_elements = $element->getId();
+		$dataEl->ordering_elements = $element->getId();
 		$dataEl->trash = $dataElement->published == 1 ? false : true;
 		$dataEl->white_space = !str_contains($params["tablecss_cell"], 'nowrap');
 
@@ -505,7 +506,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param   	Object			$elements 		Object of each element of the list
 	 * @param   	Boolean			$mod 			Must be return label or name of the element
 	 * 
-	 * @return 		Object
+	 * @return 		Object		
 	 */
 	protected function processElementsNames($elements, $mod=true) 
 	{
@@ -1330,7 +1331,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		// Options to set up the element
 		$dEl->options = $this->optionsElements(Array(
 			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_0"),
-			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1")
+			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_1"),
+			'2' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_COLLAB_OPTION_2"),
 		));
 		$dEl->name = $id;
 		$dEl->id = $id;
@@ -1600,9 +1602,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$options = Array(
-			'0' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_0"),
-			'1' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_1"),
-			'4' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_4")
+			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0"),
+			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1")
 		);
 
 		foreach ($elsList as $el) {

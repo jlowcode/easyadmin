@@ -382,7 +382,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				});
 
 				jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click', {button: 'edit-element', sufix: ''});
-
+				
 				if(sufix === '_wfl' || self.options.addNewElement) {
 					jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').addClass('fabrikHide');
 					jQuery('#easyadmin_modal___trash' + sufix).closest('.fabrikElementContainer').addClass('fabrikHide');
@@ -495,7 +495,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				if(elementClass.indexOf(modal + '-' + name) > 0) {
 					switch (type) {
 						case 'yesno':
-							show = jQuery('#easyadmin_modal___' + name + '1').prop('checked') ? true : '';
+							show = jQuery('#easyadmin_modal___' + name + '1').prop('checked') ? true : '';							
 							break;
 
 						case 'dropdown':
@@ -968,7 +968,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 									});
 									break;
 
-								case 'name_on_list':
+									case 'name_on_list':
 									self.options.emptyNameOnList = false;
 									break;
 							}
@@ -1081,7 +1081,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				jQuery.each(elements, function(index, value) {
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
-					var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="subMenuAdmin ' + classTrash + ' ' + value.fullname + '"></li>')
+										var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="subMenuAdmin ' + classTrash + ' ' + value.fullname + '"></li>')
 						.appendTo(state == 'trash' ? divTrash : JBtnGroup);
 					if(value.enabled) {
 						var sub = jQuery('<a style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;" href="#' + self.options.idModal + '" data-bs-toggle="modal"></a>')
@@ -1156,10 +1156,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 							jQuery(this).val('1');
 							break;
 
-						case 'easyadmin_modal___name_on_list':
+							case 'easyadmin_modal___name_on_list':
 							self.options.emptyNameOnList = true;
 							break;
-
+							
 						default:
 							if(!jQuery(this).hasClass('input-list')) {
 								jQuery(this).val('');
