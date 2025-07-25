@@ -241,7 +241,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
-
+		
 		if(
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
@@ -505,7 +505,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param   	Object			$elements 		Object of each element of the list
 	 * @param   	Boolean			$mod 			Must be return label or name of the element
 	 * 
-	 * @return 		Object		
+	 * @return 		Object
 	 */
 	protected function processElementsNames($elements, $mod=true) 
 	{
