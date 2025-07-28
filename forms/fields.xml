@@ -15,7 +15,7 @@
             />
 
             <field name="workflow_list"
-				type="list"
+				type="radio"
                 class="btn-group"
 				default="1"
                 filter="integer"
