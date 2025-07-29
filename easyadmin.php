@@ -3828,6 +3828,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'related_list':
+				$data['show_in_list'] = '0';
+				$data['required'] = '0';
+
+				$opts['filter_type'] = '';
 				$opts['related_list'] = $data['related_list'];
 				$opts['group_id_old'] = $data['group_id_old'];
 				$opts['module_id_old'] = $data['module_id_old'];
