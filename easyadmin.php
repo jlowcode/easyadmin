@@ -4436,7 +4436,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsModule['params']['list_id'] = $idRelatedList;
 		$optsModule['params']['useajax'] = "0";
 		$optsModule['params']['fabriklayout'] = "jlowcode_admin";
-		$optsModule['params']['show_filters'] = "0";
+		$optsModule['params']['show_filters'] = "1";
 		$optsModule['params']['prefilters'] = json_encode($optsPreFilters);
 
 		$modelModule->getState();
