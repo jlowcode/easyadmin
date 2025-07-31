@@ -22,7 +22,6 @@ use Joomla\CMS\Filesystem\Path;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\Component\Modules\Administrator\Model\ModuleModel;
 use Joomla\CMS\User\User;
-use Joomla\Component\Users\Administrator\Model\UserModel;
 use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
@@ -30,6 +29,7 @@ use Joomla\CMS\Editor\Editor;
 use Joomla\Component\Menus\Administrator\Model\ItemModel;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\User\UserFactoryInterface;
 
 // Requires 
 // Change to namespaces on F5
@@ -4756,7 +4756,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
 		$dataList['access'] = $viewLevel;
 		$dataList['created_by'] = $data['owner_list'];
-		$dataList['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
+		$dataList['created_by_alias'] = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($data['owner_list'])->get('username');
 		$dataList['published'] = $data['trash_list'] ? '0' : '1';
 
 		foreach ($properties as $key => $val) {
@@ -4779,7 +4779,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataForm['current_groups'] = array_keys($groupsForm);
 		$dataForm['database_name'] = $propertiesForm['db_table_name'];
 		$dataForm['created_by'] = $data['owner_list'];
-		$dataForm['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
+		$dataForm['created_by_alias'] = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($data['owner_list'])->get('username');
 		$dataForm['published'] = $data['trash_list'] ? '0' : '1';
 
 		$pluginsForm = Array();
@@ -4959,7 +4959,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function configureAdminsList($users, $viewLevel, $oldAdmins) 
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
-		$userModel = new UserModel();
 
 		$db->setQuery("SELECT `rules` FROM `#__viewlevels` WHERE `id` = $viewLevel;");
 		$rules = json_decode($db->loadResult());
@@ -4971,7 +4970,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Adding users
 		foreach ($users as $idUser) {
-			$user = User::getInstance($idUser);
+			$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($idUser);
 			$groups = array_keys($user->groups);
 
 			if(!in_array($groupId, $groups)) {
@@ -4979,6 +4978,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$data['id'] = $idUser;
 				$data['groups'] = $groups;
 
+				$userModel = Factory::getApplication()->bootComponent('com_users')->getMVCFactory()->createModel('User', 'Administrator');
 				$userModel->getState();
 				$userModel->save($data);
 			}
@@ -4986,7 +4986,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		//Removing users
 		foreach ($usersExclused as $idUser) {
-			$user = User::getInstance($idUser);
+			$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($idUser);
 			$groups = array_keys($user->groups);
 
 			if(in_array($groupId, $groups)) {
