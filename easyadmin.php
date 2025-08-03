@@ -1,6 +1,6 @@
 <?php
 /**
- * Fabrik List Plugin test for new environment
+ * Fabrik List Plugin
  *
  * @package     Joomla.Plugin
  * @subpackage  Fabrik.list.js
