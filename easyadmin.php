@@ -116,7 +116,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if(!$requestWorkflow) {
 				$this->setElements();
 				$this->setElementsList();
-				$this->customizedStyle();
 			}
 		}
 	}
@@ -130,7 +129,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
-		$this->jsScriptTranslation();
 		$listModel = $this->getListModel();
 		$elements = $listModel->getElements(true, true, false);
 
@@ -628,9 +626,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$srcs['Placeholder'] = 'media/com_fabrik/js/lib/form_placeholder/Form.Placeholder.js';
 		$srcs['FormSubmit'] = $mediaFolder . '/form-submit.js';
 		$srcs['Element'] = $mediaFolder . '/element.js';
-
-		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.js', 'plupload');
-		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.html5.js', 'plupload.html5');
 
 		foreach ($elements as $key => $els) {
 			foreach ($els as $nameElement) {
@@ -5305,6 +5300,22 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$css .= '.select2-dropdown {z-index: 9999 !important;}';
 		$css .= '.btn-easyadmin-modal {min-height: 30px; width: 100%; border-radius: 12px; color: rgb(255, 255, 255); background-color: rgb(0, 62, 161);}';
 		$document->addStyleDeclaration($css);
+	}
+
+	/**
+     * Listener for the `onBeforeCompileHead` event
+     * 
+     * @return  void
+     * 
+     * @since   4.3.5
+     */
+	public function onBeforeCompileHead()
+	{
+		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.js', 'plupload');
+		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.html5.js', 'plupload.html5');
+
+		$this->customizedStyle();
+		$this->jsScriptTranslation();
 	}
 
 	/**
