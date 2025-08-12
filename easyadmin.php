@@ -4717,17 +4717,21 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataList[$key]['allow_view_details'] = $viewLevel;
 				$dataList[$key]['workflow_list'] = $data['workflow_list'] == 'true' ? '1' : '0';
 
-				if((int)$data['collab_list'] === 2) {
-					$dataList[$key]['allow_edit_details'] = '2';
-					$dataList[$key]['allow_add'] = '2';
-				} elseif((int)$data['collab_list'] === 1) {
-					$allowDelete = isset($dataList[$key]['allow_delete']) ? $dataList[$key]['allow_delete'] : '0';
-					$dataList[$key]['allow_edit_details'] = $allowDelete;
-					$dataList[$key]['allow_add'] = '2';
-				} elseif ((int)$data['collab_list'] === 0) {
-					$allowDelete = isset($dataList[$key]['allow_delete']) ? $dataList[$key]['allow_delete'] : '0';
-					$dataList[$key]['allow_edit_details'] = $allowDelete;
-					$dataList[$key]['allow_add'] = $allowDelete;
+				switch ((int)$data['collab_list']) {
+					case 2: //modo wiki
+						$dataList[$key]['allow_edit_details'] = '2';
+						$dataList[$key]['allow_add'] = '2';
+						break;
+					case 1: // modo open
+						$allowDelete = $dataList[$key]['allow_delete'] ?? '0';
+						$dataList[$key][$key]['allow_edit_details'] = $allowDelete;
+						$dataList[$key]['allow_add'] = '2';
+						break;
+					case 0: //modo restricted
+						$allowDelete = $dataList[$key]['allow_delete'] ?? '0';
+						$dataList[$key]['allow_edit_details'] = $allowDelete;
+						$dataList[$key]['allow_add'] = $allowDelete;
+						break;
 				}
 
 				$this->configurePluginComparison($data, $dataList[$key], $listModel);
