@@ -26,7 +26,6 @@ use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
-use Joomla\Component\Menus\Administrator\Model\ItemModel;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\User\UserFactoryInterface;
@@ -4895,22 +4894,35 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function extras($data, $mode)
 	{
+		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
 		$db = Factory::getContainer()->get('DatabaseDriver');
+		$app = Factory::getApplication();
+
+		$listId = $data['listid'];
 
 		$response = new stdClass;
 		switch ($mode) {
 			case 'list':
 				// Settings to update url
-				$oldUrl = ltrim(Uri::getInstance()->getPath(), '/');
-				$url = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
-				$updateLink = ($url != $oldUrl);
+				$menu = $app->getMenu();
+				$listModel->setId($listId);
+				$url = "index.php?option=com_fabrik&view=list&listid=$listId";
+				$menuItem = $menu->getItems('link', $url, true);
+				$oldUrl = explode('/', ltrim($menuItem->route, '/'));
+				$oldUrl = $oldUrl[count($oldUrl)-1];
+
+				$newUrl = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
+				$updateLink = $newUrl != $oldUrl;
 				if ($updateLink) {
-					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
-					$response->newUrl = $url;
+					$response->updateUrl = $this->updateUrlMenu($newUrl, $listId);
+					$newPath = explode('/', $menuItem->route);
+					array_pop($newPath);
+					$newPath[] = $newUrl;
+					$newPath = implode('/', $newPath);
+					$response->newUrl = $newPath;
 				}
 
 				// Settings to update list's thumb
-				$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 				$listModel->setId('1');
 				$els = $listModel->getElements();
 				foreach ($els as $el) {
@@ -4923,9 +4935,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
-				$update->id_lista = $data['listid'];
+				$update->id_lista = $listId;
 				$update->user = $data['owner_list'];
-				$update->link = "/" . ($updateLink ? $url : $oldUrl);
+				$update->link = "/" . ($updateLink ? $newPath : $oldUrl);
 				$update->status = $data['trash_list'] ? '0' : '1';
 				$update->miniatura = !empty($data['thumb_list']) ? $path . str_replace(' ', '_', $data['thumb_list']) : '';
 
@@ -6252,7 +6264,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
 
-		$val = ltrim(Uri::getInstance()->getPath(), '/');
+		$val = explode('/', ltrim(Uri::getInstance()->getPath(), '/'));
+		$val = $val[count($val)-1];
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
@@ -6286,13 +6299,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param		String 		$urlNew				The new URL alias to apply
 	 * @param		Int			$listId				The ID of the list associated with the menu item
 	 * 
-	 * @return		Boolean								True if the update was successful, false otherwise
+	 * @return		bool
 	 * 
 	 * @since		v4.3.4
 	 */
 	private function updateUrlMenu($urlNew, $listId)
 	{
+        $menuModel = Factory::getApplication()->bootComponent('com_menus')->getMVCFactory()->createModel('Item', 'Administrator');
 		$app = Factory::getApplication();
+
+        $menuModel->getState(); 	//We need do this to set __state_set before the save
 		$menu = $app->getMenu();
 
 		$url = "index.php?option=com_fabrik&view=list&listid={$listId}";
@@ -6315,7 +6331,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataMenu->alias = $urlNew;
 		$dataMenu->menutype = $currentMenu->menutype;
 
-		$menuModel = new ItemModel();
 		if (!$menuModel->save((array) $dataMenu)) {
 			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_URL'));
 		}
