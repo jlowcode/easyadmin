@@ -12,7 +12,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			inputSearch: '',
 			labelList: '',
 			fatherList: '',
-			valIdEl: 0
+			valIdEl: 0,
+			emptyNameOnList: true,
+			addNewElement: false
 		},
 
 		/**
@@ -69,6 +71,19 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			if(self.options.owner_id != self.options.user.id || !self.options.isAdmin) {
 				jQuery("input[name='checkAll']").addClass('fabrikHide');
 			}
+
+			// Event to fill name_on_list when user type name to form
+			jQuery('#easyadmin_modal___name').on('input', function () {
+				const nameOnList = jQuery('#easyadmin_modal___name_on_list');
+
+				if (self.options.emptyNameOnList) {
+					nameOnList.val(this.value);
+				}
+			});
+
+			jQuery('#easyadmin_modal___name_on_list').on('input', function() {
+				self.options.emptyNameOnList = false;
+			})
 		},
 
 		/**
@@ -221,7 +236,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 							if (opt.value === val) {
 								o.selected = 'selected';
 								x = 1;
-							} else if(opt.value == "name" && el.id.indexOf("___label") > 0 && x == 0) {
+							} else if(opt.value == "name" && el.id.indexOf("label") > 0 && x == 0) {
+								o.selected = "selected";
+							} else if((opt.value == "parent" || opt.value == "parent_id") && el.id.indexOf("father") > 0 && x == 0) {
 								o.selected = "selected";
 							}
 							new Element('option', o).set('text', opt.label).inject(el);
@@ -348,8 +365,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			elType.find('option[value="user"], option[value="internalid"]').css('display', 'none');
 
-			elType.off('change').on('change', function() {
-				type = jQuery(this).val();
+			elType.off('change').on('change', function(e, params) {
+				let type = jQuery(this).val();
+				let sufix = params != null ? params.sufix : false;
 
 				jQuery(modal + ' .modal-element').each(function(index, element) {
 					elementClass = jQuery(this).prop('class');
@@ -364,9 +382,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				});
 
 				jQuery('label[for="easyadmin_modal___label_advanced_link"]').trigger('click', {button: 'edit-element', sufix: ''});
-				
-				if(self.options.addNewElement) {
+
+				if(sufix === '_wfl' || self.options.addNewElement) {
 					jQuery('#easyadmin_modal___trash').closest('.fabrikElementContainer').addClass('fabrikHide');
+					jQuery('#easyadmin_modal___trash' + sufix).closest('.fabrikElementContainer').addClass('fabrikHide');
 				}
 			});
 
@@ -950,7 +969,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 									break;
 
 								case 'name_on_list':
-									el.closest('.fabrikElementContainer').removeClass('fabrikHide');
+									self.options.emptyNameOnList = false;
 									break;
 							}
 						} else {
@@ -1138,7 +1157,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 							break;
 
 						case 'easyadmin_modal___name_on_list':
-							jQuery(this).closest('.fabrikElementContainer').addClass('fabrikHide');
+							self.options.emptyNameOnList = true;
 							break;
 
 						default:

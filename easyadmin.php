@@ -22,14 +22,13 @@ use Joomla\CMS\Filesystem\Path;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\Component\Modules\Administrator\Model\ModuleModel;
 use Joomla\CMS\User\User;
-use Joomla\Component\Users\Administrator\Model\UserModel;
 use Joomla\CMS\Language\Transliterate;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Editor\Editor;
-use Joomla\Component\Menus\Administrator\Model\ItemModel;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\User\UserFactoryInterface;
 
 // Requires 
 // Change to namespaces on F5
@@ -116,7 +115,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if(!$requestWorkflow) {
 				$this->setElements();
 				$this->setElementsList();
-				$this->customizedStyle();
 			}
 		}
 	}
@@ -130,7 +128,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
-		$this->jsScriptTranslation();
 		$listModel = $this->getListModel();
 		$elements = $listModel->getElements(true, true, false);
 
@@ -241,7 +238,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$app = Factory::getApplication();
 		$input = $app->input;
-
+		
 		if(
 			strpos($input->get('task'), 'filter') > 0 ||
 			strpos($input->get('task'), 'order') > 0 ||
@@ -505,7 +502,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param   	Object			$elements 		Object of each element of the list
 	 * @param   	Boolean			$mod 			Must be return label or name of the element
 	 * 
-	 * @return 		Object		
+	 * @return 		Object
 	 */
 	protected function processElementsNames($elements, $mod=true) 
 	{
@@ -628,9 +625,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$srcs['Placeholder'] = 'media/com_fabrik/js/lib/form_placeholder/Form.Placeholder.js';
 		$srcs['FormSubmit'] = $mediaFolder . '/form-submit.js';
 		$srcs['Element'] = $mediaFolder . '/element.js';
-
-		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.js', 'plupload');
-		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.html5.js', 'plupload.html5');
 
 		foreach ($elements as $key => $els) {
 			foreach ($els as $nameElement) {
@@ -1600,8 +1594,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Options to set up the element
 		$options = Array(
-			'0' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_0"),
-			'1' => Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_1")
+			'0' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_0"),
+			'1' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_1"),
+			'4' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_4")
 		);
 
 		foreach ($elsList as $el) {
@@ -1612,12 +1607,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params->get('join_db_name') == $listModel->getTable()->get('db_table_name') && 
 				($params->get('database_join_display_style') == 'both-treeview-autocomplete' || $params->get('database_join_display_style') == 'only-treeview')
 			) {
-				$options['2'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_2");
+				$options['2'] = Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_2");
 			}
 		}
 		
 		if($listModel->canShowTutorialTemplate()) {
-			$options['3'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_OPTION_3");
+			$options['3'] = Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_3");
 		}
 
 		$dEl->options = $this->optionsElements($options);
@@ -1634,8 +1629,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$id]['dataField'] = $dEl;
 		$elements[$id]['dataLabel'] = $this->getDataLabel(
 			$id,
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_LABEL'),
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_LAYOUT_MODE_DESC'),
+			Text::_('COM_FABRIK_LAYOUT_MODE_LABEL'),
+			Text::_('COM_FABRIK_LAYOUT_MODE_DESC'),
 		);
 	}
 
@@ -3702,7 +3697,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
 				$params['ajax_show_widget'] = '0';
-				$params['random_filename'] = '1';
+				$params['random_filename'] = '0';
 				$params['length_random_filename'] = '12';
 				$params['fu_make_pdf_thumb'] = '1';
 				$params['make_thumbnail'] = '1';
@@ -3712,6 +3707,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['thumb_max_height'] = '144';
 				$params['upload_rotate_image'] = '1';
 				$params['upload_caption'] = '1';
+				$params['default_image'] = 'default-card';
 
 				if($data['ajax_upload']) {
 					$params['ajax_upload'] = '1';
@@ -3826,6 +3822,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				break;
 
 			case 'related_list':
+				$data['required'] = false;
+
+				$opts['show_in_list_summary'] = '0';
+				$opts['filter_type'] = '';
 				$opts['related_list'] = $data['related_list'];
 				$opts['group_id_old'] = $data['group_id_old'];
 				$opts['module_id_old'] = $data['module_id_old'];
@@ -3950,7 +3950,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		// Validation rules
-			if(isset($pluginValidation)) {
+		if(isset($pluginValidation)) {
 			$validation['plugin'] = $pluginValidation;
 			$validation['plugin_published'] = $publishedValidation;
 			$validation['validate_in'] = $validateInValidation;
@@ -4430,7 +4430,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsModule['params']['list_id'] = $idRelatedList;
 		$optsModule['params']['useajax'] = "0";
 		$optsModule['params']['fabriklayout'] = "jlowcode_admin";
-		$optsModule['params']['show_filters'] = "0";
+		$optsModule['params']['show_filters'] = "1";
 		$optsModule['params']['prefilters'] = json_encode($optsPreFilters);
 
 		$modelModule->getState();
@@ -4750,7 +4750,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
 		$dataList['access'] = $viewLevel;
 		$dataList['created_by'] = $data['owner_list'];
-		$dataList['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
+		$dataList['created_by_alias'] = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($data['owner_list'])->get('username');
 		$dataList['published'] = $data['trash_list'] ? '0' : '1';
 
 		foreach ($properties as $key => $val) {
@@ -4773,7 +4773,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataForm['current_groups'] = array_keys($groupsForm);
 		$dataForm['database_name'] = $propertiesForm['db_table_name'];
 		$dataForm['created_by'] = $data['owner_list'];
-		$dataForm['created_by_alias'] = JFactory::getUser($data['owner_list'])->get('username');
+		$dataForm['created_by_alias'] = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($data['owner_list'])->get('username');
 		$dataForm['published'] = $data['trash_list'] ? '0' : '1';
 
 		$pluginsForm = Array();
@@ -4894,22 +4894,35 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function extras($data, $mode)
 	{
+		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
 		$db = Factory::getContainer()->get('DatabaseDriver');
+		$app = Factory::getApplication();
+
+		$listId = $data['listid'];
 
 		$response = new stdClass;
 		switch ($mode) {
 			case 'list':
 				// Settings to update url
-				$oldUrl = ltrim(Uri::getInstance()->getPath(), '/');
-				$url = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
-				$updateLink = ($url != $oldUrl);
+				$menu = $app->getMenu();
+				$listModel->setId($listId);
+				$url = "index.php?option=com_fabrik&view=list&listid=$listId";
+				$menuItem = $menu->getItems('link', $url, true);
+				$oldUrl = explode('/', ltrim($menuItem->route, '/'));
+				$oldUrl = $oldUrl[count($oldUrl)-1];
+
+				$newUrl = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
+				$updateLink = $newUrl != $oldUrl;
 				if ($updateLink) {
-					$response->updateUrl = $this->updateUrlMenu($url, $data['listid']);
-					$response->newUrl = $url;
+					$response->updateUrl = $this->updateUrlMenu($newUrl, $listId);
+					$newPath = explode('/', $menuItem->route);
+					array_pop($newPath);
+					$newPath[] = $newUrl;
+					$newPath = implode('/', $newPath);
+					$response->newUrl = $newPath;
 				}
 
 				// Settings to update list's thumb
-				$listModel = JModelLegacy::getInstance('List', 'FabrikFEModel');
 				$listModel->setId('1');
 				$els = $listModel->getElements();
 				foreach ($els as $el) {
@@ -4922,9 +4935,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
-				$update->id_lista = $data['listid'];
+				$update->id_lista = $listId;
 				$update->user = $data['owner_list'];
-				$update->link = "/" . ($updateLink ? $url : $oldUrl);
+				$update->link = "/" . ($updateLink ? $newPath : $oldUrl);
 				$update->status = $data['trash_list'] ? '0' : '1';
 				$update->miniatura = !empty($data['thumb_list']) ? $path . str_replace(' ', '_', $data['thumb_list']) : '';
 
@@ -4953,7 +4966,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function configureAdminsList($users, $viewLevel, $oldAdmins) 
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
-		$userModel = new UserModel();
 
 		$db->setQuery("SELECT `rules` FROM `#__viewlevels` WHERE `id` = $viewLevel;");
 		$rules = json_decode($db->loadResult());
@@ -4965,7 +4977,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		// Adding users
 		foreach ($users as $idUser) {
-			$user = User::getInstance($idUser);
+			$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($idUser);
 			$groups = array_keys($user->groups);
 
 			if(!in_array($groupId, $groups)) {
@@ -4973,6 +4985,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$data['id'] = $idUser;
 				$data['groups'] = $groups;
 
+				$userModel = Factory::getApplication()->bootComponent('com_users')->getMVCFactory()->createModel('User', 'Administrator');
 				$userModel->getState();
 				$userModel->save($data);
 			}
@@ -4980,7 +4993,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		//Removing users
 		foreach ($usersExclused as $idUser) {
-			$user = User::getInstance($idUser);
+			$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($idUser);
 			$groups = array_keys($user->groups);
 
 			if(in_array($groupId, $groups)) {
@@ -5299,6 +5312,22 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$css .= '.select2-dropdown {z-index: 9999 !important;}';
 		$css .= '.btn-easyadmin-modal {min-height: 30px; width: 100%; border-radius: 12px; color: rgb(255, 255, 255); background-color: rgb(0, 62, 161);}';
 		$document->addStyleDeclaration($css);
+	}
+
+	/**
+     * Listener for the `onBeforeCompileHead` event
+     * 
+     * @return  void
+     * 
+     * @since   4.3.5
+     */
+	public function onBeforeCompileHead()
+	{
+		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.js', 'plupload');
+		Factory::getDocument()->addScript('plugins/fabrik_element/fileupload/lib/plupload/js/plupload.html5.js', 'plupload.html5');
+
+		$this->customizedStyle();
+		$this->jsScriptTranslation();
 	}
 
 	/**
@@ -6235,7 +6264,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
 
-		$val = ltrim(Uri::getInstance()->getPath(), '/');
+		$val = explode('/', ltrim(Uri::getInstance()->getPath(), '/'));
+		$val = $val[count($val)-1];
 
 		$id = $this->prefixEl . '___' . $nameElement;
 		$dEl = new stdClass;
@@ -6269,13 +6299,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * @param		String 		$urlNew				The new URL alias to apply
 	 * @param		Int			$listId				The ID of the list associated with the menu item
 	 * 
-	 * @return		Boolean								True if the update was successful, false otherwise
+	 * @return		bool
 	 * 
 	 * @since		v4.3.4
 	 */
 	private function updateUrlMenu($urlNew, $listId)
 	{
+        $menuModel = Factory::getApplication()->bootComponent('com_menus')->getMVCFactory()->createModel('Item', 'Administrator');
 		$app = Factory::getApplication();
+
+        $menuModel->getState(); 	//We need do this to set __state_set before the save
 		$menu = $app->getMenu();
 
 		$url = "index.php?option=com_fabrik&view=list&listid={$listId}";
@@ -6298,7 +6331,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataMenu->alias = $urlNew;
 		$dataMenu->menutype = $currentMenu->menutype;
 
-		$menuModel = new ItemModel();
 		if (!$menuModel->save((array) $dataMenu)) {
 			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_URL'));
 		}
