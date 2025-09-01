@@ -4637,7 +4637,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$db->setQuery($query);
 				$originalRules = $db->loadColumn()[0];
 				$rules = json_decode($originalRules, true);
-				$rules["core.manage"][max($groups)] = 1;
+				$rules["core.admin"][max($groups)] = 1;
 
 				$query = $db->getQuery(true);
 				$query->update($db->qn("#__assets"))
