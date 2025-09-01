@@ -154,7 +154,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->dbPrefix = $db->getPrefix();
 		$opts->workflow = $workflow;
 		$opts->owner_id = $listModel->getFormModel()->getTable()->get('created_by');
-		$opts->isAdmin = $this->user->authorise('core.admin');
+		$opts->isAdmin = $this->user->authorise('core.manage');
 		$opts->user = $this->user;
 
 		echo $this->setUpModalElements();
@@ -207,7 +207,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$showOptions = (int) $params->get('show_options', 0);
 
 		if($showOptions == 2) return false;
-		if($user->authorise('core.admin')) return true;
+		if($user->authorise('core.manage')) return true;
 		if($showOptions == 1) return false;
 
 		$workflowExist = $this->workflowExists();
@@ -4637,7 +4637,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$db->setQuery($query);
 				$originalRules = $db->loadColumn()[0];
 				$rules = json_decode($originalRules, true);
-				$rules["core.admin"][max($groups)] = 1;
+				$rules["core.manage"][max($groups)] = 1;
 
 				$query = $db->getQuery(true);
 				$query->update($db->qn("#__assets"))
@@ -4719,7 +4719,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				switch ((int)$data['collab_list']) {
 					case 2: //Wiki mode
+						$allowDelete = $dataList[$key]['allow_delete'] ?? '8';
 						$dataList[$key]['allow_edit_details'] = '2';
+						$dataList[$key]['allow_edit_details2'] = $allowDelete;
+						$dataList[$key]['allow_delete2'] = $allowDelete;
 						$dataList[$key]['allow_add'] = '2';
 						break;
 					case 1: //Open mode
