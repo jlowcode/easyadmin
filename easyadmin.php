@@ -3488,6 +3488,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$listId = $_POST['easyadmin_modal___listid'];
 		$listModel->setId($listId);
+		$this->setListModel($listModel);
 
 		$data = $listModel->removeTableNameFromSaveData($_POST);
 		$mode = $data['mode'];
@@ -4897,30 +4898,21 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
 		$db = Factory::getContainer()->get('DatabaseDriver');
-		$app = Factory::getApplication();
-
-		$listId = $data['listid'];
 
 		$response = new stdClass;
 		switch ($mode) {
 			case 'list':
 				// Settings to update url
-				$menu = $app->getMenu();
-				$listModel->setId($listId);
-				$url = "index.php?option=com_fabrik&view=list&listid=$listId";
-				$menuItem = $menu->getItems('link', $url, true);
+				$menuItem = $this->searchMenuItem();
 				$oldUrl = explode('/', ltrim($menuItem->route, '/'));
 				$oldUrl = $oldUrl[count($oldUrl)-1];
 
 				$newUrl = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
 				$updateLink = $newUrl != $oldUrl;
 				if ($updateLink) {
-					$response->updateUrl = $this->updateUrlMenu($newUrl, $listId);
-					$newPath = explode('/', $menuItem->route);
-					array_pop($newPath);
-					$newPath[] = $newUrl;
-					$newPath = implode('/', $newPath);
+					$newPath = $this->updateUrlMenu($newUrl);
 					$response->newUrl = $newPath;
+					$response->updateUrl = true;
 				}
 
 				// Settings to update list's thumb
@@ -6240,7 +6232,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Getter method to modalParams variable
-	 *
+	 * 
 	 * @return  	String
 	 * 
 	 * @since 		version 4.2
@@ -6252,12 +6244,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Setter method to define the URL element for the list
-	 *
+	 * 
 	 * @param		Array		$elements			Reference to all elements
 	 * @param		String		$nameElement		Identity of the element to generate the URL input
-	 *
+	 * 
 	 * @return		Null
-	 *
+	 * 
 	 * @since		version 4.3.4
 	 */
 	private function setElementUrlList(&$elements, $nameElement) 
@@ -6265,7 +6257,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = $this->getListModel();
 		$subject = $this->getSubject();
 
-		$val = explode('/', ltrim(Uri::getInstance()->getPath(), '/'));
+		$menuItem = $this->searchMenuItem();
+
+		$val = explode('/', $menuItem->route);
 		$val = $val[count($val)-1];
 
 		$id = $this->prefixEl . '___' . $nameElement;
@@ -6294,17 +6288,46 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
+	 * This method search into apllication for the current menu item
+	 * 
+	 * @return		MenuItem
+	 */
+	private function searchMenuItem()
+	{
+        $app = Factory::getApplication();
+
+		$listModel = $this->getListModel();
+	    $menu = $app->getMenu();
+
+		$listId = $listModel->getId();
+        $url = "index.php?option=com_fabrik&view=list&listid=$listId";
+		$attributesFilter = ['link', 'level'];
+		$valuesFilter = [$url, 2];
+        $menuItem = $menu->getItems($attributesFilter, $valuesFilter, true);
+
+		// If not found the current list dont belong to a website so we will find it only by link
+		if(empty($menuItem)) {
+	        $menuItem = $menu->getItems('link', $url, true);
+		}
+
+		if (!$menuItem) {
+			throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_MENU_ITEM_NOT_FOUND'));
+		}
+
+		return $menuItem;
+	}
+
+	/**
 	 * This method updates the URL alias of the menu item related to a list
 	 * It finds the menu item linked to the list and sets a new alias based on the given URL
 	 * 
 	 * @param		String 		$urlNew				The new URL alias to apply
-	 * @param		Int			$listId				The ID of the list associated with the menu item
 	 * 
-	 * @return		bool
+	 * @return		string
 	 * 
 	 * @since		v4.3.4
 	 */
-	private function updateUrlMenu($urlNew, $listId)
+	private function updateUrlMenu($urlNew)
 	{
         $menuModel = Factory::getApplication()->bootComponent('com_menus')->getMVCFactory()->createModel('Item', 'Administrator');
 		$app = Factory::getApplication();
@@ -6312,20 +6335,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
         $menuModel->getState(); 	//We need do this to set __state_set before the save
 		$menu = $app->getMenu();
 
-		$url = "index.php?option=com_fabrik&view=list&listid={$listId}";
-		$currentMenu = $menu->getItems('link', $url, true);
-
-		if (!$currentMenu) {
-			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_MENU_ITEM_NOT_FOUND'));
-		}
-
-		$existingItems = $menu->getItems('alias', $urlNew);
-
-		foreach ($existingItems as $item) {
-			if ($item->id != $currentMenu->id) {
-				throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_URL_ALREADY_USED'));
-			}
-		}
+		$currentMenu = $this->searchMenuItem();
 
 		$dataMenu = new stdClass();
 		$dataMenu->id = $currentMenu->id;
@@ -6333,10 +6343,13 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$dataMenu->menutype = $currentMenu->menutype;
 
 		if (!$menuModel->save((array) $dataMenu)) {
-			throw new RuntimeException(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_URL'));
+			throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_URL'));
 		}
 
-		return true;
+		$itemId = $menuModel->getState('item.id');
+		$newPath = $menuModel->getItem($itemId)->path;
+
+		return $newPath;
 	}
 
 	/**
