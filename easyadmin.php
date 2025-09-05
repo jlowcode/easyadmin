@@ -4746,7 +4746,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$dataList['label'] = $data['name_list'];
-		$dataList['introduction'] = $data['description_list'];
+		$desc = $data['description_list'];
+		$desc = preg_replace('/<p>\s*<\/p>/', '', $desc);
+		$dataList['introduction'] = strip_tags($desc, '<p><br><b><i><u><strong><em><a>');
 		//$dataList['order_by'] = array($data['ordering_list']);			//Updated by input data order_by (js)
 		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
 		$dataList['access'] = $viewLevel;
