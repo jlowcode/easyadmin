@@ -4898,6 +4898,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
+		$listId = $data['listid'];
+
 		$response = new stdClass;
 		switch ($mode) {
 			case 'list':
@@ -6231,7 +6233,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Getter method to modalParams variable
-	 *
+	 * 
 	 * @return  	String
 	 * 
 	 * @since 		version 4.2
@@ -6243,12 +6245,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 	/**
 	 * Setter method to define the URL element for the list
-	 *
+	 * 
 	 * @param		Array		$elements			Reference to all elements
 	 * @param		String		$nameElement		Identity of the element to generate the URL input
-	 *
+	 * 
 	 * @return		Null
-	 *
+	 * 
 	 * @since		version 4.3.4
 	 */
 	private function setElementUrlList(&$elements, $nameElement) 
