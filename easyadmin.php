@@ -3652,6 +3652,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['textarea_field_type'] = 'MEDIUMTEXT';
 					$params['use_wysiwyg'] = $data['format_long_text'];
 					$params['height'] = '6';
+					$params['wysiwyg_extra_buttons'] = '0';
 
 					if($data['format_long_text']) {
 						$params['height'] = '20';
