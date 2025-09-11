@@ -4532,6 +4532,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$optsForm[$key] = json_decode($optsForm[$key], true);
 				$optsForm[$key]['jump_page'] = $jumpPage;
 				$optsForm[$key]['redirect_conditon'] = $redirectCond;
+				$optsForm[$key]['apply_button1'] = '0';
 				$pluginsForm['plugin'] = $optsForm[$key]['plugins'];
 				$pluginsForm['plugin_locations'] = $optsForm[$key]['plugin_locations'];
 				$pluginsForm['plugin_events'] = $optsForm[$key]['plugin_events'];
