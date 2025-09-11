@@ -3771,6 +3771,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['fabrikdatabasejoin_frontend_add'] =  '0';
 
 				$params['database_join_display_type'] = $data['multi_relation'] ? 'checkbox' : 'auto-complete';
+				$params['databasejoin_popupform'] = $this->getIdPopupForm($data['listas']);
 
 				if($data['use_filter']) {
 					$type == 'autocomplete' ? $opts['filter_type'] = 'auto-complete' : $opts['filter_type'] = 'treeview';
@@ -3808,10 +3809,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$params['fabrikdatabasejoin_frontend_blank_page'] =  '0';
 					$params['join_popupwidth'] =  '80%';
 					$params['rollover'] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ROLLOVER_DATABASEJOIN");
-					$params['databasejoin_popupform'] = $this->getIdPopupForm($data['listas']);
 					$params['moldTags'] = '0';
 				}
-
+				
 				break;
 
 			case 'thumbs':
@@ -4299,7 +4299,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$optsGroup['id'] = (string) $opts['group_id_old'];
 		}
 
-		$optsGroup['name'] = $opts['label'];
+		if (empty($opts['name'])) {
+			$opts['name'] = $opts['label'];
+		}
+
+		$optsGroup['name'] = $opts['name'];
+		$optsGroup['label'] = $opts['name'];
 		$optsGroup['published'] = $trash ? '0' : '1';
 		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
 
@@ -4746,9 +4751,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$dataList['label'] = $data['name_list'];
-		$desc = $data['description_list'];
-		$desc = preg_replace('/<p>\s*<\/p>/', '', $desc);
-		$dataList['introduction'] = strip_tags($desc, '<p><br><b><i><u><strong><em><a>');
+		$dataList['introduction'] = $data['description_list'];
 		//$dataList['order_by'] = array($data['ordering_list']);			//Updated by input data order_by (js)
 		//$dataList['order_dir'] = array($data['ordering_type_list']);		//Updated by input data order_dir (js)
 		$dataList['access'] = $viewLevel;
