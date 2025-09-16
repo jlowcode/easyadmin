@@ -4299,12 +4299,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$optsGroup['id'] = (string) $opts['group_id_old'];
 		}
 
-		if (empty($opts['name'])) {
-			$opts['name'] = $opts['label'];
-		}
-
-		$optsGroup['name'] = $opts['name'];
-		$optsGroup['label'] = $opts['name'];
+		$optsGroup['name'] = $opts['label'];
+		$optsGroup['label'] = $opts['label'];
 		$optsGroup['published'] = $trash ? '0' : '1';
 		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "2";
 
@@ -4339,6 +4335,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$optsGroup['id'] = (string) $opts['group_id_old'];
 		}
 
+		$optsGroup['label'] = '';
 		$optsGroup['name'] = $opts['label'];
 		$optsGroup['published'] = $trash ? '0' : '1';
 		$optsGroup['params']['repeat_group_show_first'] = $opts['published'] == '0' ? '0' : "1";
@@ -4361,7 +4358,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	{
 		$modelGroup = new FabrikAdminModelGroup();
 
-		$optsGroup['label'] = '';
 		$optsGroup['is_join'] = "0";
 		$optsGroup['tags'] = Array();
 
