@@ -861,13 +861,14 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				div.append(editListButton);
 			}
 
+			qtnElementsTrash = Object.keys(allElements.trash).length;
 			jQuery.each(allElements, function(state, elements) {
 				if(state == 'trash') {
 					var liSubTitle = jQuery('<li style="font-size: 12px; margin: 10px 0px 0px 8px;"></li>')
 						.appendTo(divTrash);
 						jQuery(self.options.images.trash).appendTo(liSubTitle);
 					var sub = jQuery('<b>')
-						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH"))
+						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH") + ' (' + qtnElementsTrash + ')')
 						.css({
 							'padding-left': '5px',
 							'color': '#011627',
@@ -1062,6 +1063,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				});
 			}
 
+			qtnElementsTrash = Object.keys(allElements.trash).length;
 			jQuery.each(allElements, function(state, elements) {
 				var state = state;
 				if(state == 'trash') {
@@ -1069,7 +1071,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						.appendTo(divTrash);
 					jQuery(self.options.images.trash).appendTo(liSubTitle);
 					var sub = jQuery('<b>')
-						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH"))
+						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH") + ' (' + qtnElementsTrash + ')')
 						.css({
 							'padding-left': '5px',
 							'color': '#011627',
