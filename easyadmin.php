@@ -3566,7 +3566,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$nameEl = $this->formatValue($data['name']);
 
 		// If the user change the type we need create a new element and send to trash the old one
-		if($data['valIdEl'] != '0' && $data['history_type'] != $data['type'] && !empty($data['history_type'])) {
+		if($this->isChangeType($data) && $data['valIdEl'] != '0') {
 			$oldId = $data['valIdEl'];
 			$data['valIdEl'] = '0';
 
@@ -4051,6 +4051,41 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		return json_encode($validate);
 	}
+
+	/**
+	 * Checks if the element has changed type and needs to be recreated
+	 * 
+	 * @param		array			$data			Request data
+	 * 
+	 * @return		boolean
+	 * 
+	 * @since
+	 */
+	private function isChangeType($data): bool
+	{
+		if($data['valIdEl'] == '0') {
+			return true;
+		}
+
+		if($data['history_type'] != $data['type'] && !empty($data['history_type'])) {
+
+			$sameElement = [
+				'dropdown'     => 'tags',
+				'tags'         => 'dropdown',
+				'autocomplete' => 'treeview',
+				'treeview'     => 'autocomplete',
+			];
+
+			if (isset($sameElement[$data['history_type']]) && $sameElement[$data['history_type']] === $data['type']) {
+				return false;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 
 	/**
 	 * This method format the options selected to dropdown element
