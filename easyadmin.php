@@ -3623,8 +3623,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['default'] = $data['default_value'];
 				$opts['plugin'] = 'field';
 
-				$data['use_filter'] ? $opts['filter_type'] = 'auto-complete' : null;
 				$params['field_use_number_format'] = $data['text_format'] == 'decimal' ? '1' : '0';
+
+				if($data['use_filter']) {
+					$opts['filter_type'] = 'auto-complete';
+				}
 
 				if($type == 'text') {
 					if(in_array($data['text_format'], ['integer', 'decimal'])) {
@@ -3646,7 +3649,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 				if($type == 'longtext') {
 					$opts['plugin'] = 'textarea';
-					$opts['filter_type'] = 'field';
+
+					if($data['use_filter']) {
+						$opts['filter_type'] = 'field';
+					}
 
 					$params['bootstrap_class'] = 'col-sm-12';
 					$params['textarea_field_type'] = 'MEDIUMTEXT';
