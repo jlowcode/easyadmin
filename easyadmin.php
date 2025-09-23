@@ -239,16 +239,21 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$app = Factory::getApplication();
 		$input = $app->input;
 		
+		$task = $input->get('task');
+		$format = $input->get('format');
+		$view = $input->get('view');
+		$plugin = $input->get('plugin');
+
 		if(
-			strpos($input->get('task'), 'filter') > 0 ||
-			strpos($input->get('task'), 'order') > 0 ||
-			$input->get('format') == 'csv' ||
-			$input->get('format') == 'pdf' ||
-			$input->get('view') == 'article' ||
-			$input->get('task') == 'list.delete' ||
-			in_array('form', explode('.', $input->get('task'))) &&
-			($input->get('plugin') != 'easyadmin' || $input->get('view') != 'list') ||
-			($input->get('view') == 'plugin' && $input->get('plugin') != 'easyadmin') ||
+			strpos($task, 'filter') > 0 ||
+			strpos($task, 'order') > 0 ||
+			$format == 'csv' ||
+			$format == 'pdf' ||
+			$view == 'article' ||
+			$task == 'list.delete' ||
+			in_array('form', explode('.', $task)) &&
+			($plugin != 'easyadmin' || $view != 'list') ||
+			($view == 'plugin' && $plugin != 'easyadmin') ||
 			($input->get('action') == 'getFilhos') ||
 			isset($_REQUEST['resetfilters']) ||
 			Factory::getApplication()->isClient('administrator')
