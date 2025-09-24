@@ -4918,6 +4918,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		switch ($mode) {
 			case 'list':
 				// Settings to update url
+				$update = new stdClass();
 				$menuItem = $this->searchMenuItem();
 				$oldUrl = explode('/', ltrim($menuItem->route, '/'));
 				$oldUrl = $oldUrl[count($oldUrl)-1];
@@ -4928,6 +4929,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 					$newPath = $this->updateUrlMenu($newUrl);
 					$response->newUrl = $newPath;
 					$response->updateUrl = true;
+					$update->link = $newPath;
 				}
 
 				// Settings to update list's thumb
@@ -4940,12 +4942,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				}
 
 				// Settings to update adm_cloner_listas table
-				$update = new stdClass();
 				$update->name = $data['name_list'];
 				$update->description = $data['description_list'];
 				$update->id_lista = $listId;
 				$update->user = $data['owner_list'];
-				$update->link = "/" . ($updateLink ? $newPath : $oldUrl);
 				$update->status = $data['trash_list'] ? '0' : '1';
 				$update->miniatura = !empty($data['thumb_list']) ? $path . str_replace(' ', '_', $data['thumb_list']) : '';
 
