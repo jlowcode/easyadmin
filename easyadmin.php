@@ -3566,7 +3566,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$nameEl = $this->formatValue($data['name']);
 
 		// If the user change the type we need create a new element and send to trash the old one
-		if($this->isChangeType($data) && $data['valIdEl'] != '0') {
+		if($this->isChangeType($data)) {
 			$oldId = $data['valIdEl'];
 			$data['valIdEl'] = '0';
 
@@ -3968,12 +3968,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['params'] = $params;
 
 		if($opts['id'] != '0') {
-			$opts['id'] = $data['history_type'] != $data['type'] ? $oldId : $opts['id'];
+			$opts['id'] = $this->isChangeType($data) ? $oldId : $opts['id'];
 
 			$origName = $this->syncParams($opts, $listModel);
 			$input->set('name_orig', $origName);
 
-			$opts['id'] = $data['history_type'] != $data['type'] ? '0' : $opts['id'];
+			$opts['id'] = $this->isChangeType($data) ? '0' : $opts['id'];
 		}
 
 		$modelElement->getState(); 	//We need do this to set __state_set before the save
