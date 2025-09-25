@@ -3695,8 +3695,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_directory'] = 'images/stories/';
 				$params['image_library'] = 'gd2';
 				$params['fileupload_crop_dir'] = 'images/stories/crop';
-				$params['ul_max_file_size'] = '1048576';
-				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
 				$params['ajax_show_widget'] = '0';
 				$params['random_filename'] = '0';
