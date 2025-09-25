@@ -4545,7 +4545,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsForm['current_groups'] = array_keys($groupsForm);
 		$optsForm['database_name'] = $propertiesForm['db_table_name'];
 		$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{{$tableName}___{$relatedColumn}_raw}";
-		$redirectCond = 'return "{' . $tableName . '___' . $relatedColumn . '_raw}" != "" ? true : false;';
+		$redirectCond = '
+			use Joomla\CMS\Uri\Uri;
+			$uri = Uri::getInstance();
+			$var = $uri->getVar("' . $tableName . '___' . $relatedColumn . '_raw");
+			return $var != "{' . $tableNameActual . '___id}" ? true : false;
+		';
 
 		$pluginsForm = Array();
 		foreach ($propertiesForm as $key => $val) {
@@ -4570,7 +4575,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		if(!in_array('redirect', json_decode($propertiesForm['params'], true)['plugins'])) {
 			$pluginsForm['plugin'][] = 'redirect';
 			$pluginsForm['plugin_locations'][] = 'both';
-			$pluginsForm['plugin_events'][] = 'both';
+			$pluginsForm['plugin_events'][] = 'new';
 			$pluginsForm['plugin_description'][] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_PLUGIN_REDIRECT_DESC");
 			$pluginsForm['plugin_state'][] = '1';
 		}
