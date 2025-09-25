@@ -4528,12 +4528,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$optsForm['current_groups'] = array_keys($groupsForm);
 		$optsForm['database_name'] = $propertiesForm['db_table_name'];
 		$jumpPage = "/" . explode('/', trim(FabrikWorker::goBackAction(), '"\''))[3] . "/details/{$idForm}/{{$tableName}___{$relatedColumn}_raw}";
-		$redirectCond = '
-			use Joomla\CMS\Uri\Uri;
-			$uri = Uri::getInstance();
-			$var = $uri->getVar("' . $tableName . '___' . $relatedColumn . '_raw");
-			return $var != "{' . $tableNameActual . '___id}" ? true : false;
-		';
+		$redirectCond = 'return "{' . $tableName . '___' . $relatedColumn . '_raw}" != "" ? true : false;';
 
 		$pluginsForm = Array();
 		foreach ($propertiesForm as $key => $val) {
