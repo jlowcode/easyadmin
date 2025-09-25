@@ -3566,7 +3566,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$nameEl = $this->formatValue($data['name']);
 
 		// If the user change the type we need create a new element and send to trash the old one
-		if($this->mustChangeType($data) && $data['valIdEl'] != '0') {
+		if($this->mustChangeType($data)) {
 			$oldId = $data['valIdEl'];
 			$data['valIdEl'] = '0';
 
@@ -3577,11 +3577,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$optsOld['params'] = json_decode($element->getParams(), true);
 			$optsOld['validationrule'] = $optsOld['params']['validations'];
 			$this->syncParams($optsOld, $listModel);
-			$modelElement->getState(); 	//We need do this to set __state_set before the save
+			$modelElement->getState();
 			$modelElement->save($optsOld);
 
 			$nameEl = $this->checkNameElementToChangeType($nameEl, $listModel);
-			$elChangedType = true;
+			$elChangedType = true;	
 		}
 
 		$opts['easyadmin'] = true;
@@ -4063,12 +4063,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function mustChangeType($data): bool
 	{
-		if($data['valIdEl'] == '0') {
-			return true;
-		}
-
-		if($data['history_type'] != $data['type'] && !empty($data['history_type'])) {
-
+		if($data['valIdEl'] != '0' && $data['history_type'] != $data['type'] && !empty($data['history_type'])){
 			$sameElement = [
 				'dropdown'     => 'tags',
 				'tags'         => 'dropdown',
