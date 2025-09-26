@@ -29,6 +29,7 @@ use Joomla\CMS\Editor\Editor;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\User\UserFactoryInterface;
+use Fabrik\Helpers\Uploader;
 
 // Requires 
 // Change to namespaces on F5
@@ -110,7 +111,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 			$this->setListModel($listModel);
 			$this->setSubject($subject);
-			$this->setModalParams();
 
 			if(!$requestWorkflow) {
 				$this->setElements();
@@ -4808,7 +4808,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		if(!$validate->error) {
 			try {
-				$responseExtras = $this->extras($data, 'list');
+				$responseExtras = $this->saveExtraConfigurationList($data);
 			} catch (\Throwable $e) {
 				$validate->error = true;
 				$validate->message = $e->getMessage();
@@ -4893,65 +4893,95 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	}
 
 	/**
-	 * This method execute extras configuration when we save the modal
+	 * This method execute extras configuration when we save the list modal
 	 * 
-	 * @param		Array			$data				The data sent
-	 * @param		String			$mode				List modal or element modal?
+	 * @param		array			$data				The data sent
 	 * 
-	 * @return 		Object
+	 * @return 		object
 	 * 
 	 * @since 		version 4.0
 	 */
-	private function extras($data, $mode)
+	private function saveExtraConfigurationList($data)
 	{
-		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
 		$listId = $data['listid'];
-
 		$response = new stdClass;
-		switch ($mode) {
-			case 'list':
-				// Settings to update url
-				$update = new stdClass();
-				$menuItem = $this->searchMenuItem();
-				$oldUrl = explode('/', ltrim($menuItem->route, '/'));
-				$oldUrl = $oldUrl[count($oldUrl)-1];
+		$update = new stdClass();
 
-				$newUrl = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
-				$updateLink = $newUrl != $oldUrl;
-				if ($updateLink) {
-					$newPath = $this->updateUrlMenu($newUrl);
-					$response->newUrl = $newPath;
-					$response->updateUrl = true;
-					$update->link = $newPath;
-				}
+		$menuItem = $this->searchMenuItem();
+		$oldUrl = explode('/', ltrim($menuItem->route, '/'));
+		$oldUrl = $oldUrl[count($oldUrl)-1];
 
-				// Settings to update list's thumb
-				$listModel->setId('1');
-				$els = $listModel->getElements();
-				foreach ($els as $el) {
-					if($el->getElement()->name == 'miniatura') {
-						$path = $el->getParams()->get('ul_directory');
-					}
-				}
-
-				// Settings to update adm_cloner_listas table
-				$update->name = $data['name_list'];
-				$update->description = $data['description_list'];
-				$update->id_lista = $listId;
-				$update->user = $data['owner_list'];
-				$update->status = $data['trash_list'] ? '0' : '1';
-				$update->miniatura = !empty($data['thumb_list']) ? $path . str_replace(' ', '_', $data['thumb_list']) : '';
-
-				$db->updateObject('adm_cloner_listas', $update, 'id_lista');
-				break;
-			
-			case 'element':
-				break;
+		$newUrl = trim(strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', iconv('UTF-8', 'ASCII//TRANSLIT', $data['url_list'])), '-')), '_');
+		$updateLink = $newUrl != $oldUrl;
+		if ($updateLink) {
+			$newPath = $this->updateUrlMenu($newUrl);
+			$response->newUrl = $newPath;
+			$response->updateUrl = true;
+			$update->link = $newPath;
 		}
 
+		// Settings to update adm_cloner_listas table
+		$update->name = $data['name_list'];
+		$update->description = $data['description_list'];
+		$update->id_lista = $listId;
+		$update->user = $data['owner_list'];
+		$update->status = $data['trash_list'] ? '0' : '1';
+		$update->miniatura = $this->getFullPathForThumbListElement($data['thumb_list']);
+
+		$db->updateObject('adm_cloner_listas', $update, 'id_lista');
+
 		return $response;
+	}
+
+	/**
+	 * This method provide the full path with file name clenead to store in database
+	 * 
+	 * @param 		string		$file		File name to clean and join with file path
+	 * 
+	 * @return		string
+	 */
+	private function getFullPathForThumbListElement($file)
+	{
+		$listModel = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
+
+		if(empty($file)) {
+			return '';
+		}
+
+		$modalParams = json_decode($this->getModalParams(), true);
+		$listModel->setId($modalParams['list']);
+		$elementsModal = $listModel->getElements('id');
+		$idEl = $modalParams['elementsId']['thumb_list'];
+		$elThumb = $elementsModal[$idEl];
+
+		$params = $elThumb->getParams();
+		$storage  = $elThumb->getStorage();
+		$fileName = $storage->cleanName($file, 0);
+
+		$path = $params->get('ul_directory');
+		$filePath = $path . $fileName;
+
+		if(!$storage->exists($filePath) || $params->get('ul_file_increment', 0) != 1) {
+			return $filePath;
+		}
+
+		$filePath = Uploader::incrementFileName($filePath, $filePath, 1, $storage);
+		if(preg_match('/^(.*?)(\d+)(\.[^.]+)$/', $filePath, $matches)) {
+			$base = $matches[1];
+			$num  = (int) $matches[2];
+			$ext  = $matches[3];
+
+			$num--;
+			if($num < 1) {
+				$filePath = $base . $ext;
+			} else {
+				$filePath = $base . $num . $ext;
+			}
+		}
+
+		return $filePath;
 	}
 
 	/**
@@ -6222,11 +6252,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * Setter method to modal params variable
 	 * 
-	 * @return  	Null
+	 * @return  	array
 	 * 
 	 * @since 		version 4.2
 	 */
-	public function setModalParams() 
+	public function getModalParams() 
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
@@ -6237,19 +6267,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$db->setQuery($query);
 		$modalParams = $db->loadResult();
 
-		$this->modalParams = $modalParams;
-	}
-
-	/**
-	 * Getter method to modalParams variable
-	 * 
-	 * @return  	String
-	 * 
-	 * @since 		version 4.2
-	 */
-	public function getModalParams()
-	{
-		return $this->modalParams;
+		return $modalParams;
 	}
 
 	/**
