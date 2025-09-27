@@ -4059,24 +4059,26 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @since
 	 */
-	private function mustChangeType($data): bool
-	{
-		if($data['valIdEl'] != '0' && $data['history_type'] != $data['type'] && !empty($data['history_type'])){
-			$sameElement = [
-				'dropdown'     => 'tags',
-				'tags'         => 'dropdown',
-				'autocomplete' => 'treeview',
-				'treeview'     => 'autocomplete',
-			];
-
-			if (isset($sameElement[$data['history_type']]) && $sameElement[$data['history_type']] === $data['type']) {
-				return false;
-			}
-
-			return true;
+	private function mustChangeType($data): bool 
+	{ 
+		if (empty($data) || !is_array($data)) {
+        	return false;
+    	} 
+		if (!isset($data['valIdEl'], $data['history_type'], $data['type'])) {
+			return false;
 		}
+		if ($data['valIdEl'] == '0' || empty($data['history_type']) || $data['history_type'] == $data['type']) {
+			return false;
+		}
+		$sameElement = [ 
+			'dropdown' => 'tags', 
+			'autocomplete' => 'treeview', 
+		]; 
+		$areTypesCompatible = 
+        (isset($sameElement[$data['history_type']]) && $sameElement[$data['history_type']] === $data['type']) ||
+		(isset($sameElement[$data['type']]) && $sameElement[$data['type']] === $data['history_type']);
 
-		return false;
+		return !$areTypesCompatible;
 	}
 
 
