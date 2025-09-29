@@ -4061,22 +4061,21 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function mustChangeType($data): bool 
 	{ 
-		if (empty($data) || !is_array($data)) {
-        	return false;
-    	} 
-		if (!isset($data['valIdEl'], $data['history_type'], $data['type'])) {
+		$historyType = $data['history_type'];
+		$type = $data['type'];
+		
+		if ($data['valIdEl'] == '0' || empty($historyType) || $historyType == $type) {
 			return false;
 		}
-		if ($data['valIdEl'] == '0' || empty($data['history_type']) || $data['history_type'] == $data['type']) {
-			return false;
-		}
+		
 		$sameElement = [ 
 			'dropdown' => 'tags', 
 			'autocomplete' => 'treeview', 
 		]; 
+		
 		$areTypesCompatible = 
-        (isset($sameElement[$data['history_type']]) && $sameElement[$data['history_type']] === $data['type']) ||
-		(isset($sameElement[$data['type']]) && $sameElement[$data['type']] === $data['history_type']);
+			($sameElement[$historyType] ?? null) === $type ||
+			($sameElement[$type] ?? null) === $historyType;
 
 		return !$areTypesCompatible;
 	}
