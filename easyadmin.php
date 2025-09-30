@@ -4057,7 +4057,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 * 
 	 * @return		boolean
 	 * 
-	 * @since
+	 * @since		4.3.5
 	 */
 	private function mustChangeType($data): bool 
 	{ 
@@ -4073,9 +4073,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'autocomplete' => 'treeview', 
 		]; 
 		
-		$areTypesCompatible = 
-			($sameElement[$historyType] ?? null) === $type ||
-			($sameElement[$type] ?? null) === $historyType;
+		$areTypesCompatible = (($sameElement[$historyType] ?? null) === $type) || (($sameElement[$type] ?? null) === $historyType);
 
 		return !$areTypesCompatible;
 	}
