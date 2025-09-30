@@ -3571,7 +3571,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$nameEl = $this->formatValue($data['name']);
 
 		// If the user change the type we need create a new element and send to trash the old one
-		if($data['valIdEl'] != '0' && $data['history_type'] != $data['type'] && !empty($data['history_type'])) {
+		if($this->mustChangeType($data)) {
 			$oldId = $data['valIdEl'];
 			$data['valIdEl'] = '0';
 
@@ -3582,11 +3582,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$optsOld['params'] = json_decode($element->getParams(), true);
 			$optsOld['validationrule'] = $optsOld['params']['validations'];
 			$this->syncParams($optsOld, $listModel);
-			$modelElement->getState(); 	//We need do this to set __state_set before the save
+			$modelElement->getState();
 			$modelElement->save($optsOld);
 
 			$nameEl = $this->checkNameElementToChangeType($nameEl, $listModel);
-			$elChangedType = true;
+			$elChangedType = true;	
 		}
 
 		$opts['easyadmin'] = true;
@@ -3706,8 +3706,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$params['ul_directory'] = 'images/stories/';
 				$params['image_library'] = 'gd2';
 				$params['fileupload_crop_dir'] = 'images/stories/crop';
-				$params['ul_max_file_size'] = '1048576';
-				$params['ul_max_file_size'] = '1048576';
 				$params['ul_file_increment'] = '1';
 				$params['ajax_show_widget'] = '0';
 				$params['random_filename'] = '0';
@@ -3979,12 +3977,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts['params'] = $params;
 
 		if($opts['id'] != '0') {
-			$opts['id'] = $data['history_type'] != $data['type'] ? $oldId : $opts['id'];
+			$opts['id'] = $this->mustChangeType($data) ? $oldId : $opts['id'];
 
 			$origName = $this->syncParams($opts, $listModel);
 			$input->set('name_orig', $origName);
 
-			$opts['id'] = $data['history_type'] != $data['type'] ? '0' : $opts['id'];
+			$opts['id'] = $this->mustChangeType($data) ? '0' : $opts['id'];
 		}
 
 		$modelElement->getState(); 	//We need do this to set __state_set before the save
@@ -4062,6 +4060,35 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		return json_encode($validate);
 	}
+
+	/**
+	 * Checks if the element has changed type and needs to be recreated
+	 * 
+	 * @param		array			$data			Request data
+	 * 
+	 * @return		boolean
+	 * 
+	 * @since		4.3.5
+	 */
+	private function mustChangeType($data): bool 
+	{ 
+		$historyType = $data['history_type'];
+		$type = $data['type'];
+		
+		if ($data['valIdEl'] == '0' || empty($historyType) || $historyType == $type) {
+			return false;
+		}
+		
+		$sameElement = [ 
+			'dropdown' => 'tags', 
+			'autocomplete' => 'treeview', 
+		]; 
+		
+		$areTypesCompatible = (($sameElement[$historyType] ?? null) === $type) || (($sameElement[$type] ?? null) === $historyType);
+
+		return !$areTypesCompatible;
+	}
+
 
 	/**
 	 * This method format the options selected to dropdown element
