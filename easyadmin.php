@@ -3549,17 +3549,17 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function saveModalElements($data, $group_id, $listModel)
 	{
-		$db = Factory::getContainer()->get('DatabaseDriver');
 		$app = Factory::getApplication();
+		$db = Factory::getContainer()->get('DatabaseDriver');
 
-		$modelElement = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Element', 'FabrikAdminModel');
-		$modelForm = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Form', 'FabrikAdminModel');
+		$modelElement = new FabrikAdminModelElement();
+		$modelForm = new FabrikAdminModelForm();
+
 		$input = $app->input;
-
 		$elChangedType = false;
+
 		$labelElement = $data['name'];
 		$validate = $this->validateElements($data, $listModel);
-
 		if($validate->error) {
 			return json_encode($validate);
 		}
@@ -4395,7 +4395,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function newGroupToElements($listModel, $optsGroup, $new)
 	{
-		$modelGroup = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('Group', 'FabrikAdminModel');
+		$modelGroup = new FabrikAdminModelGroup();
 
 		$optsGroup['is_join'] = "0";
 		$optsGroup['tags'] = Array();
@@ -4426,7 +4426,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function moduleToElementRelatedList($listModel, &$opts, &$params, $trash=false) 
 	{
 		$modelModule = new ModuleModel();
-		$listModelRelated = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
+		$listModelRelated = new FabrikFEModelList();
 
 		$listModelRelated->setId($opts['related_list']);
 		$idRelatedList = $opts['related_list'];
@@ -4492,8 +4492,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	private function configureListToElementRelatedList($listModel, &$opts, &$params) 
 	{
-		$listModelRelated = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikAdminModel');
-		$listModelRelatedFE = Factory::getApplication()->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
+		$listModelRelated = new FabrikAdminModelList();
+		$listModelRelatedFE = new FabrikFEModelList();
 
 		$listModelRelatedFE->setId($opts['related_list']);
 		$tableName = $listModelRelatedFE->getTable()->get('db_table_name');
@@ -4527,13 +4527,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function configureFormToElementRelatedList($listModel, &$opts, &$params) 
 	{
 		$app = Factory::getApplication();
-
-		$formModelRelated = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Form', 'FabrikAdminModel');
-		$formModelRelatedFE = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Form', 'FabrikFEModel');
-		$listModelRelatedFE = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('List', 'FabrikFEModel');
-
 		$listModel->reset();
 		$input = $app->input;
+
+		$formModelRelated = new FabrikAdminModelForm();
+		$formModelRelatedFE = new FabrikFEModelForm();
+		$listModelRelatedFE = new FabrikFEModelList();
 
 		$listModelRelatedFE->setId($opts['related_list']);
 		$idFormRelated = $listModelRelatedFE->getFormModel()->getId();
@@ -4763,9 +4762,9 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$app = Factory::getApplication();
 		$input = $app->input;
 
-		$modelList = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Form', 'FabrikAdminModel');
-		$modelForm = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Form', 'FabrikAdminModel');
-		$formModel = $app->bootComponent('com_fabrik')->getMVCFactory()->createModel('Form', 'FabrikFEModel');
+		$modelList = new FabrikAdminModelList();
+		$modelForm = new FabrikAdminModelForm();
+		$formModel = new FabrikFEModelForm();
 
 		$formModel->setId($listModel->getFormModel()->getId());
 		$groupsForm = $formModel->getGroups();
