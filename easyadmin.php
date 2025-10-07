@@ -3876,21 +3876,24 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$opts['plugin'] = 'youtube';
 				$params['width'] = '30';
 				$params['player_size'] = 'medium';
+				$params['or_width_player'] = '100%';
+				$params['or_height_player'] = '100%';
 				$params['display_in_table'] = '2';
 				$params['youtube_autoplay'] = '0';
 
 				$params['php-message'][0] = Text::_("PLG_FABRIK_LIST_EASY_ADMIN_ERROR_YOUTUBE_LINK");
-				$params['php-code'][0] = '
-					if (filter_var($data, FILTER_VALIDATE_URL)) {
-						$domain = parse_url($data, PHP_URL_HOST);
-						$domain = strtolower($domain);
+				$params['php-code'][0] = <<<'END'
+				if (filter_var($data, FILTER_VALIDATE_URL)) {
+					$domain = parse_url($data, PHP_URL_HOST);
+					$domain = strtolower($domain);
 
-						if ((strpos($domain, "youtube.com") !== false || strpos($domain, "youtu.be") !== false) && !str_contains($data, "list=")) {
-							return true;
-						}
+					if ((strpos($domain, "youtube.com") !== false || strpos($domain, "youtu.be") !== false) && !str_contains($data, "list=")) {
+						return true;
 					}
+				}
 
-					return false;';
+				return false;
+				END;
 				$pluginValidation[] = 'php';
 				$publishedValidation[] = '1';
 				$validateInValidation[] = 'both';
