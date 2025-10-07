@@ -48,7 +48,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			self.setElementAdminsList();
 			self.setElementType();
-			//self.setElementVisibilityList();
+			self.setElementVisibilityList();
 			self.setElementApproveByVotes();
 			self.setElementShowInList();
 			self.setElementLabelAdvancedLink();
@@ -355,6 +355,61 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		},
 
 		/**
+		 * Function that set the list members element to take the members users
+		 * 
+		 */
+		setElementMembersList: function () {
+			var data = {};
+			var viewLevel = jQuery('#easyadmin_modal___viewLevel_list_view').val();
+			var url = this.options.baseUri + "index.php?option=com_fabrik&format=raw&task=plugin.pluginAjax&g=list&plugin=easyadmin&method=getUsersMembers";
+
+			data['viewLevel'] = viewLevel;
+
+			// We don't need to run the ajax if the select2 already has the options
+			var select2 = document.querySelectorAll('[name="easyadmin_modal___members_list[]"]');
+			if(select2[0].options.length > 0) {
+				return;
+			}
+
+			jQuery.ajax({
+				url     : url,
+				method	: 'post',
+				data: data,
+			}).done(function (r) {
+				var select2 = document.querySelectorAll('[name="easyadmin_modal___members_list[]"]');
+				var valuesCheck = [];
+				r = JSON.parse(r);
+
+				for (var i = 0; i < select2[0].options.length; i++) {
+					valuesCheck.push(select2[0].options[i].value);
+				}
+
+				for (const key of r) {
+					if(!valuesCheck.includes(key['id'])) {
+						var values = [];
+						newOption = new Option(key['name'], key['id'], false, false);
+		
+						jQuery(select2).append(newOption).trigger('change');
+						for (var i = 0; i < select2[0].options.length; i++) {
+							values.push(select2[0].options[i].value);
+						}
+						jQuery(select2).val(values).trigger('change');
+					}	
+				}
+			}).fail(function (jq, status, error) {
+				var message = {
+					url: url,
+					data: data,
+					error: error,
+					status: status,
+					jq: jq
+				};
+
+				self.saveLogs(message);
+			});
+		},
+
+		/**
 		 * Function that set the events to type element
 		 * 
 		 */
@@ -405,7 +460,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 		/**
 		 * Function that set the events to visibility list element
-		 * Function don't needed
 		 * 
 		 */
 		setElementVisibilityList: function() {
@@ -1201,6 +1255,11 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			});
 		},
 
+		/**
+		 * Function that sort the columns of the table
+		 * 
+		 * @return  	void
+		 */
 		sortColumns: function () {
 			var self = this;
 			var data = {};
@@ -1287,6 +1346,13 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			});
 		},
 
+		/**
+		 * Function that get the order of the columns of the table
+		 * 
+		 * @param		object			$table		Table object
+		 * 
+		 * @return  	array
+		 */
 		getColumnOrder: function (table) {
 			// Select the first row of the table header
 			const headerRow = table.querySelector("thead tr");

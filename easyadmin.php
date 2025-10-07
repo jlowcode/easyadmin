@@ -616,7 +616,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$elements = Array(
 			'elements' => ['list', 'options_dropdown'],
-			'elementsList' => ['admins_list', 'owner_list', 'thumb_list']
+			'elementsList' => ['admins_list', 'members_list', 'owner_list', 'thumb_list']
 		);
 		$srcs = array_merge(
 			array(
@@ -649,7 +649,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 						$plugin = 'ElementDropdown';
 						$nameFile = 'dropdown';
 						break;
-					
+
 					case 'thumb_list':
 						$plugin = 'ElementFileupload';
 						$nameFile = 'fileupload';
@@ -858,6 +858,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function setUpFooter($type) 
 	{
 		$viewLevelList = (int) $this->getListModel()->getParams()->get('allow_edit_details');
+		$viewLevelListView = (int) $this->getListModel()->get('access');
 
 		$footer = '<div class="d-flex">';
 		$footer .= 	'<button class="btn btn-easyadmin-modal" id="easyadmin_modal___submit_' . $type . '" data-dismiss="modal" aria-hidden="true" style="margin-right: 10px">' . Text::_("JAPPLY") . '</button>';
@@ -868,6 +869,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		
 		$footer .=  '<input type="hidden" id="easyadmin_modal___history_type" name="history_type" value="">';
 		$footer .=  '<input type="hidden" id="easyadmin_modal___viewLevel_list" name="viewLevel_list" value="' . $viewLevelList . '">';
+		$footer .=  '<input type="hidden" id="easyadmin_modal___viewLevel_list_view" name="viewLevel_list_view" value="' . $viewLevelListView . '">';
 
 		$footer .= '</div>';
 
@@ -1033,6 +1035,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementOrderingList($elementsList, 'ordering_list');
 		$this->setElementOrderingTypeList($elementsList, 'ordering_type_list');
 		$this->setElementVisibilityList($elementsList, 'visibility_list');
+		$this->setElementMembersList($elementsList, 'members_list');
 		$this->setElementAdminsList($elementsList, 'admins_list');
 		$this->setElementOwnerList($elementsList, 'owner_list');
 		$this->setElementWidthList($elementsList, 'width_list');
@@ -1747,7 +1750,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elContextModelElement = Array('name' => 'admins_list');
 		$elContextTableElement = Array('label' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_LABEL'));
 		$elContextTableJoin = Array('table_join' => '#__users', 'table_key' => 'id');
-		$params = new Registry(json_encode(Array(
+		$params = new Registry(json_encode([
 			'database_join_display_type' => 'checkbox',
 			'database_join_display_style' => 'only-autocomplete',
 			'join_db_name' => '#__users',
@@ -1756,7 +1759,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'database_join_show_please_select' => '1',
 			'dbjoin_autocomplete_rows' => 10,
 			'database_join_where_sql' => ''
-		)));
+		]));
 
 		$objDatabasejoin->setParams($params, 0);
 		$objDatabasejoin->setEditable(true);
@@ -1773,10 +1776,67 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
 
 		$elements[$id]['dataLabel'] = $this->getDataLabel(
-			$id, 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_LABEL'), 
-			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_DESC'), 
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ADMINS_LIST_DESC'),
 			Array(),
+			false,
+			'list'
+		);
+		$elements[$id]['dataField'] = Array();
+	}
+
+	/**
+	 * Setter method to list members element
+	 *
+	 * @param   	array 		$elements			Reference to all elements
+	 * @param		string		$nameElement		Identity of the element
+	 *
+	 * @return  	void
+	 *
+	 * @since 		version 4.3.5
+	 */
+	private function setElementMembersList(&$elements, $nameElement)
+	{
+		$subject = $this->getSubject();
+		$objDatabasejoin = new PlgFabrik_ElementDatabasejoin($subject);
+
+		$id = $this->prefixEl . '___' . $nameElement;
+		$showOnTypes = ['list-visibility_list'];
+
+		$elContextModelElement = Array('name' => $nameElement);
+		$elContextTableElement = Array('label' => Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MEMBERS_LIST_LABEL'));
+		$elContextTableJoin = Array('table_join' => '#__users', 'table_key' => 'id');
+		$params = new Registry(json_encode([
+			'database_join_display_type' => 'checkbox',
+			'database_join_display_style' => 'only-autocomplete',
+			'join_db_name' => '#__users',
+			'join_val_column' => 'name',
+			'join_key_column' => 'id',
+			'database_join_show_please_select' => '1',
+			'dbjoin_autocomplete_rows' => 10,
+			'database_join_where_sql' => ''
+		]));
+
+		$objDatabasejoin->setParams($params, 0);
+		$objDatabasejoin->setEditable(true);
+		$objDatabasejoin->getListModel()->getTable()->bind(Array('db_table_name' => 'easyadmin_modal'));
+		$objDatabasejoin->getFormModel()->getTable()->bind(Array('record_in_database' => '1'));
+		$objDatabasejoin->getFormModel()->getData();
+		$objDatabasejoin->getJoinModel()->getJoin()->bind($elContextTableJoin);
+		$objDatabasejoin->getElement()->bind($elContextTableElement);
+		$objDatabasejoin->bindToElement($elContextModelElement);		
+		$objDatabasejoin->jsJLayout();
+		$json = json_encode($objDatabasejoin->elementJavascript(0));
+
+		$elements[$id]['objField'] = $objDatabasejoin;
+		$elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+		$elements[$id]['dataLabel'] = $this->getDataLabel(
+			$id,
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MEMBERS_LIST_LABEL'),
+			Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_MEMBERS_LIST_DESC'),
+			$showOnTypes,
 			false,
 			'list'
 		);
@@ -5029,7 +5089,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$db->setQuery("SELECT `rules` FROM `#__viewlevels` WHERE `id` = $viewLevel;");
 		$rules = json_decode($db->loadResult());
-		unset($rules[array_search('8', $rules)]); // Dont show super users
+		unset($rules[array_search('8', $rules)]); // Don't show super users
 
 		$groupId = $rules[0];
 		$data = Array();
@@ -5051,7 +5111,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			}
 		}
 
-		//Removing users
+		// Removing users
 		foreach ($usersExclused as $idUser) {
 			$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($idUser);
 			$groups = array_keys($user->groups);
@@ -5269,7 +5329,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$db->setQuery("SELECT `rules` FROM `#__viewlevels` WHERE `id` = $viewLevel;");
 		$rules = json_decode($db->loadResult());
-		unset($rules[array_search('8', $rules)]); // Dont show super users
+		unset($rules[array_search('8', $rules)]); // Don't show super users
 
 		$query = $db->getQuery(true);
 		$query->select(['u.'.$db->qn('id'), 'u.'.$db->qn('name')])
@@ -5279,13 +5339,55 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$db->setQuery($query);
 		$users = $db->loadObjectList();
 
-		/**
-		 * If we are a ajax request send the json users, if not return the users object
-		 */
+		return $this->returnUsers($users, $req);
+	}
+
+	/**
+	 * Method that returns the members users of the list 
+	 * 
+	 * @param		string				$viewLevel		View level to search the users related
+	 * 
+	 * @return  	void|array
+	 * 
+	 * @since 		version 4.3.5
+	 */
+	public function onGetUsersMembers($viewLevel=null)
+	{
+		$db = Factory::getContainer()->get('DatabaseDriver');
+
+		$req = $viewLevel ? false : true;
+		$viewLevel = $req ? $_POST['viewLevel'] : $viewLevel;
+
+		$db->setQuery("SELECT `rules` FROM `#__viewlevels` WHERE `id` = $viewLevel;");
+		$rules = json_decode($db->loadResult());
+		unset($rules[array_search('8', $rules)]); // Don't show super users
+
+		$query = $db->getQuery(true);
+		$query->select(['u.'.$db->qn('id'), 'u.'.$db->qn('name')])
+			->from($db->qn('#__users') . ' AS u')
+			->join('LEFT', $db->qn('#__user_usergroup_map') . ' AS ug_map ON ug_map.' . $db->qn('user_id') . ' = u.' . $db->qn('id'))
+			->where('ug_map.' . $db->qn('group_id') . ' IN ("' . implode('","', $rules) . '")');
+		$db->setQuery($query);
+		$users = $db->loadObjectList();
+
+		return $this->returnUsers($users, $req);
+	}
+
+	/**
+	 * This method return the users
+	 * 
+	 * @param		array			$users		Users data
+	 * @param		boolean			$req		Is a ajax request or not
+	 * 
+	 * @return  	void|array
+	 * 
+	 */
+	function returnUsers($users, $req)
+	{
 		if($req) {
 			echo json_encode($users);
 		} else {
-			$idsUsers = Array();
+			$idsUsers = [];
 			foreach ($users as $user) {
 				$idsUsers[] = $user->id;
 			}
