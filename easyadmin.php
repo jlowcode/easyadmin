@@ -1601,7 +1601,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$options = Array(
 			'0' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_0"),
 			'1' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_1"),
-			'4' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_4")
+            '4' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_4"),
+			'5' => Text::_("COM_FABRIK_LAYOUT_MODE_OPTION_5")
 		);
 
 		foreach ($elsList as $el) {
