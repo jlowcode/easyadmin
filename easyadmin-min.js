@@ -1049,8 +1049,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
 			if(self.options.owner_id == self.options.user.id || self.options.isAdmin) {
-				jQuery('.header-title button:not(.btn-share)').remove();
-				jQuery(editListButton).insertBefore('.header-title .btn-share').css({
+				jQuery('.header-title #button_modal-list').remove();
+				jQuery('.header-title h1').after(editListButton);
+				jQuery('#button_modal-list').css({
 					'margin-left': '24px',
 					'background-color': 'rgba(220, 226, 249, 1)',
 					'border-radius': '50%',
