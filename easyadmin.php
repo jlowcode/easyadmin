@@ -4998,21 +4998,25 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			return $filePath;
 		}
 
-		$filePath = Uploader::incrementFileName($filePath, $filePath, 1, $storage);
-		if(preg_match('/^(.*?)(\d+)(\.[^.]+)$/', $filePath, $matches)) {
+		$filePathNew = Uploader::incrementFileName($filePath, $filePath, 1, $storage);
+        if(!$storage->exists($filePathNew)) {
+            return $filePath;
+        }
+
+		if(preg_match('/^(.*?)(\d+)(\.[^.]+)$/', $filePathNew, $matches)) {
 			$base = $matches[1];
 			$num  = (int) $matches[2];
 			$ext  = $matches[3];
 
 			$num--;
 			if($num < 1) {
-				$filePath = $base . $ext;
+				$filePathNew = $base . $ext;
 			} else {
-				$filePath = $base . $num . $ext;
+				$filePathNew = $base . $num . $ext;
 			}
 		}
 
-		return $filePath;
+		return $filePathNew;
 	}
 
 	/**
