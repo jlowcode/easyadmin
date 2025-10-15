@@ -56,7 +56,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			self.setUpButtonsPainel();
 			self.setUpElementList();
 			self.sortColumns();
-			self.initShareButton();
 
 			if(window.location.search.indexOf('manage') > 0) {
 				jQuery("#button_" + self.options.idModalList).trigger('click');
@@ -862,13 +861,14 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				div.append(editListButton);
 			}
 
+			qtnElementsTrash = Object.keys(allElements.trash).length;
 			jQuery.each(allElements, function(state, elements) {
 				if(state == 'trash') {
 					var liSubTitle = jQuery('<li style="font-size: 12px; margin: 10px 0px 0px 8px;"></li>')
 						.appendTo(divTrash);
 						jQuery(self.options.images.trash).appendTo(liSubTitle);
 					var sub = jQuery('<b>')
-						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH"))
+						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH") + ' (' + qtnElementsTrash + ')')
 						.css({
 							'padding-left': '5px',
 							'color': '#011627',
@@ -1049,8 +1049,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
 			if(self.options.owner_id == self.options.user.id || self.options.isAdmin) {
-				jQuery('.header-title button:not(.btn-share)').remove();
-				jQuery(editListButton).insertBefore('.header-title .btn-share').css({
+				jQuery('.header-title #button_modal-list').remove();
+				jQuery('.header-title h1').after(editListButton);
+				jQuery('#button_modal-list').css({
 					'margin-left': '24px',
 					'background-color': 'rgba(220, 226, 249, 1)',
 					'border-radius': '50%',
@@ -1063,6 +1064,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				});
 			}
 
+			qtnElementsTrash = Object.keys(allElements.trash).length;
 			jQuery.each(allElements, function(state, elements) {
 				var state = state;
 				if(state == 'trash') {
@@ -1070,7 +1072,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 						.appendTo(divTrash);
 					jQuery(self.options.images.trash).appendTo(liSubTitle);
 					var sub = jQuery('<b>')
-						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH"))
+						.text(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_TRASH") + ' (' + qtnElementsTrash + ')')
 						.css({
 							'padding-left': '5px',
 							'color': '#011627',
@@ -1283,25 +1285,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				};
 
 				self.saveLogs(message);
-			});
-		},
-
-		initShareButton: function() {
-			jQuery(document).on('click', '.btn-share', function() {
-				const url = window.location.href;
-				const textArea = document.createElement('textarea');
-				textArea.value = url;
-				document.body.appendChild(textArea);
-				textArea.select();
-				
-				try {
-					document.execCommand('copy');
-					alert(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SHARE_COPIED"));
-				} catch (err) {
-					prompt(Joomla.JText._("PLG_FABRIK_LIST_EASY_ADMIN_SHARE_COPY_MANUALLY"), url);
-				}
-				
-				document.body.removeChild(textArea);
 			});
 		},
 
