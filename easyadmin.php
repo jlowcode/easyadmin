@@ -4950,7 +4950,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$newPath = $this->updateUrlMenu($newUrl);
 			$response->newUrl = $newPath;
 			$response->updateUrl = true;
-			$update->link = $newPath;
+			$update->link = '/' . $newPath;
 		}
 
 		// Settings to update adm_cloner_listas table
@@ -6383,11 +6383,11 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
 	 * This method updates the URL alias of the menu item related to a list
 	 * It finds the menu item linked to the list and sets a new alias based on the given URL
-	 * 
+	 *
 	 * @param		String 		$urlNew				The new URL alias to apply
-	 * 
+	 *
 	 * @return		string
-	 * 
+	 *
 	 * @since		v4.3.4
 	 */
 	private function updateUrlMenu($urlNew)
@@ -6410,9 +6410,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		}
 
 		$itemId = $menuModel->getState('item.id');
-		$newPath = $menuModel->getItem($itemId)->path;
-
-		return $newPath;
+        return $menuModel->getItem($itemId)->path;
 	}
 
 	/**
