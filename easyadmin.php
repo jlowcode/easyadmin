@@ -2301,9 +2301,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$options = Array();
 		$options['-1'] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_OPTION_FIRST');
 		foreach ($listModel->getElements('id') as $id => $element) {
-			if($element->getName() != 'PlgFabrik_ElementIp' && $element->getElement()->name != 'indexing_text') {
-				$options[$id] = $element->getElement()->label;
+			if (
+                $element->getName() == 'PlgFabrik_ElementIp' ||
+                $element->getElement()->name == 'indexing_text' ||
+                $element->getName() == 'PlgFabrik_ElementHits'
+            ) {
+                continue;
 			}
+
+            $options[$id] = $element->getElement()->label;
 		}
 		$options['-2'] = Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_ORDERING_ELEMENTS_OPTION_LAST');
 
