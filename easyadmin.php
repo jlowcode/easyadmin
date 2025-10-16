@@ -2289,11 +2289,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	/**
      * Get the elements that are in list to ordering it
 	 * 
-     * @return  	Array
-     *
-     * @since   	version 4.0.2
+     * @return array
+     * @since version 4.0.2
      */
-    public function getElementsToOrderingInList()
+    public function getElementsToOrderingInList(): array
     {
 		$listModel = $this->getListModel();
 		$listModel->setId($this->getListId());
