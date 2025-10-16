@@ -91,11 +91,10 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 		 * 
 		 */
 		setUpButtonsPainel: function () {
-			const heading = jQuery('th.heading.fabrik_ordercell.fabrik_actions')[0];
-			const btnGroup = this.options.actionMethod == 'inline' ? jQuery(heading).find('.btn-group')[0] : jQuery(heading).find('.dropdown-menu')[0];			
+			let elements = this.options.elements;
 
-			this.setButtons(this.options.elements.published);
-			this.setActionPanel(this.options.elements);
+			this.setButtons(elements.published);
+			this.setActionPanel(elements);
 			jQuery(document).ready(function () {
 				jQuery(document).off('mouseenter').on('mouseenter', '.heading.fabrik_ordercell', function () {
 					jQuery(this).find(":button.elementAdminButton").show();
@@ -777,7 +776,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 					var element = jQuery('th.' + links[key].fullname).children();
 					element.css({'display': 'flex'});
 					element.addClass("tooltip2");
-					this.createButton(key, element);
+					this.createButton(links[key].id, element);
 					element.css({
 						"min-width": "120px;"
 					});
@@ -878,6 +877,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				}
 			
 				jQuery.each(elements, function(index, value) {
+					index = value.id;
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
 					var li = jQuery('<li value="' + index + '" style="padding-left:10px; font-size: 12px; ' + display + '" class="' + classTrash +'"></li>')
@@ -1081,6 +1081,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				}
 
 				jQuery.each(elements, function(index, value) {
+					index = value.id;
 					var display = state == 'trash' ? 'display: none' : '';
 					var classTrash = state == 'trash' ? 'trashEl' : '';
 					var li = jQuery('<li value="' + index + '" style="font-size: 12px; ' + display + '" class="subMenuAdmin ' + classTrash + ' ' + value.fullname + '"></li>')

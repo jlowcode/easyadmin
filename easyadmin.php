@@ -130,10 +130,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 
 		$listModel = $this->getListModel();
 		$elements = $listModel->getElements(true, true, false);
-
-        uasort($elements, function($a, $b) {
-            return $a->getElement()->get('ordering') <=> $b->getElement()->get('ordering');
-        });
+        $this->sortElements($elements);
 
 		$workflowExist = $this->workflowExists();
 		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
@@ -307,6 +304,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$params = new JRegistry($plugin->params);
 		$ignoreElements = $params->get('easyadmin_ignore_elements', '');
 
+        $x = 0;
 		foreach($elements as $key => $element) {
 			$dataEl = new stdClass();
 			$fullElementName = $this->processFullElementName($key);
@@ -319,13 +317,15 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			$idElement = $element->getId();
 			$enable = $this->isEnabledEdit($element->getElement());
 
+            $dataEl->id = $idElement;
 			$dataEl->fullname = $fullElementName;
 			$dataEl->enabled = $enable;
 
 			$this->setDataElementToEditModal($dataEl, $element, $enable);
 
 			if($div) {
-				$dataEl->trash ? $processedElements->trash->$idElement = $dataEl : $processedElements->published->$idElement = $dataEl;
+				$dataEl->trash ? $processedElements->trash->$x = $dataEl : $processedElements->published->$x = $dataEl;
+                $x++;
 			} else {
 				$processedElements->$idElement = $dataEl;
 			}
@@ -6479,4 +6479,18 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$restrict = !(bool) $listModel->getFormModel()->getParams()->get('approve_for_own_records');
 		return $restrict;
 	}
+
+    /**
+     * This method sort the elements using ordering column. Also, it will put all elements that show in list options is set first
+     *
+     * @param array $elements List elements to sort
+     * @return void
+     * @since v4.3.5
+     */
+    private function sortElements(array &$elements): void
+    {
+        uasort($elements, function($a, $b) {
+            return $b->getElement()->get('show_in_list_summary') <=> $a->getElement()->get('show_in_list_summary') ?: $a->getElement()->get('ordering') <=> $b->getElement()->get('ordering');
+        });
+    }
 }
