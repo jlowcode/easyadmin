@@ -124,12 +124,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 *
 	 * @return  	Null
 	 */
-	protected function init() 
+	protected function init()
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
 
 		$listModel = $this->getListModel();
 		$elements = $listModel->getElements(true, true, false);
+
+        uasort($elements, function($a, $b) {
+            return $a->getElement()->get('ordering') <=> $b->getElement()->get('ordering');
+        });
 
 		$workflowExist = $this->workflowExists();
 		$workflow = $this->getListModel()->getParams()->get('workflow_list', '1') && $workflowExist;
@@ -306,15 +310,12 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		foreach($elements as $key => $element) {
 			$dataEl = new stdClass();
 			$fullElementName = $this->processFullElementName($key);
-
-			$params = $this->params;
 			$ignoreElementsArray = array_map('trim', explode(',', $ignoreElements));
 
 			if (in_array($this->processFullElementName($key, true), $ignoreElementsArray)) {
     			continue;
 			}
 
-			$link = $this->createLink($element->element->id);
 			$idElement = $element->getId();
 			$enable = $this->isEnabledEdit($element->getElement());
 
