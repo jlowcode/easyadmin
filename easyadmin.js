@@ -1059,8 +1059,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 					'padding': '0px',
 					'flex-shrink': '0',
 					'margin-right': '8px'
-				}).find('img').css({
-					'margin-bottom': '3px'
 				});
 			}
 
