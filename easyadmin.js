@@ -1052,13 +1052,13 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 				jQuery('.header-title #button_modal-list').remove();
 				jQuery('.header-title h1').after(editListButton);
 				jQuery('#button_modal-list').css({
-					'margin-left': '24px',
 					'background-color': 'rgba(220, 226, 249, 1)',
 					'border-radius': '50%',
 					'width': '40px',
 					'height': '40px',
 					'padding': '0px',
-					'flex-shrink': '0'
+					'flex-shrink': '0',
+					'margin-right': '8px'
 				}).find('img').css({
 					'margin-bottom': '3px'
 				});
