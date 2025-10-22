@@ -1049,17 +1049,16 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			this.setCssAndEventsButtons(editListButton, addElementButton);
             JBtnGroup.append(addElementButton);
 			if(self.options.owner_id == self.options.user.id || self.options.isAdmin) {
-				jQuery('.header-title button').remove();
-				jQuery('.header-title').append(editListButton).find('button').css({
-					'margin-left': '32px',
+				jQuery('.header-title #button_modal-list').remove();
+				jQuery('.header-title h1').after(editListButton);
+				jQuery('#button_modal-list').css({
 					'background-color': 'rgba(220, 226, 249, 1)',
 					'border-radius': '50%',
 					'width': '40px',
 					'height': '40px',
 					'padding': '0px',
-					'flex-shrink': '0'
-				}).find('img').css({
-					'margin-bottom': '3px'
+					'flex-shrink': '0',
+					'margin-right': '8px'
 				});
 			}
 
