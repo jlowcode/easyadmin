@@ -280,7 +280,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$jsFiles = array();
 
 		$jsFiles['Fabrik'] = 'media/com_fabrik/js/fabrik.js';
-		$jsFiles['FabrikEasyAdmin'] = '/plugins/fabrik_list/easyadmin/easyadmin' . $ext;
+		$jsFiles['FabrikEasyAdmin'] = 'plugins/fabrik_list/easyadmin/easyadmin' . $ext;
 		$script = "var fabrikEasyAdmin = new FabrikEasyAdmin($optsJson);";
 		$this->opts = $optsJson;
 		FabrikHelperHTML::script($jsFiles, $script);
@@ -4930,15 +4930,16 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$params['list_comparison_columns'] = json_encode($columns);
 	}
 
-	/**
-	 * This method execute extras configuration when we save the list modal
-	 * 
-	 * @param		array			$data				The data sent
-	 * 
-	 * @return 		object
-	 * 
-	 * @since 		version 4.0
-	 */
+    /**
+     * This method execute extras configuration when we save the list modal
+     *
+     * @param array $data The data sent
+     *
+     * @return        object
+     *
+     * @throws Exception
+     * @since        version 4.0
+     */
 	private function saveExtraConfigurationList($data)
 	{
 		$db = Factory::getContainer()->get('DatabaseDriver');
@@ -4969,6 +4970,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$update->miniatura = $this->getFullPathForThumbListElement($data['thumb_list']);
 
 		$db->updateObject('adm_cloner_listas', $update, 'id_lista');
+        $this->updateMenuName($data['name_list']);
 
 		return $response;
 	}
@@ -6419,6 +6421,34 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$itemId = $menuModel->getState('item.id');
         return $menuModel->getItem($itemId)->path;
 	}
+
+    /**
+     * This method updates the name of the menu item related to a list
+     * It finds the menu item linked to the list and sets a new name
+     *
+     * @param   String  $newName The new name to apply
+     * @return  String
+     * @since	v4.3.5
+     */
+    private function updateMenuName($newName): void
+    {
+        $menuModel = Factory::getApplication()->bootComponent('com_menus')->getMVCFactory()->createModel('Item', 'Administrator');
+        $app = Factory::getApplication();
+
+        $menuModel->getState(); 	//We need do this to set __state_set before the save
+        $menu = $app->getMenu();
+
+        $currentMenu = $this->searchMenuItem();
+
+        $dataMenu = new stdClass();
+        $dataMenu->id = $currentMenu->id;
+        $dataMenu->title = $newName;
+        $dataMenu->menutype = $currentMenu->menutype;
+
+        if (!$menuModel->save((array) $dataMenu)) {
+            throw new Exception(Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_UPDATING_MENU_NAME'));
+        }
+    }
 
 	/**
 	 * This method check if the list id from the request is restrict
