@@ -152,7 +152,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$opts->dbPrefix = $db->getPrefix();
 		$opts->workflow = $workflow;
 		$opts->owner_id = $listModel->getFormModel()->getTable()->get('created_by');
-		$opts->isAdmin = $this->user->authorise('core.admin');
+        $opts->isAdmin = $this->user->authorise('core.admin');
+        $opts->showFiltersList = $listModel->getParams()->get('show_filters_list', '0');
 		$opts->user = $this->user;
 
 		echo $this->setUpModalElements();
@@ -265,14 +266,14 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		return true;
 	}
 
-	/**
-	 * Method to load the javascript code for the plugin
-	 * 
-	 * @param   	Array		$opts 		Configuration array for javascript.
-	 * 
-	 * @return  	Null
-	 */
-	protected function loadJS($opts) 
+    /**
+     * Method to load the javascript code for the plugin
+     *
+     * @param stdClass $opts Configuration array for javascript.
+     * @return void
+     * @since v1.0
+     */
+	protected function loadJS(stdClass $opts): void
 	{
 		$ext    = FabrikHelperHTML::isDebug() ? '.js' : '-min.js';
 
@@ -1024,7 +1025,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	 */
 	public function setElementsList() 
 	{
-		$subject = $this->getSubject();
 		$elementsList = Array();
 
 		$this->setElementNameList($elementsList, 'name_list');
@@ -1039,7 +1039,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementOwnerList($elementsList, 'owner_list');
 		$this->setElementWidthList($elementsList, 'width_list');
 		$this->setElementLayoutMode($elementsList, 'layout_mode');
-		$this->setElementComparisonList($elementsList, 'comparison_list');
+        $this->setElementShowFiltersList($elementsList, 'show_filters_list');
+        $this->setElementComparisonList($elementsList, 'comparison_list');
 		$this->setElementWorkflowList($elementsList, 'workflow_list');
 		$this->setElementApproveByVotesList($elementsList, 'approve_by_votes_list');
 		$this->setElementVotesToApproveList($elementsList, 'votes_to_approve_list');
@@ -1655,7 +1656,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 	private function setElementComparisonList(&$elements, $nameElement) 
 	{
 		$listModel = $this->getListModel();
-		$subject = $this->getSubject();
 
 		$plgComparison = array_search('comparison', $listModel->getParams()->get('plugins'));
 		$value = $plgComparison && (bool) $listModel->getParams()->get('plugin_state')[$plgComparison];
@@ -1685,6 +1685,46 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
 		);
 	}
+
+    /**
+     * Setter method to show filters element
+     *
+     * @param array $elements Reference to all elements
+     * @param string $nameElement Identity of the element
+     *
+     * @return void
+     *
+     * @since v4.3.5
+     */
+    private function setElementShowFiltersList(array &$elements, string $nameElement)
+    {
+        $listModel = $this->getListModel();
+
+        $value = $listModel->getParams()->get('show_filters_list', '0');
+        $id = $this->prefixEl . '___' . $nameElement;
+
+        // Options to set up the element
+        $opts = Array(
+            Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_NO'),
+            Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENTS_YESNO_YES')
+        );
+        $elements[$id]['objField'] = new FileLayout('joomla.form.field.radio.switcher');
+        $elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+        $elements[$id]['dataLabel'] = $this->getDataLabel(
+            $id,
+            Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_FILTERS_LIST_LABEL'),
+            Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_FILTERS_LIST_DESC'),
+        );
+        $elements[$id]['dataField'] = Array(
+            'value' => $value,
+            'options' => $this->optionsElements($opts),
+            'name' => $id,
+            'id' => $id,
+            'class' => 'fbtn-default fabrikinput input-list',
+            'dataAttribute' => 'style="margin-bottom: 0px; padding: 0px"',
+        );
+    }
 
 	/**
 	 * Setter method to visibility of the list
@@ -4809,7 +4849,8 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			if($key == 'params') {
 				$dataList[$key] = json_decode($dataList[$key], true);
 				$dataList[$key]['width_list'] = $data['width_list'];
-				$dataList[$key]['layout_mode'] = $data['layout_mode'];
+                $dataList[$key]['layout_mode'] = $data['layout_mode'];
+                $dataList[$key]['show_filters_list'] = $data['show_filters_list'];
 				$dataList[$key]['allow_view_details'] = $viewLevel;
 				$dataList[$key]['workflow_list'] = $data['workflow_list'] == 'true' ? '1' : '0';
 

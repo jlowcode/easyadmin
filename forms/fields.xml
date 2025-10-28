@@ -24,6 +24,17 @@
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
 			</field>
+
+			<field name="show_filters_list"
+				   type="radio"
+				   class="btn-group"
+				   default="0"
+				   filter="integer"
+				   description="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_FILTERS_LIST_DESC"
+				   label="PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_SHOW_FILTERS_LIST_LABEL">
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
         </fieldset>
 
         <fieldset label="PLG_FABRIK_LIST_EASY_ADMIN_ADVANCED" name="plg-list-easyadmin-advanced">

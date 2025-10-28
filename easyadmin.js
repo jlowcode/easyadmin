@@ -14,7 +14,9 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			fatherList: '',
 			valIdEl: 0,
 			emptyNameOnList: true,
-			addNewElement: false
+			addNewElement: false,
+			isAdmin: false,
+			showFiltersList: false,
 		},
 
 		/**
@@ -83,7 +85,11 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 
 			jQuery('#easyadmin_modal___name_on_list').on('input', function() {
 				self.options.emptyNameOnList = false;
-			})
+			});
+
+			if(self.options.showFiltersList === 'true') {
+				setTimeout(() => jQuery('.toggleFilters').click(), 100);
+			}
 		},
 
 		/**
@@ -580,6 +586,7 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 					case 'easyadmin_modal___multi_relation1':
 					case 'easyadmin_modal___trash_list1':
 					case 'easyadmin_modal___workflow_list1':
+					case 'easyadmin_modal___show_filters_list1':
 					case 'easyadmin_modal___approve_by_votes_list1':
 					case 'easyadmin_modal___comparison_list1':
                     case 'easyadmin_modal___white_space1':
