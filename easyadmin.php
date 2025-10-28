@@ -1700,7 +1700,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
     {
         $listModel = $this->getListModel();
 
-        $value = $listModel->getParams()->get('show_filters_list', '0');
+        $value = $listModel->getParams()->get('show_filters_list', '0') == 'true' ? '1' : '0';
         $id = $this->prefixEl . '___' . $nameElement;
 
         // Options to set up the element
