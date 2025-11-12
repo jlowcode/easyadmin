@@ -1990,7 +1990,10 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'class' => 'form-control fabrikinput inputbox text',
 			'value' => $value
 		);
-		$this->getRequestWorkflow() ? $dEl->attributes['disabled'] = 'disabled' : '';
+		
+		if ($this->getRequestWorkflow() && !in_array($nameElement, ['autocomplete', 'treeview'])) {
+			$dEl->attributes['disabled'] = 'disabled';
+		}
 
 		$classField = new PlgFabrik_ElementField($subject);
 		$elements[$idEasy]['objField'] = $classField->getLayout('form');
@@ -4126,7 +4129,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$historyType = $data['history_type'];
 		$type = $data['type'];
 		
-		if ($data['valIdEl'] == '0' || empty($historyType) || $historyType == $type) {
+		if ($data['valIdEl'] == '0' || empty($historyType)) {
 			return false;
 		}
 		
@@ -4135,9 +4138,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'autocomplete' => 'treeview', 
 		]; 
 		
-		$areTypesCompatible = (($sameElement[$historyType] ?? null) === $type) || (($sameElement[$type] ?? null) === $historyType);
+		$areTypesCompatible = 
+			($sameElement[$historyType] ?? null) === $type ||
+			($sameElement[$type] ?? null) === $historyType;
 
-		return !$areTypesCompatible;
+		if ($historyType != $type && !$areTypesCompatible) {
+			return true;
+		}
+
+		if (($historyType == $type || $areTypesCompatible) && in_array($type, ['autocomplete', 'treeview'])) {
+			$oldId = $data['valIdEl'];
+			$listModel = $this->getListModel();
+			$element = $listModel->getElements('id', true, false)[$oldId];
+
+			
+			if ($element) {
+				$oldParams = json_decode($element->getParams(), true);
+				$oldJoinDbName = $oldParams['join_db_name'] ?? null;
+				$newJoinDbName = $data['listas-auto-complete'] ?? null;
+				
+				return $oldJoinDbName !== $newJoinDbName;
+			}
+		}
+    	return false;
+
 	}
 
 

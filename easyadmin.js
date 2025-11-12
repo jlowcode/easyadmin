@@ -992,7 +992,6 @@ define(['jquery', 'fab/list-plugin', 'lib/debounce/jquery.ba-throttle-debounce']
 			}
 
 			var typeVal = jQuery('#easyadmin_modal___type').val();
-			typeVal == 'treeview' || typeVal == 'autocomplete' ? jQuery('#jlow_fabrik_easyadmin_modal___listas-auto-complete').prop('disabled', 'disabled') : null;
 
 			jQuery('#easyadmin_modal___type').trigger('change');
 			jQuery('#easyadmin_modal___options_dropdown').trigger("chosen:updated");
