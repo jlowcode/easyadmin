@@ -1991,9 +1991,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'value' => $value
 		);
 		
-		if ($this->getRequestWorkflow() && !in_array($nameElement, ['autocomplete', 'treeview'])) {
-			$dEl->attributes['disabled'] = 'disabled';
-		}
+		$this->getRequestWorkflow() ? $dEl->attributes['disabled'] = 'disabled' : '';
 
 		$classField = new PlgFabrik_ElementField($subject);
 		$elements[$idEasy]['objField'] = $classField->getLayout('form');
