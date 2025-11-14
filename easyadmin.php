@@ -765,7 +765,6 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR_VALIDATE');
         Text::script('PLG_FABRIK_LIST_EASY_ADMIN_TRASH');
 		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_MESSAGE_CONFIRM_NEW_OWNER');
-		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_TEXT_RELATIONSHIP_LOCKED');
 		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_ERROR');
 		Text::script('PLG_FABRIK_LIST_EASY_ADMIN_SHARE_COPIED');
     }
@@ -1990,6 +1989,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'class' => 'form-control fabrikinput inputbox text',
 			'value' => $value
 		);
+		
 		$this->getRequestWorkflow() ? $dEl->attributes['disabled'] = 'disabled' : '';
 
 		$classField = new PlgFabrik_ElementField($subject);
@@ -4126,7 +4126,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$historyType = $data['history_type'];
 		$type = $data['type'];
 		
-		if ($data['valIdEl'] == '0' || empty($historyType) || $historyType == $type) {
+		if ($data['valIdEl'] == '0' || empty($historyType)) {
 			return false;
 		}
 		
@@ -4135,9 +4135,30 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 			'autocomplete' => 'treeview', 
 		]; 
 		
-		$areTypesCompatible = (($sameElement[$historyType] ?? null) === $type) || (($sameElement[$type] ?? null) === $historyType);
+		$areTypesCompatible = 
+			($sameElement[$historyType] ?? null) === $type ||
+			($sameElement[$type] ?? null) === $historyType;
 
-		return !$areTypesCompatible;
+		if ($historyType != $type && !$areTypesCompatible) {
+			return true;
+		}
+
+		if (($historyType == $type || $areTypesCompatible) && in_array($type, ['autocomplete', 'treeview'])) {
+			$oldId = $data['valIdEl'];
+			$listModel = $this->getListModel();
+			$element = $listModel->getElements('id', true, false)[$oldId];
+
+			
+			if ($element) {
+				$oldParams = json_decode($element->getParams(), true);
+				$oldJoinDbName = $oldParams['join_db_name'] ?? null;
+				$newJoinDbName = $data['listas-auto-complete'] ?? null;
+				
+				return $oldJoinDbName !== $newJoinDbName;
+			}
+		}
+    	return false;
+
 	}
 
 
