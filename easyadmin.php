@@ -1044,6 +1044,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		$this->setElementApproveByVotesList($elementsList, 'approve_by_votes_list');
 		$this->setElementVotesToApproveList($elementsList, 'votes_to_approve_list');
 		$this->setElementVotesToDisapproveList($elementsList, 'votes_to_disapprove_list');
+        $this->setElementContributionToVoteList($elementsList, 'contribution_to_vote_list');
 		$this->setElementCollab($elementsList, 'collab_list');
 		$this->setElementTrashList($elementsList, 'trash_list');
 
@@ -1438,7 +1439,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		);
 	}
 
-		/**
+    /**
 	 * Setter method to votes to approve element of the list
 	 *
 	 * @param   	Array 		$elements			Reference to all elements
@@ -1533,6 +1534,53 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 		);
 		$elements[$id]['dataField'] = $dEl;
 	}
+
+    /**
+     * Setter method to contribution to vote element on list
+     *
+     * @param   	Array 		$elements			Reference to all elements
+     * @param		String		$nameElement		Identity of the element
+     *
+     * @return  	Null
+     *
+     * @since 		version 4.3.5
+     */
+    private function setElementContributionToVoteList(&$elements, $nameElement)
+    {
+        $listModel = $this->getListModel();
+        $subject = $this->getSubject();
+
+        $value = (int) $listModel->getFormModel()->getParams()->get('workflow_contribution_to_vote', '5');
+
+        $id = $this->prefixEl . '___' . $nameElement;
+        $dEl = new stdClass;
+        $showOnTypes = ['list-approve_by_votes_list'];
+
+        // Options to set up the element
+        $dEl->attributes = Array(
+            'type' => 'text',
+            'id' => $id,
+            'name' => $id,
+            'size' => 0,
+            'maxlength' => '255',
+            'class' => 'form-control fabrikinput inputbox text input-list',
+            'value' => $value
+        );
+
+        $classField = new PlgFabrik_ElementField($subject);
+        $elements[$id]['objField'] = $classField->getLayout('form');
+        $elements[$id]['objLabel'] = FabrikHelperHTML::getLayout('fabrik-element-label', [COM_FABRIK_BASE . 'components/com_fabrik/layouts/element']);
+
+        $elements[$id]['dataLabel'] = $this->getDataLabel(
+            $id,
+            Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_APPROVE_LIST_LABEL'),
+            Text::_('PLG_FABRIK_LIST_EASY_ADMIN_ELEMENT_VOTES_TO_APPROVE_LIST_DESC'),
+            $showOnTypes,
+            false,
+            'list'
+        );
+        $elements[$id]['dataField'] = $dEl;
+    }
 
 	/**
 	 * Setter method to width element of the list
@@ -4898,6 +4946,7 @@ class PlgFabrik_ListEasyAdmin extends PlgFabrik_List {
 				$dataForm[$key]['workflow_approval_by_vote'] = $data['approve_by_votes_list'] == 'true' ? '1' : '0';
 				$dataForm[$key]['workflow_votes_to_approve'] = $data['votes_to_approve_list'];
 				$dataForm[$key]['workflow_votes_to_disapprove'] = $data['votes_to_disapprove_list'];
+                $dataForm[$key]['workflow_contribution_to_vote'] = $data['contribution_to_vote_list'];
 				$pluginsForm['plugin'] = $dataForm[$key]['plugins'];
 				$pluginsForm['plugin_locations'] = $dataForm[$key]['plugin_locations'];
 				$pluginsForm['plugin_events'] = $dataForm[$key]['plugin_events'];
